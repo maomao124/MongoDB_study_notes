@@ -230,7 +230,11 @@ MongoDB支持丰富的查询语言，支持读和写操作(CRUD)，比如数据�
 
 
 
-第一步：下载安装包
+### 第一步：下载安装包
+
+
+
+https://www.mongodb.com/try#community
 
 
 
@@ -244,7 +248,7 @@ MongoDB支持丰富的查询语言，支持读和写操作(CRUD)，比如数据�
 
 
 
-第二步：安装
+### 第二步：安装
 
 
 
@@ -288,7 +292,7 @@ MongoDB支持丰富的查询语言，支持读和写操作(CRUD)，比如数据�
 
 
 
-第三步：启动
+### 第三步：启动
 
 
 
@@ -394,7 +398,7 @@ PS H:\opensoft\MongoDB\data>
 
 
 
-第一种：命令行参数方式启动服务
+#### 第一种：命令行参数方式启动服务
 
 
 
@@ -493,7 +497,508 @@ PS H:\opensoft\MongoDB\bin> .\mongod --dbpath=..\data\db
 
 
 
-第二种：配置文件方式启动服务
+#### 第二种：配置文件方式启动服务
+
+
+
+在解压目录中新建 conf 文件夹，该文件夹中新建配置文件 mongod.conf
+
+
+
+配置文件内容：
+
+```
+storage:
+  dbPath: .\\..\\data\\db
+```
+
+
+
+
+
+```sh
+PS H:\opensoft\MongoDB> ls
+
+
+    目录: H:\opensoft\MongoDB
+
+
+Mode                 LastWriteTime         Length Name
+----                 -------------         ------ ----
+d-----        2022/11/14     20:18                bin
+d-----        2022/11/14     20:37                conf
+d-----        2022/11/14     20:41                data
+d-----        2022/11/14     20:16                log
+-a----         2022/9/29      1:03          30608 LICENSE-Community.txt
+-a----         2022/9/29      1:03          16726 MPL-2
+-a----         2022/9/29      1:03           1977 README
+-a----         2022/9/29      1:03          77913 THIRD-PARTY-NOTICES
+
+
+PS H:\opensoft\MongoDB> cd conf
+PS H:\opensoft\MongoDB\conf> ls
+
+
+    目录: H:\opensoft\MongoDB\conf
+
+
+Mode                 LastWriteTime         Length Name
+----                 -------------         ------ ----
+-a----        2022/11/14     20:41             33 mongod.conf
+
+
+PS H:\opensoft\MongoDB\conf> cat .\mongod.conf
+storage:
+  dbPath: .\\..\\data\\db
+PS H:\opensoft\MongoDB\conf>
+```
+
+
+
+
+
+更多参数配置：
+
+
+
+
+
+启动方式：
+
+
+
+```sh
+.\mongod -f ../conf/mongod.conf
+```
+
+或者
+
+```sh
+.\mongod --config ../conf/mongod.conf
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+## Shell连接
+
+
+
+第一步：下载
+
+
+
+https://www.mongodb.com/try/download/shell
+
+
+
+![image-20221114205839934](img/MongoDB学习笔记/image-20221114205839934.png)
+
+
+
+
+
+
+
+第二步：解压
+
+
+
+解压到MongoDB目录下
+
+
+
+```sh
+PS H:\opensoft\MongoDB> ls
+
+
+    目录: H:\opensoft\MongoDB
+
+
+Mode                 LastWriteTime         Length Name
+----                 -------------         ------ ----
+d-----        2022/11/14     20:18                bin
+d-----        2022/11/14     20:37                conf
+d-----        2022/11/14     21:02                data
+d-----        2022/11/14     20:16                log
+d-----         2022/9/20      4:08                mongosh
+-a----         2022/9/29      1:03          30608 LICENSE-Community.txt
+-a----         2022/9/29      1:03          16726 MPL-2
+-a----         2022/9/29      1:03           1977 README
+-a----         2022/9/29      1:03          77913 THIRD-PARTY-NOTICES
+
+
+PS H:\opensoft\MongoDB> cd .\mongosh\
+PS H:\opensoft\MongoDB\mongosh> ls
+
+
+    目录: H:\opensoft\MongoDB\mongosh
+
+
+Mode                 LastWriteTime         Length Name
+----                 -------------         ------ ----
+d-----         2022/9/20      4:08                bin
+-a----         2022/9/20      4:01          17524 LICENSE-crypt-library
+-a----         2022/9/20      4:01          10759 LICENSE-mongosh
+-a----         2022/9/20      4:08           5792 mongosh.1.gz
+-a----         2022/9/20      4:01            393 README
+-a----         2022/9/20      4:01         918987 THIRD_PARTY_NOTICES
+
+
+PS H:\opensoft\MongoDB\mongosh> cd bin
+PS H:\opensoft\MongoDB\mongosh\bin> ls
+
+
+    目录: H:\opensoft\MongoDB\mongosh\bin
+
+
+Mode                 LastWriteTime         Length Name
+----                 -------------         ------ ----
+-a----         2022/9/20      3:53      146979840 mongosh.exe
+-a----         2022/8/16     10:50       17886208 mongosh_crypt_v1.dll
+
+
+PS H:\opensoft\MongoDB\mongosh\bin>
+```
+
+
+
+
+
+
+
+第三步：启动
+
+
+
+```sh
+.\mongosh
+```
+
+或者
+
+```sh
+.\mongosh --host=127.0.0.1 --port=27017
+```
+
+
+
+
+
+
+
+```sh
+PS H:\opensoft\MongoDB\mongosh\bin> .\mongosh
+Current Mongosh Log ID: 63723d5d79fae2f2ba5e24af
+Connecting to:          mongodb://127.0.0.1:27017/?directConnection=true&serverSelectionTimeoutMS=2000&appName=mongosh+1.6.0
+Using MongoDB:          6.0.2
+Using Mongosh:          1.6.0
+
+For mongosh info see: https://docs.mongodb.com/mongodb-shell/
+
+------
+   The server generated these startup warnings when booting
+   2022-11-14T20:16:36.251+08:00: Access control is not enabled for the database. Read and write access to data and configuration is unrestricted
+------
+
+------
+   Enable MongoDB's free cloud-based monitoring service, which will then receive and display
+   metrics about your deployment (disk utilization, CPU, operation statistics, etc).
+
+   The monitoring data will be available on a MongoDB website with a unique URL accessible to you
+   and anyone you share the URL with. MongoDB may use this information to make product
+   improvements and to suggest MongoDB products and deployment options to you.
+
+   To enable free monitoring, run the following command: db.enableFreeMonitoring()
+   To permanently disable this reminder, run the following command: db.disableFreeMonitoring()
+------
+
+test>
+```
+
+
+
+```sh
+PS H:\opensoft\MongoDB\mongosh\bin> .\mongosh --host=127.0.0.1 --port=27017
+Current Mongosh Log ID: 63723d397060718605194f6b
+Connecting to:          mongodb://127.0.0.1:27017/?directConnection=true&serverSelectionTimeoutMS=2000&appName=mongosh+1.6.0
+Using MongoDB:          6.0.2
+Using Mongosh:          1.6.0
+
+For mongosh info see: https://docs.mongodb.com/mongodb-shell/
+
+------
+   The server generated these startup warnings when booting
+   2022-11-14T20:16:36.251+08:00: Access control is not enabled for the database. Read and write access to data and configuration is unrestricted
+------
+
+------
+   Enable MongoDB's free cloud-based monitoring service, which will then receive and display
+   metrics about your deployment (disk utilization, CPU, operation statistics, etc).
+
+   The monitoring data will be available on a MongoDB website with a unique URL accessible to you
+   and anyone you share the URL with. MongoDB may use this information to make product
+   improvements and to suggest MongoDB products and deployment options to you.
+
+   To enable free monitoring, run the following command: db.enableFreeMonitoring()
+   To permanently disable this reminder, run the following command: db.disableFreeMonitoring()
+------
+
+test>
+```
+
+
+
+
+
+
+
+
+
+查看已经有的数据库
+
+```sh
+show databases
+```
+
+
+
+```sh
+test> show databases
+admin    40.00 KiB
+config  108.00 KiB
+local    40.00 KiB
+test>
+```
+
+
+
+
+
+退出mongodb
+
+```sh
+exit
+```
+
+
+
+```sh
+test> exit
+PS H:\opensoft\MongoDB\mongosh\bin>
+```
+
+
+
+
+
+更多参数可以通过帮助查看：
+
+```sh
+.\mongosh --help
+```
+
+
+
+
+
+```sh
+PS H:\opensoft\MongoDB\mongosh\bin> .\mongosh --help
+
+  $ mongosh [options] [db address] [file names (ending in .js or .mongodb)]
+
+  Options:
+
+    -h, --help                                 Show this usage information
+    -f, --file [arg]                           Load the specified mongosh script
+        --host [arg]                           Server to connect to
+        --port [arg]                           Port to connect to
+        --version                              Show version information
+        --verbose                              Increase the verbosity of the output of the shell
+        --quiet                                Silence output from the shell during the connection process
+        --shell                                Run the shell after executing files
+        --nodb                                 Don't connect to mongod on startup - no 'db address' [arg] expected
+        --norc                                 Will not run the '.mongoshrc.js' file on start up
+        --eval [arg]                           Evaluate javascript
+        --json[=canonical|relaxed]             Print result of --eval as Extended JSON, including errors
+        --retryWrites[=true|false]             Automatically retry write operations upon transient network errors (Default: true)
+
+  Authentication Options:
+
+    -u, --username [arg]                       Username for authentication
+    -p, --password [arg]                       Password for authentication
+        --authenticationDatabase [arg]         User source (defaults to dbname)
+        --authenticationMechanism [arg]        Authentication mechanism
+        --awsIamSessionToken [arg]             AWS IAM Temporary Session Token ID
+        --gssapiServiceName [arg]              Service name to use when authenticating using GSSAPI/Kerberos
+        --sspiHostnameCanonicalization [arg]   Specify the SSPI hostname canonicalization (none or forward, available on Windows)
+        --sspiRealmOverride [arg]              Specify the SSPI server realm (available on Windows)
+
+  TLS Options:
+
+        --tls                                  Use TLS for all connections
+        --tlsCertificateKeyFile [arg]          PEM certificate/key file for TLS
+        --tlsCertificateKeyFilePassword [arg]  Password for key in PEM file for TLS
+        --tlsCAFile [arg]                      Certificate Authority file for TLS
+        --tlsAllowInvalidHostnames             Allow connections to servers with non-matching hostnames
+        --tlsAllowInvalidCertificates          Allow connections to servers with invalid certificates
+        --tlsCertificateSelector [arg]         TLS Certificate in system store (Windows and macOS only)
+        --tlsCRLFile [arg]                     Specifies the .pem file that contains the Certificate Revocation List
+        --tlsDisabledProtocols [arg]           Comma separated list of TLS protocols to disable [TLS1_0,TLS1_1,TLS1_2]
+        --tlsUseSystemCA                       Load the operating system trusted certificate list
+        --tlsFIPSMode                          Enable the system TLS library's FIPS mode
+
+  API version options:
+
+        --apiVersion [arg]                     Specifies the API version to connect with
+        --apiStrict                            Use strict API version mode
+        --apiDeprecationErrors                 Fail deprecated commands for the specified API version
+
+  FLE Options:
+
+        --awsAccessKeyId [arg]                 AWS Access Key for FLE Amazon KMS
+        --awsSecretAccessKey [arg]             AWS Secret Key for FLE Amazon KMS
+        --awsSessionToken [arg]                Optional AWS Session Token ID
+        --keyVaultNamespace [arg]              database.collection to store encrypted FLE parameters
+        --kmsURL [arg]                         Test parameter to override the URL of the KMS endpoint
+
+  DB Address Examples:
+
+        foo                                    Foo database on local machine
+        192.168.0.5/foo                        Foo database on 192.168.0.5 machine
+        192.168.0.5:9999/foo                   Foo database on 192.168.0.5 machine on port 9999
+        mongodb://192.168.0.5:9999/foo         Connection string URI can also be used
+
+  File Names:
+
+        A list of files to run. Files must end in .js and will exit after unless --shell is specified.
+
+  Examples:
+
+        Start mongosh using 'ships' database on specified connection string:
+        $ mongosh mongodb://192.168.0.5:9999/ships
+
+  For more information on usage: https://docs.mongodb.com/mongodb-shell.
+PS H:\opensoft\MongoDB\mongosh\bin>
+```
+
+
+
+
+
+
+
+
+
+第四步：配置环境变量
+
+
+
+![image-20221114211135822](img/MongoDB学习笔记/image-20221114211135822.png)
+
+
+
+
+
+![image-20221114211146575](img/MongoDB学习笔记/image-20221114211146575.png)
+
+
+
+
+
+![image-20221114211156842](img/MongoDB学习笔记/image-20221114211156842.png)
+
+
+
+点击高级系统设置
+
+
+
+![image-20221114211216980](img/MongoDB学习笔记/image-20221114211216980.png)
+
+
+
+点击环境变量
+
+
+
+![image-20221114211303433](img/MongoDB学习笔记/image-20221114211303433.png)
+
+
+
+编辑path
+
+
+
+![image-20221114211405463](img/MongoDB学习笔记/image-20221114211405463.png)
+
+
+
+新建一个，保存
+
+
+
+
+
+随便在一个路径下启动
+
+```sh
+PS C:\Users\mao\Desktop> mongosh.exe
+Current Mongosh Log ID: 63723f4fea0a3e8c6d08ee92
+Connecting to:          mongodb://127.0.0.1:27017/?directConnection=true&serverSelectionTimeoutMS=2000&appName=mongosh+1.6.0
+Using MongoDB:          6.0.2
+Using Mongosh:          1.6.0
+
+For mongosh info see: https://docs.mongodb.com/mongodb-shell/
+
+------
+   The server generated these startup warnings when booting
+   2022-11-14T20:16:36.251+08:00: Access control is not enabled for the database. Read and write access to data and configuration is unrestricted
+------
+
+------
+   Enable MongoDB's free cloud-based monitoring service, which will then receive and display
+   metrics about your deployment (disk utilization, CPU, operation statistics, etc).
+
+   The monitoring data will be available on a MongoDB website with a unique URL accessible to you
+   and anyone you share the URL with. MongoDB may use this information to make product
+   improvements and to suggest MongoDB products and deployment options to you.
+
+   To enable free monitoring, run the following command: db.enableFreeMonitoring()
+   To permanently disable this reminder, run the following command: db.disableFreeMonitoring()
+------
+
+test>
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+## Compass-图形化界面客户端
 
 
 
