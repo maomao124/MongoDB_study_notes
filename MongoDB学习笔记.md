@@ -597,7 +597,7 @@ PS H:\opensoft\MongoDB\conf>
 
 
 
-第一步：下载
+### 第一步：下载
 
 
 
@@ -613,7 +613,7 @@ https://www.mongodb.com/try/download/shell
 
 
 
-第二步：解压
+### 第二步：解压
 
 
 
@@ -680,7 +680,7 @@ PS H:\opensoft\MongoDB\mongosh\bin>
 
 
 
-第三步：启动
+### 第三步：启动
 
 
 
@@ -903,7 +903,7 @@ PS H:\opensoft\MongoDB\mongosh\bin>
 
 
 
-第四步：配置环境变量
+### 第四步：配置环境变量
 
 
 
@@ -999,6 +999,162 @@ test>
 
 
 ## Compass-图形化界面客户端
+
+
+
+### 第一步：下载
+
+https://www.mongodb.com/try/download/compass
+
+
+
+
+
+![image-20221114212806986](img/MongoDB学习笔记/image-20221114212806986.png)
+
+
+
+
+
+
+
+
+
+### 第二步：运行
+
+
+
+```sh
+PS H:\opensoft\MongoDB> ls
+
+
+    目录: H:\opensoft\MongoDB
+
+
+Mode                 LastWriteTime         Length Name
+----                 -------------         ------ ----
+d-----        2022/11/14     20:18                bin
+d-----        2022/11/14     20:37                conf
+d-----        2022/11/14     21:32                data
+d-----        2022/11/14     20:16                log
+d-----        2022/11/14     21:32                MongoDBCompass
+d-----         2022/9/20      4:08                mongosh
+-a----         2022/9/29      1:03          30608 LICENSE-Community.txt
+-a----         2022/9/29      1:03          16726 MPL-2
+-a----         2022/9/29      1:03           1977 README
+-a----         2022/9/29      1:03          77913 THIRD-PARTY-NOTICES
+-a----        2022/11/14     21:22             50 运行.bat
+
+
+PS H:\opensoft\MongoDB> cd .\MongoDBCompass\
+PS H:\opensoft\MongoDB\MongoDBCompass> ls
+
+
+    目录: H:\opensoft\MongoDB\MongoDBCompass
+
+
+Mode                 LastWriteTime         Length Name
+----                 -------------         ------ ----
+d-----        2022/11/14     21:32                app-1.33.1
+d-----        2022/11/14     21:32                packages
+-a----        2022/11/14     21:28           6518 app.ico
+-a----        2022/11/14     21:28         664472 MongoDBCompass.exe
+-a----        2022/11/14     21:28           1309 Squirrel-Shortcut.log
+-a----        2022/11/14     21:28        1905560 Update.exe
+
+
+PS H:\opensoft\MongoDB\MongoDBCompass> cd .\app-1.33.1\
+PS H:\opensoft\MongoDB\MongoDBCompass\app-1.33.1> ls
+
+
+    目录: H:\opensoft\MongoDB\MongoDBCompass\app-1.33.1
+
+
+Mode                 LastWriteTime         Length Name
+----                 -------------         ------ ----
+d-----        2022/11/14     21:32                locales
+d-----        2022/11/14     21:32                resources
+d-----        2022/11/14     21:32                swiftshader
+-a----        2022/11/14     21:28         142204 chrome_100_percent.pak
+-a----        2022/11/14     21:28         207660 chrome_200_percent.pak
+-a----        2022/11/14     21:28        4524696 d3dcompiler_47.dll
+-a----        2022/11/14     21:28        1681408 ffmpeg.dll
+-a----        2022/11/14     21:28       10215904 icudtl.dat
+-a----        2022/11/14     21:28         441856 libEGL.dll
+-a----        2022/11/14     21:28        7831552 libGLESv2.dll
+-a----        2022/11/14     21:28          36100 LICENSE
+-a----        2022/11/14     21:28      140914072 MongoDBCompass.exe
+-a----        2022/11/14     21:28        5870149 resources.pak
+-a----        2022/11/14     21:28          49266 snapshot_blob.bin
+-a----        2022/11/14     21:28            263 Squirrel-UpdateSelf.log
+-a----        2022/11/14     21:28        1905560 squirrel.exe
+-a----        2022/11/14     21:28         164467 v8_context_snapshot.bin
+-a----        2022/11/14     21:28        4467712 vk_swiftshader.dll
+-a----        2022/11/14     21:28            106 vk_swiftshader_icd.json
+-a----        2022/11/14     21:28         732672 vulkan-1.dll
+
+
+PS H:\opensoft\MongoDB\MongoDBCompass\app-1.33.1> .\MongoDBCompass.exe
+PS H:\opensoft\MongoDB\MongoDBCompass\app-1.33.1>
+```
+
+
+
+
+
+![image-20221114212945921](img/MongoDB学习笔记/image-20221114212945921.png)
+
+
+
+![image-20221114212955862](img/MongoDB学习笔记/image-20221114212955862.png)
+
+
+
+
+
+
+
+
+
+### 第三步：新建一个连接
+
+
+
+![image-20221114213525130](img/MongoDB学习笔记/image-20221114213525130.png)
+
+
+
+
+
+![image-20221114213536998](img/MongoDB学习笔记/image-20221114213536998.png)
+
+
+
+
+
+![image-20221114213648375](img/MongoDB学习笔记/image-20221114213648375.png)
+
+
+
+
+
+![image-20221114213701980](img/MongoDB学习笔记/image-20221114213701980.png)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+# 基本常用命令
 
 
 
