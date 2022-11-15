@@ -1434,3 +1434,175 @@ db1>
 
 ## 文档的增删改查
 
+文档（document）的数据结构和 JSON 基本一样
+
+所有存储在集合中的数据都是 BSON 格式
+
+
+
+
+
+### 文档的插入
+
+**单个文档插入**
+
+使用insert() 或 save() 方法向集合中插入文档，语法如下：
+
+
+
+```json
+db.collection.insert(
+	<document or array of documents>,
+	{
+		writeConcern: <document>,
+		ordered: <boolean>
+	}
+)
+```
+
+
+
+
+
+document：要插入到集合中的文档或文档数组
+
+
+
+ordered：可选。如果为真，则按顺序插入数组中的文档，如果其中一个文档出现错误，MongoDB将返回而 不处理数组中的其余文档。如果为假，则执行无序插入，如果其中一个文档出现错误，则继续处理 数组中的主文档。在版本2.6+中默认为true
+
+
+
+要向comment的集合(表)中插入一条测试数据：
+
+```sh
+db.comment.insert({"articleid":"100000","content":"今天天气真好，阳光明媚","userid":"1001","nickname":"Rose","createdatetime":new Date(),"likenum":NumberInt(10),"state":null})
+```
+
+
+
+```sh
+db1> db.comment.insert({"articleid":"100000","content":"今天天气真好，阳光明媚","userid":"1001","nickname":"Rose","createdatetime":new Date(),"likenum":NumberInt(10),"state":null})
+{
+  acknowledged: true,
+  insertedIds: { '0': ObjectId("6372f74a140d38c7cf862490") }
+}
+db1>
+```
+
+
+
+![image-20221115102305967](img/MongoDB学习笔记/image-20221115102305967.png)
+
+
+
+
+
+* comment集合如果不存在，则会隐式创建
+* mongo中的数字，默认情况下是double类型，如果要存整型，必须使用函数NumberInt(整型数字)，否则取出来就有问题了
+* 插入当前日期使用 new Date()
+* 插入的数据没有指定 _id ，会自动生成主键值
+* 如果某字段没值，可以赋值为null，或不写该字段
+
+
+
+注意：
+
+* 文档中的键/值对是有序的
+* 文档中的值不仅可以是在双引号里面的字符串，还可以是其他几种数据类型（甚至可以是整个嵌入的文档)
+* MongoDB区分类型和大小写
+* MongoDB的文档不能有重复的键
+* 文档的键是字符串。除了少数例外情况，键可以使用任意UTF-8字符
+
+
+
+
+
+**批量插入**
+
+```sh
+db.collection.insertMany(
+	[ <document 1> , <document 2>, ... ],
+		{
+			writeConcern: <document>,
+			ordered: <boolean>
+		}
+)
+
+```
+
+
+
+
+
+批量插入多条文章评论：
+
+```sh
+db.comment.insertMany([
+{"_id":"1","articleid":"100001","content":"我们不应该把清晨浪费在手机上，健康很重要，一杯温水幸福你我他。","userid":"1002","nickname":"相忘于江湖","createdatetime":new Date("2019-08-05T22:08:15.522Z"),"likenum":NumberInt(1000),"state":"1"},
+{"_id":"2","articleid":"100001","content":"我夏天空腹喝凉开水，冬天喝温开水","userid":"1005","nickname":"伊人憔悴","createdatetime":new Date("2019-08-05T23:58:51.485Z"),"likenum":NumberInt(888),"state":"1"},
+{"_id":"3","articleid":"100001","content":"我一直喝凉开水，冬天夏天都喝。","userid":"1004","nickname":"杰克船长","createdatetime":new Date("2019-08-06T01:05:06.321Z"),"likenum":NumberInt(666),"state":"1"},
+{"_id":"4","articleid":"100001","content":"专家说不能空腹吃饭，影响健康。","userid":"1003","nickname":"凯撒","createdatetime":new Date("2019-08-06T08:18:35.288Z"),"likenum":NumberInt(2000),"state":"1"},
+{"_id":"5","articleid":"100001","content":"研究表明，刚烧开的水千万不能喝，因为烫嘴。","userid":"1003","nickname":"凯撒","createdatetime":new Date("2019-08-06T11:01:02.521Z"),"likenum":NumberInt(3000),"state":"1"}
+]);
+```
+
+
+
+```sh
+db1> db.comment.insertMany([
+... {"_id":"1","articleid":"100001","content":"我们不应该把清晨浪费在手机上，健康很重要，一杯温水幸福你我他。","userid":"1002","nickname":"相忘于江湖","createdatetime":new Date("2019-08-05T22:08:15.522Z"),"likenum":NumberInt(1000),"state":"1"},
+... {"_id":"2","articleid":"100001","content":"我夏天空腹喝凉开水，冬天喝温开水","userid":"1005","nickname":"伊人憔悴","createdatetime":new Date("2019-08-05T23:58:51.485Z"),"likenum":NumberInt(888),"state":"1"},
+... {"_id":"3","articleid":"100001","content":"我一直喝凉开水，冬天夏天都喝。","userid":"1004","nickname":"杰克船长","createdatetime":new Date("2019-08-06T01:05:06.321Z"),"likenum":NumberInt(666),"state":"1"},
+... {"_id":"4","articleid":"100001","content":"专家说不能空腹吃饭，影响健康。","userid":"1003","nickname":"凯撒","createdatetime":new Date("2019-08-06T08:18:35.288Z"),"likenum":NumberInt(2000),"state":"1"},
+... {"_id":"5","articleid":"100001","content":"研究表明，刚烧开的水千万不能喝，因为烫嘴。","userid":"1003","nickname":"凯撒","createdatetime":new Date("2019-08-06T11:01:02.521Z"),"likenum":NumberInt(3000),"state":"1"}
+db1>
+{
+  acknowledged: true,
+  insertedIds: { '0': '1', '1': '2', '2': '3', '3': '4', '4': '5' }
+}
+```
+
+
+
+
+
+![image-20221115102751103](img/MongoDB学习笔记/image-20221115102751103.png)
+
+
+
+
+
+
+
+* 插入时指定了 _id ，则主键就是该值
+* 如果某条数据插入失败，将会终止插入，但已经插入成功的数据不会回滚掉
+* 因为批量插入由于数据较多容易出现失败，因此，可以使用try catch进行异常捕捉处理，测试的时候可以不处理
+
+
+
+```sh
+try {
+db.comment.insertMany([
+{"_id":"1","articleid":"100001","content":"我们不应该把清晨浪费在手机上，健康很重要，一杯温水幸福你我他。","userid":"1002","nickname":"相忘于江湖","createdatetime":new Date("2019-08-05T22:08:15.522Z"),"likenum":NumberInt(1000),"state":"1"},
+{"_id":"2","articleid":"100001","content":"我夏天空腹喝凉开水，冬天喝温开水","userid":"1005","nickname":"伊人憔悴","createdatetime":new Date("2019-08-05T23:58:51.485Z"),"likenum":NumberInt(888),"state":"1"},
+{"_id":"3","articleid":"100001","content":"我一直喝凉开水，冬天夏天都喝。","userid":"1004","nickname":"杰克船长","createdatetime":new Date("2019-08-06T01:05:06.321Z"),"likenum":NumberInt(666),"state":"1"},
+{"_id":"4","articleid":"100001","content":"专家说不能空腹吃饭，影响健康。","userid":"1003","nickname":"凯撒","createdatetime":new Date("2019-08-06T08:18:35.288Z"),"likenum":NumberInt(2000),"state":"1"},
+{"_id":"5","articleid":"100001","content":"研究表明，刚烧开的水千万不能喝，因为烫嘴。","userid":"1003","nickname":"凯撒","createdatetime":new Date("2019-08-06T11:01:02.521Z"),"likenum":NumberInt(3000),"state":"1"}
+]);
+} catch (e) {
+	print (e);
+}
+```
+
+
+
+
+
+
+
+
+
+### 文档的查询
+
+
+
