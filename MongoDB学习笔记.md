@@ -1604,5 +1604,352 @@ db.comment.insertMany([
 
 ### 文档的查询
 
+查询数据的语法格式如下：
 
+```sh
+db.collection.find(<query>, [projection])
+```
+
+
+
+query：可选。使用查询运算符指定选择筛选器。若要返回集合中的所有文档，请省略此参数或传递空文档 ( {} )
+
+projection：可选。指定要在与查询筛选器匹配的文档中返回的字段（投影）。若要返回匹配文档中的所有字段， 请省略此参数
+
+
+
+
+
+**查询所有**
+
+```sh
+db.comment.find()
+```
+
+或者
+
+```sh
+db.comment.find({})
+```
+
+
+
+
+
+```sh
+db1> db.comment.find();
+[
+  {
+    _id: ObjectId("6372f74a140d38c7cf862490"),
+    articleid: '100000',
+    content: '今天天气真好，阳光明媚',
+    userid: '1001',
+    nickname: 'Rose',
+    createdatetime: ISODate("2022-11-15T02:19:54.161Z"),
+    likenum: 10,
+    state: null
+  },
+  {
+    _id: '1',
+    articleid: '100001',
+    content: '我们不应该把清晨浪费在手机上，健康很重要，一杯温水幸福你我他。',
+    userid: '1002',
+    nickname: '相忘于江湖',
+    createdatetime: ISODate("2019-08-05T22:08:15.522Z"),
+    likenum: 1000,
+    state: '1'
+  },
+  {
+    _id: '2',
+    articleid: '100001',
+    content: '我夏天空腹喝凉开水，冬天喝温开水',
+    userid: '1005',
+    nickname: '伊人憔悴',
+    createdatetime: ISODate("2019-08-05T23:58:51.485Z"),
+    likenum: 888,
+    state: '1'
+  },
+  {
+    _id: '3',
+    articleid: '100001',
+    content: '我一直喝凉开水，冬天夏天都喝。',
+    userid: '1004',
+    nickname: '杰克船长',
+    createdatetime: ISODate("2019-08-06T01:05:06.321Z"),
+    likenum: 666,
+    state: '1'
+  },
+  {
+    _id: '4',
+    articleid: '100001',
+    content: '专家说不能空腹吃饭，影响健康。',
+    userid: '1003',
+    nickname: '凯撒',
+    createdatetime: ISODate("2019-08-06T08:18:35.288Z"),
+    likenum: 2000,
+    state: '1'
+  },
+  {
+    _id: '5',
+    articleid: '100001',
+    content: '研究表明，刚烧开的水千万不能喝，因为烫嘴。',
+    userid: '1003',
+    nickname: '凯撒',
+    createdatetime: ISODate("2019-08-06T11:01:02.521Z"),
+    likenum: 3000,
+    state: '1'
+  }
+]
+db1> db.comment.find({});
+[
+  {
+    _id: ObjectId("6372f74a140d38c7cf862490"),
+    articleid: '100000',
+    content: '今天天气真好，阳光明媚',
+    userid: '1001',
+    nickname: 'Rose',
+    createdatetime: ISODate("2022-11-15T02:19:54.161Z"),
+    likenum: 10,
+    state: null
+  },
+  {
+    _id: '1',
+    articleid: '100001',
+    content: '我们不应该把清晨浪费在手机上，健康很重要，一杯温水幸福你我他。',
+    userid: '1002',
+    nickname: '相忘于江湖',
+    createdatetime: ISODate("2019-08-05T22:08:15.522Z"),
+    likenum: 1000,
+    state: '1'
+  },
+  {
+    _id: '2',
+    articleid: '100001',
+    content: '我夏天空腹喝凉开水，冬天喝温开水',
+    userid: '1005',
+    nickname: '伊人憔悴',
+    createdatetime: ISODate("2019-08-05T23:58:51.485Z"),
+    likenum: 888,
+    state: '1'
+  },
+  {
+    _id: '3',
+    articleid: '100001',
+    content: '我一直喝凉开水，冬天夏天都喝。',
+    userid: '1004',
+    nickname: '杰克船长',
+    createdatetime: ISODate("2019-08-06T01:05:06.321Z"),
+    likenum: 666,
+    state: '1'
+  },
+  {
+    _id: '4',
+    articleid: '100001',
+    content: '专家说不能空腹吃饭，影响健康。',
+    userid: '1003',
+    nickname: '凯撒',
+    createdatetime: ISODate("2019-08-06T08:18:35.288Z"),
+    likenum: 2000,
+    state: '1'
+  },
+  {
+    _id: '5',
+    articleid: '100001',
+    content: '研究表明，刚烧开的水千万不能喝，因为烫嘴。',
+    userid: '1003',
+    nickname: '凯撒',
+    createdatetime: ISODate("2019-08-06T11:01:02.521Z"),
+    likenum: 3000,
+    state: '1'
+  }
+]
+db1>
+```
+
+
+
+
+
+**按一定条件来查询**
+
+比如按userid来查询：
+
+```sh
+db.comment.find({userid:'1005'})
+```
+
+
+
+```sh
+db1> db.comment.find({userid:'1005'})
+[
+  {
+    _id: '2',
+    articleid: '100001',
+    content: '我夏天空腹喝凉开水，冬天喝温开水',
+    userid: '1005',
+    nickname: '伊人憔悴',
+    createdatetime: ISODate("2019-08-05T23:58:51.485Z"),
+    likenum: 888,
+    state: '1'
+  }
+db1>
+```
+
+
+
+
+
+如果只需要返回符合条件的第一条数据，我们可以使用findOne命令来实现
+
+```sh
+db.comment.findOne({userid:'1004'})
+```
+
+
+
+```sh
+db1> db.comment.findOne({userid:'1004'})
+{
+  _id: '3',
+  articleid: '100001',
+  content: '我一直喝凉开水，冬天夏天都喝。',
+  userid: '1004',
+  nickname: '杰克船长',
+  createdatetime: ISODate("2019-08-06T01:05:06.321Z"),
+  likenum: 666,
+  state: '1'
+}
+db1>
+```
+
+
+
+
+
+
+
+**投影查询**
+
+如果要查询结果返回部分字段，则需要使用投影查询（不显示所有字段，只显示指定的字段）
+
+
+
+查询结果只显示 userid：
+
+```sh
+db.comment.find({},{userid:1})
+```
+
+
+
+```sh
+db1> db.comment.find({},{userid:1})
+[
+  { _id: ObjectId("6372f74a140d38c7cf862490"), userid: '1001' },
+  { _id: '1', userid: '1002' },
+  { _id: '2', userid: '1005' },
+  { _id: '3', userid: '1004' },
+  { _id: '4', userid: '1003' },
+  { _id: '5', userid: '1003' }
+]
+db1>
+```
+
+
+
+查询结果只显示 _id：
+
+```sh
+db.comment.find({},{_id:1})
+```
+
+
+
+```sh
+db1> db.comment.find({},{_id:1})
+[
+  { _id: ObjectId("6372f74a140d38c7cf862490") },
+  { _id: '1' },
+  { _id: '2' },
+  { _id: '3' },
+  { _id: '4' },
+  { _id: '5' }
+]
+db1>
+```
+
+
+
+
+
+查询结果显示 userid和content：
+
+```sh
+db.comment.find({},{userid:1,content:1})
+```
+
+
+
+```sh
+db1> db.comment.find({},{userid:1,content:1})
+[
+  {
+    _id: ObjectId("6372f74a140d38c7cf862490"),
+    content: '今天天气真好，阳光明媚',
+    userid: '1001'
+  },
+  {
+    _id: '1',
+    content: '我们不应该把清晨浪费在手机上，健康很重要，一杯温水幸福你我他。',
+    userid: '1002'
+  },
+  { _id: '2', content: '我夏天空腹喝凉开水，冬天喝温开水', userid: '1005' },
+  { _id: '3', content: '我一直喝凉开水，冬天夏天都喝。', userid: '1004' },
+  { _id: '4', content: '专家说不能空腹吃饭，影响健康。', userid: '1003' },
+  { _id: '5', content: '研究表明，刚烧开的水千万不能喝，因为烫嘴。', userid: '1003' }
+]
+db1>
+```
+
+
+
+
+
+
+
+**默认 _id 会显示**
+
+
+
+查询结果只显示 、userid、nickname ，不显示 _id：
+
+```sh
+db.comment.find({},{userid:1,nickname:1,_id:0})
+```
+
+
+
+```sh
+db1> db.comment.find({},{userid:1,nickname:1,_id:0})
+[
+  { userid: '1001', nickname: 'Rose' },
+  { userid: '1002', nickname: '相忘于江湖' },
+  { userid: '1005', nickname: '伊人憔悴' },
+  { userid: '1004', nickname: '杰克船长' },
+  { userid: '1003', nickname: '凯撒' },
+  { userid: '1003', nickname: '凯撒' }
+]
+db1>
+```
+
+
+
+
+
+
+
+
+
+### 文档的更新
 
