@@ -1953,3 +1953,174 @@ db1>
 
 ### 文档的更新
 
+更新文档的语法：
+
+```sh
+db.collection.update(query, update, options)
+```
+
+或者
+
+```sh
+db.collection.update(
+	<query>,
+	<update>,
+	{
+		upsert: <boolean>,
+		multi: <boolean>,
+		writeConcern: <document>,
+		collation: <document>,
+		arrayFilters: [ <filterdocument1>, ... ],
+		hint: <document|string> // Available starting in MongoDB 4.2
+	}
+)
+
+```
+
+
+
+* query：更新的选择条件。可以使用与find（）方法中相同的查询选择器，类似sql update查询内where后面的。。在3.0版中进行了更改：当使用upsert:true执行update（）时，如果查询使用点表示法在_id字段上指定条件，则MongoDB将拒绝插入新文档
+
+* update：要应用的修改。该值可以是：包含更新运算符表达式的文档，或仅包含：对的替换文档，或在MongoDB 4.2中启动聚合管道。
+
+* upsert：可选。如果设置为true，则在没有与查询条件匹配的文档时创建新文档。默认值为false，如果找不到匹配项，则不会插入新文档
+* multi：可选。如果设置为true，则更新符合查询条件的多个文档。如果设置为false，则更新一个文档。默认值为false
+* collation：可选。指定要用于操作的校对规则。校对规则允许用户为字符串比较指定特定于语言的规则，例如字母大小写和重音标记的规则。
+* arrayFilters：可选。一个筛选文档数组，用于确定要为数组字段上的更新操作修改哪些数组元素
+* hint：可选。指定用于支持查询谓词的索引的文档或字符串。该选项可以采用索引规范文档或索引名称字符串。如果指定的索引不存在，则说明操作错误
+
+
+
+
+
+修改_id为1的记录，点赞量为2000：
+
+```sh
+db.comment.updateOne({_id:"1"},{$set:{likenum:NumberInt(2000)}})
+```
+
+或者
+
+```sh
+db.comment.updateMany({_id:"1"},{$set:{likenum:NumberInt(2000)}})
+```
+
+
+
+```sh
+db1> db.comment.updateOne({_id:"1"},{$set:{likenum:NumberInt(2000)}})
+{
+  acknowledged: true,
+  insertedId: null,
+  matchedCount: 1,
+  modifiedCount: 1,
+  upsertedCount: 0
+}
+db1>
+```
+
+
+
+
+
+**列值增长的修改**
+
+如果我们想实现对某列值在原有值的基础上进行增加或减少，可以使用 $inc 运算符来实现
+
+对3号数据的点赞数，每次递增1：
+
+```sh
+db.comment.updateOne({_id:"3"},{$inc:{likenum:NumberInt(1)}})
+```
+
+
+
+```sh
+db1> db.comment.updateOne({_id:"3"},{$inc:{likenum:NumberInt(1)}})
+{
+  acknowledged: true,
+  insertedId: null,
+  matchedCount: 1,
+  modifiedCount: 1,
+  upsertedCount: 0
+}
+db1> db.comment.find({_id:"3"})
+[
+  {
+    _id: '3',
+    articleid: '100001',
+    content: '我一直喝凉开水，冬天夏天都喝。',
+    userid: '1004',
+    nickname: '杰克船长',
+    createdatetime: ISODate("2019-08-06T01:05:06.321Z"),
+    likenum: 667,
+    state: '1'
+  }
+]
+db1> db.comment.updateOne({_id:"3"},{$inc:{likenum:NumberInt(1)}})
+{
+  acknowledged: true,
+  insertedId: null,
+  matchedCount: 1,
+  modifiedCount: 1,
+  upsertedCount: 0
+}
+db1> db.comment.find({_id:"3"})
+[
+  {
+    _id: '3',
+    articleid: '100001',
+    content: '我一直喝凉开水，冬天夏天都喝。',
+    userid: '1004',
+    nickname: '杰克船长',
+    createdatetime: ISODate("2019-08-06T01:05:06.321Z"),
+    likenum: 668,
+    state: '1'
+  }
+]
+db1> db.comment.updateOne({_id:"3"},{$inc:{likenum:NumberInt(1)}})
+{
+  acknowledged: true,
+  insertedId: null,
+  matchedCount: 1,
+  modifiedCount: 1,
+  upsertedCount: 0
+}
+db1> db.comment.find({_id:"3"})
+[
+  {
+    _id: '3',
+    articleid: '100001',
+    content: '我一直喝凉开水，冬天夏天都喝。',
+    userid: '1004',
+    nickname: '杰克船长',
+    createdatetime: ISODate("2019-08-06T01:05:06.321Z"),
+    likenum: 669,
+    state: '1'
+  }
+]
+db1>
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+### 文档的删除
+
+
+
+
+
+
+
+
+
