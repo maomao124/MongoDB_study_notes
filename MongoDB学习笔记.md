@@ -2735,5 +2735,387 @@ skip(), limilt(), sort()三个放在一起执行的时候，执行的顺序是�
 
 ## 文档的其它查询
 
+### 正则表达式条件查询
 
+MongoDB的模糊查询是通过正则表达式的方式实现的
+
+
+
+```sh
+db.collection.find({field:/正则表达式/})
+```
+
+或者
+
+```sh
+db.集合.find({字段:/正则表达式/})
+```
+
+
+
+正则表达式是js的语法
+
+
+
+
+
+
+
+
+
+### 比较查询
+
+<, <=, >, >= 这个操作符也是很常用的，格式如下：
+
+```sh
+db.集合名称.find({ "field" : { $gt: value }}) // 大于: field > value
+db.集合名称.find({ "field" : { $lt: value }}) // 小于: field < value
+db.集合名称.find({ "field" : { $gte: value }}) // 大于等于: field >= value
+db.集合名称.find({ "field" : { $lte: value }}) // 小于等于: field <= value
+db.集合名称.find({ "field" : { $ne: value }}) // 不等于: field != value
+```
+
+
+
+查询评论点赞数量大于700的记录：
+
+```sh
+db.comment.find({likenum:{$gt:NumberInt(700)}})
+```
+
+
+
+```sh
+db1> db.comment.find({likenum:{$gt:NumberInt(700)}})
+[
+  {
+    _id: '1',
+    articleid: '100001',
+    content: '我们不应该把清晨浪费在手机上，健康很重要，一杯温水幸福你我他。',
+    userid: '1002',
+    nickname: '相忘于江湖',
+    createdatetime: ISODate("2019-08-05T22:08:15.522Z"),
+    likenum: 1000,
+    state: '1'
+  },
+  {
+    _id: '2',
+    articleid: '100001',
+    content: '我夏天空腹喝凉开水，冬天喝温开水',
+    userid: '1005',
+    nickname: '伊人憔悴',
+    createdatetime: ISODate("2019-08-05T23:58:51.485Z"),
+    likenum: 888,
+    state: '1'
+  },
+  {
+    _id: '4',
+    articleid: '100001',
+    content: '专家说不能空腹吃饭，影响健康。',
+    userid: '1003',
+    nickname: '凯撒',
+    createdatetime: ISODate("2019-08-06T08:18:35.288Z"),
+    likenum: 2000,
+    state: '1'
+  },
+  {
+    _id: '5',
+    articleid: '100001',
+    content: '研究表明，刚烧开的水千万不能喝，因为烫嘴。',
+    userid: '1003',
+    nickname: '凯撒',
+    createdatetime: ISODate("2019-08-06T11:01:02.521Z"),
+    likenum: 3000,
+    state: '1'
+  }
+]
+db1>
+```
+
+
+
+
+
+查询评论点赞数量小于1300的记录：
+
+```sh
+db.comment.find({likenum:{$lt:NumberInt(1300)}})
+```
+
+
+
+```sh
+db1> db.comment.find({likenum:{$lt:NumberInt(1300)}})
+[
+  {
+    _id: '1',
+    articleid: '100001',
+    content: '我们不应该把清晨浪费在手机上，健康很重要，一杯温水幸福你我他。',
+    userid: '1002',
+    nickname: '相忘于江湖',
+    createdatetime: ISODate("2019-08-05T22:08:15.522Z"),
+    likenum: 1000,
+    state: '1'
+  },
+  {
+    _id: '2',
+    articleid: '100001',
+    content: '我夏天空腹喝凉开水，冬天喝温开水',
+    userid: '1005',
+    nickname: '伊人憔悴',
+    createdatetime: ISODate("2019-08-05T23:58:51.485Z"),
+    likenum: 888,
+    state: '1'
+  },
+  {
+    _id: '3',
+    articleid: '100001',
+    content: '我一直喝凉开水，冬天夏天都喝。',
+    userid: '1004',
+    nickname: '杰克船长',
+    createdatetime: ISODate("2019-08-06T01:05:06.321Z"),
+    likenum: 666,
+    state: '1'
+  }
+]
+db1>
+```
+
+
+
+
+
+
+
+
+
+### 包含查询
+
+包含使用$in操作符
+
+
+
+查询评论的集合中userid字段包含1003或1004的文档：
+
+```sh
+db.comment.find({userid:{$in:["1003","1004"]}})
+```
+
+
+
+```sh
+db1> db.comment.find({userid:{$in:["1003","1004"]}})
+[
+  {
+    _id: '3',
+    articleid: '100001',
+    content: '我一直喝凉开水，冬天夏天都喝。',
+    userid: '1004',
+    nickname: '杰克船长',
+    createdatetime: ISODate("2019-08-06T01:05:06.321Z"),
+    likenum: 666,
+    state: '1'
+  },
+  {
+    _id: '4',
+    articleid: '100001',
+    content: '专家说不能空腹吃饭，影响健康。',
+    userid: '1003',
+    nickname: '凯撒',
+    createdatetime: ISODate("2019-08-06T08:18:35.288Z"),
+    likenum: 2000,
+    state: '1'
+  },
+  {
+    _id: '5',
+    articleid: '100001',
+    content: '研究表明，刚烧开的水千万不能喝，因为烫嘴。',
+    userid: '1003',
+    nickname: '凯撒',
+    createdatetime: ISODate("2019-08-06T11:01:02.521Z"),
+    likenum: 3000,
+    state: '1'
+  }
+]
+db1>
+```
+
+
+
+
+
+不包含使用$nin操作符
+
+
+
+查询评论集合中userid字段不包含1003和1004的文档
+
+
+
+```sh
+db.comment.find({userid:{$nin:["1003","1004"]}})
+```
+
+
+
+```sh
+db1> db.comment.find({userid:{$nin:["1003","1004"]}})
+[
+  {
+    _id: '1',
+    articleid: '100001',
+    content: '我们不应该把清晨浪费在手机上，健康很重要，一杯温水幸福你我他。',
+    userid: '1002',
+    nickname: '相忘于江湖',
+    createdatetime: ISODate("2019-08-05T22:08:15.522Z"),
+    likenum: 1000,
+    state: '1'
+  },
+  {
+    _id: '2',
+    articleid: '100001',
+    content: '我夏天空腹喝凉开水，冬天喝温开水',
+    userid: '1005',
+    nickname: '伊人憔悴',
+    createdatetime: ISODate("2019-08-05T23:58:51.485Z"),
+    likenum: 888,
+    state: '1'
+  }
+]
+db1>
+```
+
+
+
+
+
+
+
+### 条件连接查询
+
+我们如果需要查询同时满足两个以上条件，需要使用$and操作符将条件进行关联。（相当于SQL的and） 格式为：
+
+```sh
+$and:[ { },{ },{ } ]
+```
+
+
+
+查询评论集合中likenum大于等于700 并且小于1300的文档：
+
+```sh
+db.comment.find({$and:[{likenum:{$gte:NumberInt(700)}},{likenum:{$lt:NumberInt(1300)}}]})
+```
+
+
+
+```sh
+db1> db.comment.find({$and:[{likenum:{$gte:NumberInt(700)}},{likenum:{$lt:NumberInt(1300)}}]})
+[
+  {
+    _id: '1',
+    articleid: '100001',
+    content: '我们不应该把清晨浪费在手机上，健康很重要，一杯温水幸福你我他。',
+    userid: '1002',
+    nickname: '相忘于江湖',
+    createdatetime: ISODate("2019-08-05T22:08:15.522Z"),
+    likenum: 1000,
+    state: '1'
+  },
+  {
+    _id: '2',
+    articleid: '100001',
+    content: '我夏天空腹喝凉开水，冬天喝温开水',
+    userid: '1005',
+    nickname: '伊人憔悴',
+    createdatetime: ISODate("2019-08-05T23:58:51.485Z"),
+    likenum: 888,
+    state: '1'
+  }
+]
+db1>
+```
+
+
+
+
+
+
+
+
+
+如果两个以上条件之间是或者的关系，我们使用操作符进行关联，与前面 and的使用方式相同 ，格式为：
+
+```sh
+$or:[ { },{ },{ } ]
+```
+
+
+
+
+
+查询userid大于等于1005或者点赞数大于1500的文档：
+
+```sh
+db.comment.find({$or:[{userid:{$gte:"1005"}},{likenum:{$gt:NumberInt(1500)}}]})
+```
+
+
+
+```sh
+db1> db.comment.find({$or:[{userid:{$gte:"1005"}},{likenum:{$gt:NumberInt(1500)}}]})
+[
+  {
+    _id: '2',
+    articleid: '100001',
+    content: '我夏天空腹喝凉开水，冬天喝温开水',
+    userid: '1005',
+    nickname: '伊人憔悴',
+    createdatetime: ISODate("2019-08-05T23:58:51.485Z"),
+    likenum: 888,
+    state: '1'
+  },
+  {
+    _id: '4',
+    articleid: '100001',
+    content: '专家说不能空腹吃饭，影响健康。',
+    userid: '1003',
+    nickname: '凯撒',
+    createdatetime: ISODate("2019-08-06T08:18:35.288Z"),
+    likenum: 2000,
+    state: '1'
+  },
+  {
+    _id: '5',
+    articleid: '100001',
+    content: '研究表明，刚烧开的水千万不能喝，因为烫嘴。',
+    userid: '1003',
+    nickname: '凯撒',
+    createdatetime: ISODate("2019-08-06T11:01:02.521Z"),
+    likenum: 3000,
+    state: '1'
+  }
+]
+db1>
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+# 索引
 
