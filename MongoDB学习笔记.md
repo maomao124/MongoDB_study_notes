@@ -2116,11 +2116,624 @@ db1>
 
 ### 文档的删除
 
+删除文档的语法结构：
+
+```sh
+db.集合名称.remove(条件)
+```
+
+
+
+以下语句可以将数据全部删除，请慎用：
+
+```sh
+db.comment.remove({})
+```
+
+
+
+如果删除_id=1的记录，输入以下语句：
+
+```sh
+db.comment.remove({_id:"1"})
+```
+
+
+
+```sh
+db1> db.comment.remove({_id:"1"})
+DeprecationWarning: Collection.remove() is deprecated. Use deleteOne, deleteMany, findOneAndDelete, or bulkWrite.
+{ acknowledged: true, deletedCount: 1 }
+db1> db.comment.find({_id:"1"})
+
+db1>
+```
 
 
 
 
 
+
+
+
+
+## 文档的分页查询
+
+### 统计查询
+
+统计查询使用count()方法，语法如下：
+
+```sh
+db.collection.count(query, options)
+```
+
+
+
+* query：查询选择条件
+* options：可选。用于修改计数的额外选项
+
+
+
+统计所有记录数：
+
+```sh
+db.comment.count()
+```
+
+
+
+```sh
+db1> db.comment.count()
+5
+db1>
+```
+
+
+
+
+
+统计userid为1003的记录条数：
+
+```sh
+db.comment.count({userid:"1003"})
+```
+
+
+
+```sh
+db1> db.comment.count({userid:"1003"})
+2
+db1>
+```
+
+
+
+
+
+默认情况下 count() 方法返回符合条件的全部记录条数
+
+
+
+
+
+
+
+
+
+### 分页列表查询
+
+可以使用limit()方法来读取指定数量的数据，使用skip()方法来跳过指定数量的数据
+
+
+
+基本语法如下所示：
+
+```sh
+db.COLLECTION_NAME.find().limit(NUMBER).skip(NUMBER)
+```
+
+
+
+如果你想返回指定条数的记录，可以在find方法后调用limit来返回结果(TopN)，默认值20，例如：
+
+```sh
+db.comment.find().limit(3)
+```
+
+
+
+```sh
+db1> db.comment.find().limit(3)
+[
+  {
+    _id: '1',
+    articleid: '100001',
+    content: '我们不应该把清晨浪费在手机上，健康很重要，一杯温水幸福你我他。',
+    userid: '1002',
+    nickname: '相忘于江湖',
+    createdatetime: ISODate("2019-08-05T22:08:15.522Z"),
+    likenum: 1000,
+    state: '1'
+  },
+  {
+    _id: '2',
+    articleid: '100001',
+    content: '我夏天空腹喝凉开水，冬天喝温开水',
+    userid: '1005',
+    nickname: '伊人憔悴',
+    createdatetime: ISODate("2019-08-05T23:58:51.485Z"),
+    likenum: 888,
+    state: '1'
+  },
+  {
+    _id: '3',
+    articleid: '100001',
+    content: '我一直喝凉开水，冬天夏天都喝。',
+    userid: '1004',
+    nickname: '杰克船长',
+    createdatetime: ISODate("2019-08-06T01:05:06.321Z"),
+    likenum: 666,
+    state: '1'
+  }
+]
+db1>
+```
+
+
+
+
+
+```sh
+db.comment.find().limit(2)
+```
+
+
+
+```sh
+db1> db.comment.find().limit(2)
+[
+  {
+    _id: '1',
+    articleid: '100001',
+    content: '我们不应该把清晨浪费在手机上，健康很重要，一杯温水幸福你我他。',
+    userid: '1002',
+    nickname: '相忘于江湖',
+    createdatetime: ISODate("2019-08-05T22:08:15.522Z"),
+    likenum: 1000,
+    state: '1'
+  },
+  {
+    _id: '2',
+    articleid: '100001',
+    content: '我夏天空腹喝凉开水，冬天喝温开水',
+    userid: '1005',
+    nickname: '伊人憔悴',
+    createdatetime: ISODate("2019-08-05T23:58:51.485Z"),
+    likenum: 888,
+    state: '1'
+  }
+]
+db1>
+```
+
+
+
+
+
+skip方法同样接受一个数字参数作为跳过的记录条数。（前N个不要）,默认值是0
+
+
+
+```sh
+db.comment.find().skip(3)
+```
+
+
+
+```sh
+db1> db.comment.find()
+[
+  {
+    _id: '1',
+    articleid: '100001',
+    content: '我们不应该把清晨浪费在手机上，健康很重要，一杯温水幸福你我他。',
+    userid: '1002',
+    nickname: '相忘于江湖',
+    createdatetime: ISODate("2019-08-05T22:08:15.522Z"),
+    likenum: 1000,
+    state: '1'
+  },
+  {
+    _id: '2',
+    articleid: '100001',
+    content: '我夏天空腹喝凉开水，冬天喝温开水',
+    userid: '1005',
+    nickname: '伊人憔悴',
+    createdatetime: ISODate("2019-08-05T23:58:51.485Z"),
+    likenum: 888,
+    state: '1'
+  },
+  {
+    _id: '3',
+    articleid: '100001',
+    content: '我一直喝凉开水，冬天夏天都喝。',
+    userid: '1004',
+    nickname: '杰克船长',
+    createdatetime: ISODate("2019-08-06T01:05:06.321Z"),
+    likenum: 666,
+    state: '1'
+  },
+  {
+    _id: '4',
+    articleid: '100001',
+    content: '专家说不能空腹吃饭，影响健康。',
+    userid: '1003',
+    nickname: '凯撒',
+    createdatetime: ISODate("2019-08-06T08:18:35.288Z"),
+    likenum: 2000,
+    state: '1'
+  },
+  {
+    _id: '5',
+    articleid: '100001',
+    content: '研究表明，刚烧开的水千万不能喝，因为烫嘴。',
+    userid: '1003',
+    nickname: '凯撒',
+    createdatetime: ISODate("2019-08-06T11:01:02.521Z"),
+    likenum: 3000,
+    state: '1'
+  }
+]
+db1> db.comment.find().skip(3)
+[
+  {
+    _id: '4',
+    articleid: '100001',
+    content: '专家说不能空腹吃饭，影响健康。',
+    userid: '1003',
+    nickname: '凯撒',
+    createdatetime: ISODate("2019-08-06T08:18:35.288Z"),
+    likenum: 2000,
+    state: '1'
+  },
+  {
+    _id: '5',
+    articleid: '100001',
+    content: '研究表明，刚烧开的水千万不能喝，因为烫嘴。',
+    userid: '1003',
+    nickname: '凯撒',
+    createdatetime: ISODate("2019-08-06T11:01:02.521Z"),
+    likenum: 3000,
+    state: '1'
+  }
+]
+db1>
+```
+
+
+
+
+
+```sh
+db.comment.find().skip(2)
+```
+
+
+
+```sh
+db1> db.comment.find().skip(2)
+[
+  {
+    _id: '3',
+    articleid: '100001',
+    content: '我一直喝凉开水，冬天夏天都喝。',
+    userid: '1004',
+    nickname: '杰克船长',
+    createdatetime: ISODate("2019-08-06T01:05:06.321Z"),
+    likenum: 666,
+    state: '1'
+  },
+  {
+    _id: '4',
+    articleid: '100001',
+    content: '专家说不能空腹吃饭，影响健康。',
+    userid: '1003',
+    nickname: '凯撒',
+    createdatetime: ISODate("2019-08-06T08:18:35.288Z"),
+    likenum: 2000,
+    state: '1'
+  },
+  {
+    _id: '5',
+    articleid: '100001',
+    content: '研究表明，刚烧开的水千万不能喝，因为烫嘴。',
+    userid: '1003',
+    nickname: '凯撒',
+    createdatetime: ISODate("2019-08-06T11:01:02.521Z"),
+    likenum: 3000,
+    state: '1'
+  }
+]
+db1>
+```
+
+
+
+
+
+
+
+分页查询：
+
+
+
+```sh
+db.comment.find().skip(0).limit(2)
+```
+
+```sh
+db.comment.find().skip(2).limit(2)
+```
+
+```sh
+db.comment.find().skip(4).limit(2)
+```
+
+```sh
+db.comment.find().skip(6).limit(2)
+```
+
+......
+
+
+
+```sh
+db1> db.comment.find().skip(0).limit(2)
+[
+  {
+    _id: '1',
+    articleid: '100001',
+    content: '我们不应该把清晨浪费在手机上，健康很重要，一杯温水幸福你我他。',
+    userid: '1002',
+    nickname: '相忘于江湖',
+    createdatetime: ISODate("2019-08-05T22:08:15.522Z"),
+    likenum: 1000,
+    state: '1'
+  },
+  {
+    _id: '2',
+    articleid: '100001',
+    content: '我夏天空腹喝凉开水，冬天喝温开水',
+    userid: '1005',
+    nickname: '伊人憔悴',
+    createdatetime: ISODate("2019-08-05T23:58:51.485Z"),
+    likenum: 888,
+    state: '1'
+  }
+]
+db1> db.comment.find().skip(2).limit(2)
+[
+  {
+    _id: '3',
+    articleid: '100001',
+    content: '我一直喝凉开水，冬天夏天都喝。',
+    userid: '1004',
+    nickname: '杰克船长',
+    createdatetime: ISODate("2019-08-06T01:05:06.321Z"),
+    likenum: 666,
+    state: '1'
+  },
+  {
+    _id: '4',
+    articleid: '100001',
+    content: '专家说不能空腹吃饭，影响健康。',
+    userid: '1003',
+    nickname: '凯撒',
+    createdatetime: ISODate("2019-08-06T08:18:35.288Z"),
+    likenum: 2000,
+    state: '1'
+  }
+]
+db1> db.comment.find().skip(4).limit(2)
+[
+  {
+    _id: '5',
+    articleid: '100001',
+    content: '研究表明，刚烧开的水千万不能喝，因为烫嘴。',
+    userid: '1003',
+    nickname: '凯撒',
+    createdatetime: ISODate("2019-08-06T11:01:02.521Z"),
+    likenum: 3000,
+    state: '1'
+  }
+]
+db1> db.comment.find().skip(6).limit(2)
+
+db1>
+```
+
+
+
+
+
+
+
+
+
+### 排序查询
+
+sort() 方法对数据进行排序，sort() 方法可以通过参数指定排序的字段，并使用 1 和 -1 来指定排序的方式，其中 1 为升序排列，而 -1 是用于降序排列
+
+
+
+语法如下所示：
+
+```sh
+db.COLLECTION_NAME.find().sort({KEY:1})
+```
+
+或者
+
+```sh
+db.集合名称.find().sort(排序方式)
+
+```
+
+
+
+
+
+对userid降序排列，并对访问量进行升序排列：
+
+```sh
+db.comment.find().sort({userid:-1,likenum:1})
+```
+
+
+
+```sh
+db1> db.comment.find().sort({userid:-1,likenum:1})
+[
+  {
+    _id: '2',
+    articleid: '100001',
+    content: '我夏天空腹喝凉开水，冬天喝温开水',
+    userid: '1005',
+    nickname: '伊人憔悴',
+    createdatetime: ISODate("2019-08-05T23:58:51.485Z"),
+    likenum: 888,
+    state: '1'
+  },
+  {
+    _id: '3',
+    articleid: '100001',
+    content: '我一直喝凉开水，冬天夏天都喝。',
+    userid: '1004',
+    nickname: '杰克船长',
+    createdatetime: ISODate("2019-08-06T01:05:06.321Z"),
+    likenum: 666,
+    state: '1'
+  },
+  {
+    _id: '4',
+    articleid: '100001',
+    content: '专家说不能空腹吃饭，影响健康。',
+    userid: '1003',
+    nickname: '凯撒',
+    createdatetime: ISODate("2019-08-06T08:18:35.288Z"),
+    likenum: 2000,
+    state: '1'
+  },
+  {
+    _id: '5',
+    articleid: '100001',
+    content: '研究表明，刚烧开的水千万不能喝，因为烫嘴。',
+    userid: '1003',
+    nickname: '凯撒',
+    createdatetime: ISODate("2019-08-06T11:01:02.521Z"),
+    likenum: 3000,
+    state: '1'
+  },
+  {
+    _id: '1',
+    articleid: '100001',
+    content: '我们不应该把清晨浪费在手机上，健康很重要，一杯温水幸福你我他。',
+    userid: '1002',
+    nickname: '相忘于江湖',
+    createdatetime: ISODate("2019-08-05T22:08:15.522Z"),
+    likenum: 1000,
+    state: '1'
+  }
+]
+db1>
+```
+
+
+
+
+
+按点赞数量降序排列：
+
+```sh
+db.comment.find().sort({likenum:-1})
+```
+
+
+
+```sh
+db1> db.comment.find().sort({likenum:-1})
+[
+  {
+    _id: '5',
+    articleid: '100001',
+    content: '研究表明，刚烧开的水千万不能喝，因为烫嘴。',
+    userid: '1003',
+    nickname: '凯撒',
+    createdatetime: ISODate("2019-08-06T11:01:02.521Z"),
+    likenum: 3000,
+    state: '1'
+  },
+  {
+    _id: '4',
+    articleid: '100001',
+    content: '专家说不能空腹吃饭，影响健康。',
+    userid: '1003',
+    nickname: '凯撒',
+    createdatetime: ISODate("2019-08-06T08:18:35.288Z"),
+    likenum: 2000,
+    state: '1'
+  },
+  {
+    _id: '1',
+    articleid: '100001',
+    content: '我们不应该把清晨浪费在手机上，健康很重要，一杯温水幸福你我他。',
+    userid: '1002',
+    nickname: '相忘于江湖',
+    createdatetime: ISODate("2019-08-05T22:08:15.522Z"),
+    likenum: 1000,
+    state: '1'
+  },
+  {
+    _id: '2',
+    articleid: '100001',
+    content: '我夏天空腹喝凉开水，冬天喝温开水',
+    userid: '1005',
+    nickname: '伊人憔悴',
+    createdatetime: ISODate("2019-08-05T23:58:51.485Z"),
+    likenum: 888,
+    state: '1'
+  },
+  {
+    _id: '3',
+    articleid: '100001',
+    content: '我一直喝凉开水，冬天夏天都喝。',
+    userid: '1004',
+    nickname: '杰克船长',
+    createdatetime: ISODate("2019-08-06T01:05:06.321Z"),
+    likenum: 666,
+    state: '1'
+  }
+]
+db1>
+```
+
+
+
+
+
+skip(), limilt(), sort()三个放在一起执行的时候，执行的顺序是先 sort(), 然后是 skip()，最后是显示的 limit()，和命令编写顺序无关
+
+
+
+
+
+
+
+
+
+
+
+## 文档的其它查询
 
 
 
