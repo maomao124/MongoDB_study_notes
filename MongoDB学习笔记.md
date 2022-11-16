@@ -3455,5 +3455,273 @@ _id 的字段的索引是无法删除的，只能删除非 _id 字段的索引
 
 分析查询性能（Analyze Query Performance）通常使用执行计划（解释计划、Explain Plan）来查看查询的情况，如查询耗费的时间、是否基于索引查询等
 
+那么，通常，我们想知道，建立的索引是否有效，效果如何，都需要通过执行计划查看
+
+
+
+语法：
+
+```sh
+db.collection.find(query,options).explain(options)
+```
+
+
+
+
+
+```sh
+db1> db.comment.find().explain()
+{
+  explainVersion: '1',
+  queryPlanner: {
+    namespace: 'db1.comment',
+    indexFilterSet: false,
+    parsedQuery: {},
+    queryHash: '17830885',
+    planCacheKey: '17830885',
+    maxIndexedOrSolutionsReached: false,
+    maxIndexedAndSolutionsReached: false,
+    maxScansToExplodeReached: false,
+    winningPlan: { stage: 'COLLSCAN', direction: 'forward' },
+    rejectedPlans: []
+  },
+  command: { find: 'comment', filter: {}, '$db': 'db1' },
+  serverInfo: {
+    host: 'mao',
+    port: 27017,
+    version: '6.0.2',
+    gitVersion: '94fb7dfc8b974f1f5343e7ea394d0d9deedba50e'
+  },
+  serverParameters: {
+    internalQueryFacetBufferSizeBytes: 104857600,
+    internalQueryFacetMaxOutputDocSizeBytes: 104857600,
+    internalLookupStageIntermediateDocumentMaxSizeBytes: 104857600,
+    internalDocumentSourceGroupMaxMemoryBytes: 104857600,
+    internalQueryMaxBlockingSortMemoryUsageBytes: 104857600,
+    internalQueryProhibitBlockingMergeOnMongoS: 0,
+    internalQueryMaxAddToSetBytes: 104857600,
+    internalDocumentSourceSetWindowFieldsMaxMemoryBytes: 104857600
+  },
+  ok: 1
+}
+db1>
+```
+
+
+
+```sh
+db1> db.comment.find({userid:1003}).explain()
+{
+  explainVersion: '1',
+  queryPlanner: {
+    namespace: 'db1.comment',
+    indexFilterSet: false,
+    parsedQuery: { userid: { '$eq': 1003 } },
+    queryHash: '82257C83',
+    planCacheKey: '82257C83',
+    maxIndexedOrSolutionsReached: false,
+    maxIndexedAndSolutionsReached: false,
+    maxScansToExplodeReached: false,
+    winningPlan: {
+      stage: 'COLLSCAN',
+      filter: { userid: { '$eq': 1003 } },
+      direction: 'forward'
+    },
+    rejectedPlans: []
+  },
+  command: { find: 'comment', filter: { userid: 1003 }, '$db': 'db1' },
+  serverInfo: {
+    host: 'mao',
+    port: 27017,
+    version: '6.0.2',
+    gitVersion: '94fb7dfc8b974f1f5343e7ea394d0d9deedba50e'
+  },
+  serverParameters: {
+    internalQueryFacetBufferSizeBytes: 104857600,
+    internalQueryFacetMaxOutputDocSizeBytes: 104857600,
+    internalLookupStageIntermediateDocumentMaxSizeBytes: 104857600,
+    internalDocumentSourceGroupMaxMemoryBytes: 104857600,
+    internalQueryMaxBlockingSortMemoryUsageBytes: 104857600,
+    internalQueryProhibitBlockingMergeOnMongoS: 0,
+    internalQueryMaxAddToSetBytes: 104857600,
+    internalDocumentSourceSetWindowFieldsMaxMemoryBytes: 104857600
+  },
+  ok: 1
+}
+db1>
+```
+
+
+
+
+
+关键点看： "stage" : "COLLSCAN", 表示全集合扫描
+
+
+
+面对userid建立索引：
+
+```sh
+db.comment.createIndex({userid:1})
+```
+
+
+
+```sh
+db1> db.comment.createIndex({userid:1})
+userid_1
+db1>
+
+db1> db.comment.find({userid:1003}).explain()
+{
+  explainVersion: '1',
+  queryPlanner: {
+    namespace: 'db1.comment',
+    indexFilterSet: false,
+    parsedQuery: { userid: { '$eq': 1003 } },
+    queryHash: '82257C83',
+    planCacheKey: '75A2858A',
+    maxIndexedOrSolutionsReached: false,
+    maxIndexedAndSolutionsReached: false,
+    maxScansToExplodeReached: false,
+    winningPlan: {
+      stage: 'FETCH',
+      inputStage: {
+        stage: 'IXSCAN',
+        keyPattern: { userid: 1 },
+        indexName: 'userid_1',
+        isMultiKey: false,
+        multiKeyPaths: { userid: [] },
+        isUnique: false,
+        isSparse: false,
+        isPartial: false,
+        indexVersion: 2,
+        direction: 'forward',
+        indexBounds: { userid: [ '[1003, 1003]' ] }
+      }
+    },
+    rejectedPlans: []
+  },
+  command: { find: 'comment', filter: { userid: 1003 }, '$db': 'db1' },
+  serverInfo: {
+    host: 'mao',
+    port: 27017,
+    version: '6.0.2',
+    gitVersion: '94fb7dfc8b974f1f5343e7ea394d0d9deedba50e'
+  },
+  serverParameters: {
+    internalQueryFacetBufferSizeBytes: 104857600,
+    internalQueryFacetMaxOutputDocSizeBytes: 104857600,
+    internalLookupStageIntermediateDocumentMaxSizeBytes: 104857600,
+    internalDocumentSourceGroupMaxMemoryBytes: 104857600,
+    internalQueryMaxBlockingSortMemoryUsageBytes: 104857600,
+    internalQueryProhibitBlockingMergeOnMongoS: 0,
+    internalQueryMaxAddToSetBytes: 104857600,
+    internalDocumentSourceSetWindowFieldsMaxMemoryBytes: 104857600
+  },
+  ok: 1
+}
+db1>
+```
+
+
+
+
+
+关键点看： "stage" : "IXSCAN" ,基于索引的扫描
+
+
+
+
+
+### 涵盖的查询
+
+当查询条件和查询的投影仅包含索引字段时，MongoDB直接从索引返回结果，而不扫描任何文档或将文档带入内存。 这些覆盖的查询可以 非常有效
+
+
+
+```sh
+ db.comment.find({userid:"1003"},{userid:1,_id:0}).explain()
+```
+
+
+
+```sh
+db1>  db.comment.find({userid:"1003"},{userid:1,_id:0}).explain()
+{
+  explainVersion: '1',
+  queryPlanner: {
+    namespace: 'db1.comment',
+    indexFilterSet: false,
+    parsedQuery: { userid: { '$eq': '1003' } },
+    queryHash: '0DE8F223',
+    planCacheKey: 'DC1F18A2',
+    maxIndexedOrSolutionsReached: false,
+    maxIndexedAndSolutionsReached: false,
+    maxScansToExplodeReached: false,
+    winningPlan: {
+      stage: 'PROJECTION_COVERED',
+      transformBy: { userid: 1, _id: 0 },
+      inputStage: {
+        stage: 'IXSCAN',
+        keyPattern: { userid: 1 },
+        indexName: 'userid_1',
+        isMultiKey: false,
+        multiKeyPaths: { userid: [] },
+        isUnique: false,
+        isSparse: false,
+        isPartial: false,
+        indexVersion: 2,
+        direction: 'forward',
+        indexBounds: { userid: [ '["1003", "1003"]' ] }
+      }
+    },
+    rejectedPlans: []
+  },
+  command: {
+    find: 'comment',
+    filter: { userid: '1003' },
+    projection: { userid: 1, _id: 0 },
+    '$db': 'db1'
+  },
+  serverInfo: {
+    host: 'mao',
+    port: 27017,
+    version: '6.0.2',
+    gitVersion: '94fb7dfc8b974f1f5343e7ea394d0d9deedba50e'
+  },
+  serverParameters: {
+    internalQueryFacetBufferSizeBytes: 104857600,
+    internalQueryFacetMaxOutputDocSizeBytes: 104857600,
+    internalLookupStageIntermediateDocumentMaxSizeBytes: 104857600,
+    internalDocumentSourceGroupMaxMemoryBytes: 104857600,
+    internalQueryMaxBlockingSortMemoryUsageBytes: 104857600,
+    internalQueryProhibitBlockingMergeOnMongoS: 0,
+    internalQueryMaxAddToSetBytes: 104857600,
+    internalDocumentSourceSetWindowFieldsMaxMemoryBytes: 104857600
+  },
+  ok: 1
+}
+db1>
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+# 文章评论
+
 
 
