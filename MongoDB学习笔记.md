@@ -3723,5 +3723,559 @@ db1>
 
 # 文章评论
 
+## 表结构分析
+
+数据库：articledb
+
+表：comment
+
+
+
+|字段名称| 字段含义 |字段类型| 备注|
+| :--: | :--: | :--: | :--: |
+|_id |ID |ObjectId或String| Mongo的主键的字段|
+|articleid |文章ID |String| |
+|content| 评论内容| String| |
+|userid | 评论人ID | String ||
+|nickname | 评论人昵称| String| |
+|createdatetime  |评论的日期时间 | Date| |
+|likenum | 点赞数| Int32| |
+|replynum| 回复数| Int32| |
+|state | 状态| String| 0：不可见；1：可见；|
+|parentid| 上级ID| String| 如果为0表示文章的顶级评论|
+
+
+
+
+
+
+
+## 技术选型
+
+### mongodb-driver
+
+mongodb-driver是mongo官方推出的java连接mongoDB的驱动包，相当于JDBC驱动
+
+
+
+官方驱动说明和下载：http://mongodb.github.io/mongo-java-driver/
+
+官方驱动示例文档：http://mongodb.github.io/mongo-java-driver/3.8/driver/getting-started/quick-start/
+
+
+
+
+
+### SpringDataMongoDB
+
+SpringData家族成员之一，用于操作MongoDB的持久层框架，封装了底层的mongodb-driver
+
+官网主页：https://projects.spring.io/spring-data-mongodb/
+
+
+
+
+
+
+
+
+
+## 文章服务模块搭建
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+# MongoDB-driver快速入门
+
+##### 注意
+
+以下代码片段来自[`快速浏览.java`](https://github.com/mongodb/mongo-java-driver/blob/master/driver-sync/src/examples/tour/QuickTour.java)示例代码 这可以通过GitHub上的驱动程序源找到。
+
+## 先决条件
+
+- 在本地主机上运行 MongoDB 使用 MongoDB 的默认端口`27017`
+- MongoDB 驱动程序。有关如何安装 MongoDB 驱动程序的说明，请参阅[安装](http://mongodb.github.io/mongo-java-driver/3.8/driver/getting-started/installation/)。
+- 以下导入语句：
+
+新的MongoClient API（从3.7开始）：
+
+```java
+import com.mongodb.ConnectionString;
+import com.mongodb.client.MongoClients;
+import com.mongodb.client.MongoClient;
+```
+
+遗留的MongoClient API：
+
+```java
+import com.mongodb.MongoClient;
+import com.mongodb.MongoClientURI;
+```
+
+以及旧版和新版 API 之间的共同元素：
+
+```java
+import com.mongodb.ServerAddress;
+
+import com.mongodb.client.MongoDatabase;
+import com.mongodb.client.MongoCollection;
+
+import org.bson.Document;
+import java.util.Arrays;
+import com.mongodb.Block;
+
+import com.mongodb.client.MongoCursor;
+import static com.mongodb.client.model.Filters.*;
+import com.mongodb.client.result.DeleteResult;
+import static com.mongodb.client.model.Updates.*;
+import com.mongodb.client.result.UpdateResult;
+import java.util.ArrayList;
+import java.util.List;
+```
+
+## 建立连接
+
+使用[`MongoClients.create（）`](http://mongodb.github.io/mongo-java-driver/3.8/javadoc?com/mongodb/client/MongoClients.html)， 或[`MongoClient（）`](http://mongodb.github.io/mongo-java-driver/3.8/javadoc?com/mongodb/MongoClient.html)用于遗留的 MongoClient API， 以连接到正在运行的 MongoDB 实例。
+
+实例表示与数据库的连接池;你只需要一个类实例，即使有多个线程。`MongoClient``MongoClient`
+
+##### 重要
+
+通常，您只为给定的MongoDB部署（例如独立，副本集或分片集群）创建一个实例，并在应用程序中使用它。但是，如果您确实创建了多个实例：`MongoClient`
+
+- 所有资源使用限制（例如.max连接等）都适用于每个实例。`MongoClient`
+- 要释放实例，请调用以清理资源。`MongoClient.close()`
+
+### 连接到单个MongoDB实例
+
+以下示例显示了连接到单个MongoDB服务器的几种方法。
+
+##### 新的MongoClient API（自3.7起）
+
+要连接到单个 MongoDB 实例，请执行以下操作：
+
+- 您可以实例化没有任何参数的MongoClient对象，以连接到端口上本地主机上运行的MongoDB实例：`27017`
+
+```java
+MongoClient mongoClient = MongoClients.create();
+```
+
+- 您可以显式指定主机名以连接到端口上指定主机上运行的 MongoDB 实例：`27017`
+
+```java
+MongoClient mongoClient = MongoClients.create(
+        MongoClientSettings.builder()
+                .applyToClusterSettings(builder ->
+                        builder.hosts(Arrays.asList(new ServerAddress("hostOne"))))
+                .build());
+```
+
+- 您可以显式指定主机名和端口：
+
+```java
+MongoClient mongoClient = MongoClients.create(
+        MongoClientSettings.builder()
+                .applyToClusterSettings(builder ->
+                        builder.hosts(Arrays.asList(new ServerAddress("hostOne", 27018))))
+                .build());
+```
+
+- 您可以指定[`连接字符串`](http://mongodb.github.io/mongo-java-driver/3.8/javadoc?/com/mongodb/ConnectionString.html)：
+
+```java
+MongoClient mongoClient = MongoClients.create("mongodb://hostOne:27017,hostTwo:27018");
+```
+
+##### 遗留的蒙戈客户端 API
+
+要连接到单个 MongoDB 实例，请执行以下操作：
+
+- 您可以实例化没有任何参数的MongoClient对象，以连接到端口上本地主机上运行的MongoDB实例：`27017`
+
+```java
+MongoClient mongoClient = new MongoClient();
+```
+
+- 您可以显式指定主机名以连接到端口上指定主机上运行的 MongoDB 实例：`27017`
+
+```java
+MongoClient mongoClient = new MongoClient( "hostOne" );
+```
+
+- 您可以显式指定主机名和端口：
+
+```java
+MongoClient mongoClient = new MongoClient( "hostOne" , 27018 );
+```
+
+- 您可以指定[`MongoClientURI`](http://mongodb.github.io/mongo-java-driver/3.8/javadoc?/com/mongodb/MongoClientURI.html)连接字符串：
+
+```java
+ MongoClientURI connectionString = new MongoClientURI("mongodb://hostOne:27017,hostTwo:27017");
+ MongoClient mongoClient = new MongoClient(connectionString);
+```
+
+连接字符串主要遵循[RFC 3986](http://tools.ietf.org/html/rfc3986)，但域名除外。对于MongoDB， 可以列出多个用逗号分隔的域名。有关连接字符串的详细信息，请参阅[连接字符串](http://docs.mongodb.org/manual/reference/connection-string)。
+
+## 访问数据库
+
+一旦实例连接到MongoDB部署，请使用[`MongoClient.getDatabase（）`](http://mongodb.github.io/mongo-java-driver/3.8/javadoc?com/mongodb/MongoClient.html#getDatabase-java.lang.String-)方法访问数据库。`MongoClient`
+
+为方法指定数据库的名称。如果数据库不存在，MongoDB会在您首次存储该数据库的数据时创建该数据库。`getDatabase()`
+
+以下示例访问数据库：`mydb`
+
+```java
+ MongoDatabase database = mongoClient.getDatabase("mydb");
+```
+
+`MongoDatabase`实例是不可变的。
+
+## 访问收藏集
+
+一旦你有一个实例，使用它的[`getCollection（）`](http://mongodb.github.io/mongo-java-driver/3.8/javadoc?com/mongodb/client/MongoDatabase.html#getCollection-java.lang.String-)方法来访问一个集合。`MongoDatabase`
+
+为方法指定集合的名称。如果集合不存在，MongoDB会在您首次存储该集合的数据时创建该集合。`getCollection()`
+
+例如，使用实例，以下语句访问数据库中名为的集合：`database``test``mydb`
+
+```java
+MongoCollection<Document> collection = database.getCollection("test");
+```
+
+`MongoCollection`实例是不可变的。
+
+## 创建文档
+
+要使用 Java 驱动程序创建文档，请使用[`Document`](http://mongodb.github.io/mongo-java-driver/3.8/javadoc?org/bson/Document.html)类。
+
+例如，请考虑以下 JSON 文档：
+
+```javascript
+  {
+   "name" : "MongoDB",
+   "type" : "database",
+   "count" : 1,
+   "versions": [ "v3.2", "v3.0", "v2.6" ],
+   "info" : { x : 203, y : 102 }
+  }
+```
+
+要使用 Java 驱动程序创建文档，请使用字段和值实例化对象，并使用其[`append（）`](http://mongodb.github.io/mongo-java-driver/3.8/javadoc?org/bson/Document.html#append) 方法将其他字段和值包含在文档对象中。该值可以是另一个对象，用于指定嵌入的文档：`Document``Document`
+
+```java
+ Document doc = new Document("name", "MongoDB")
+                .append("type", "database")
+                .append("count", 1)
+                .append("versions", Arrays.asList("v3.2", "v3.0", "v2.6"))
+                .append("info", new Document("x", 203).append("y", 102));
+```
+
+##### 注意
+
+数组的BSON类型对应于Java类型。有关 BSON 类型和 Java 中相应类型的列表，请参见。`java.util.List`
+
+## 插入文档
+
+获得对象后，您可以将文档插入到 收集。`MongoCollection`
+
+### 插入一个文档
+
+若要将单个文档插入集合，可以使用集合的[`insertOne（）`](http://mongodb.github.io/mongo-java-driver/3.8/javadoc?com/mongodb/client/MongoCollection.html#insertOne-TDocument-) 方法。
+
+```java
+collection.insertOne(doc);
+```
+
+##### 注意
+
+如果文档中没有指定顶级字段，MongoDB会自动将该字段添加到插入的文档中。`_id``_id`
+
+### 插入多个文档
+
+若要添加多个文档，可以使用集合的[`insertMany（）`](http://mongodb.github.io/mongo-java-driver/3.8/javadoc?com/mongodb/client/MongoCollection.html#insertMany-java.util.List-) 方法，该方法获取要插入的文档列表。
+
+以下示例将添加表单的多个文档：
+
+```javascript
+{ "i" : value }
+```
+
+循环创建文档并添加到列表中：`documents`
+
+```java
+List<Document> documents = new ArrayList<Document>();
+for (int i = 0; i < 100; i++) {
+    documents.add(new Document("i", i));
+}
+```
+
+若要将这些文档插入到集合中，请将文档列表传递给[`insertMany（）`](http://mongodb.github.io/mongo-java-driver/3.8/javadoc?com/mongodb/client/MongoCollection.html#insertMany-java.util.List-) 方法。
+
+```java
+collection.insertMany(documents);
+```
+
+##### 注意
+
+如果文档中没有指定顶级字段，MongoDB会自动将该字段添加到插入的文档中。`_id``_id`
+
+## 对集合中的文档进行计数
+
+要计算集合中的文档数，可以使用集合的[`countDocuments（）`](http://mongodb.github.io/mongo-java-driver/3.8/javadoc?com/mongodb/client/MongoCollection#countDocuments--.html) 方法。以下代码应打印（插入的 100 个通过加上通过插入的 1）。`101``insertMany``insertOne`
+
+```java
+System.out.println(collection.countDocuments());
+```
+
+## 查询集合
+
+若要查询集合，可以使用集合的[`find（）`](http://mongodb.github.io/mongo-java-driver/3.8/javadoc?com/mongodb/client/MongoCollection.html#find--) 方法。可以在不带任何参数的情况下调用该方法来查询集合中的所有文档，或者传递筛选器以查询与筛选条件匹配的文档。
+
+[`find（`](http://mongodb.github.io/mongo-java-driver/3.8/javadoc?com/mongodb/client/MongoCollection.html#find--)） 方法返回一个[`FindIterable（）`](http://mongodb.github.io/mongo-java-driver/3.8/javadoc?com/mongodb/client/FindIterable.html)实例，该实例提供了一个用于链接其他方法的流畅接口。
+
+### 查找集合中的第一个文档
+
+若要返回集合中的第一个文档，请使用不带任何参数的[`find（`](http://mongodb.github.io/mongo-java-driver/3.8/javadoc?com/mongodb/client/MongoCollection.html#find--)） 方法，并链接到方法的第一个[`（）`](http://mongodb.github.io/mongo-java-driver/3.8/javadoc?com/mongodb/client/MongoIterable.html#first--)方法。`find()`
+
+如果集合为空，则操作返回 null。
+
+##### 提示
+
+构造对于仅应与单个文档匹配的查询非常有用，或者如果您仅对第一个文档感兴趣。`find().first()`
+
+下面的示例打印在集合中找到的第一个文档。
+
+```java
+Document myDoc = collection.find().first();
+System.out.println(myDoc.toJson());
+```
+
+该示例应打印以下文档：
+
+```json
+{ "_id" : { "$oid" : "551582c558c7b4fbacf16735" },
+  "name" : "MongoDB",
+  "type" : "database",
+  "count" : 1,
+  "info" : { "x" : 203, "y" : 102 } }
+```
+
+##### 注意
+
+该元素已由MongoDB自动添加到您的 文档和您的值将与显示的值不同。MongoDB储备字段 以 和 开头供内部使用的名称。`_id``"_"``"$"`
+
+### 查找集合中的所有文档
+
+为了检索集合中的所有文档，我们将使用没有任何参数的方法。`find()`
+
+要循环访问结果，请将[`iterator（）`](http://mongodb.github.io/mongo-java-driver/3.8/javadoc?com/mongodb/client/MongoIterable.html#iterator--) 方法链接到。`find()`
+
+下面的示例检索集合中的所有文档 并打印返回的文档（101 个文档）：
+
+```java
+MongoCursor<Document> cursor = collection.find().iterator();
+try {
+    while (cursor.hasNext()) {
+        System.out.println(cursor.next().toJson());
+    }
+} finally {
+    cursor.close();
+}
+```
+
+尽管允许使用以下迭代习惯用法，但请避免使用它，因为如果循环提前终止，应用程序可能会泄漏游标：
+
+```java
+for (Document cur : collection.find()) {
+    System.out.println(cur.toJson());
+}
+```
+
+## 指定查询筛选器
+
+若要查询与特定条件匹配的文档，请将筛选器对象传递给[`find（）`](http://mongodb.github.io/mongo-java-driver/3.8/javadoc?com/mongodb/client/MongoCollection.html#find--) 方法。为了便于创建过滤器对象，Java 驱动程序提供了[`过滤器`](http://mongodb.github.io/mongo-java-driver/3.8/javadoc?com/mongodb/client/model/Filters.html)帮助程序。
+
+### 获取与筛选器匹配的单个文档
+
+例如，要查找字段具有值的第一个文档，请传递[`eq`](http://mongodb.github.io/mongo-java-driver/3.8/javadoc?com/mongodb/client/model/Filters.html#eq-java.lang.String-TItem-)filter 对象以指定相等条件：`i``71`
+
+```java
+myDoc = collection.find(eq("i", 71)).first();
+System.out.println(myDoc.toJson());
+```
+
+该示例打印一个文档：
+
+```json
+{ "_id" : { "$oid" : "5515836e58c7b4fbc756320b" }, "i" : 71 }
+```
+
+### 获取与筛选器匹配的所有文档
+
+下面的示例返回并打印所有文档，其中：`"i" > 50`
+
+```java
+Block<Document> printBlock = new Block<Document>() {
+     @Override
+     public void apply(final Document document) {
+         System.out.println(document.toJson());
+     }
+};
+
+collection.find(gt("i", 50)).forEach(printBlock);
+```
+
+该示例在对象上使用[`forEach`](http://mongodb.github.io/mongo-java-driver/3.8/driver/getting-started/quick-start/{{ }})方法将块应用于每个文档。`FindIterable`
+
+若要为范围指定筛选器，例如，可以使用[`and`](http://mongodb.github.io/mongo-java-driver/3.8/javadoc?com/mongodb/client/model/Filters.html#and-org.bson.conversions.Bson...-)帮助程序：`50 < i <= 100`
+
+```java
+collection.find(and(gt("i", 50), lte("i", 100))).forEach(printBlock);
+```
+
+## 更新文档
+
+若要更新集合中的文档，可以使用集合的[`updateOne`](http://mongodb.github.io/mongo-java-driver/3.8/javadoc?com/mongodb/client/MongoCollection.html#updateOne-org.bson.conversions.Bson-org.bson.conversions.Bson-)和[`updateMany`](http://mongodb.github.io/mongo-java-driver/3.8/javadoc?com/mongodb/async/client/MongoCollection.html#updateMany-org.bson.conversions.Bson-org.bson.conversions.Bson-)方法。
+
+传递给方法：
+
+- 用于确定要更新的一个或多个文档的筛选器对象。为了便于创建过滤器对象，Java 驱动程序提供了[`过滤器`](http://mongodb.github.io/mongo-java-driver/3.8/javadoc?com/mongodb/client/model/Filters.html)帮助程序。要指定空筛选器（即匹配集合中的所有文档），请使用空[`的 Document`](http://mongodb.github.io/mongo-java-driver/3.8/javadoc?org/bson/Document.html)对象。
+- 指定修改的更新文档。有关可用运算符的列表，请参阅[更新运算符](http://docs.mongodb.org/manual/reference/operator/update-field)。
+
+update 方法返回一个[`UpdateResult`](http://mongodb.github.io/mongo-java-driver/3.8/javadoc?com/mongodb/client/result/UpdateResult.html)，该结果提供有关操作的信息，包括更新修改的文档数。
+
+### 更新单个文档
+
+要最多更新单个文档，请使用[`updateOne`](http://mongodb.github.io/mongo-java-driver/3.8/javadoc?com/mongodb/client/MongoCollection.html#updateOne-org.bson.conversions.Bson-org.bson.conversions.Bson-)
+
+下面的示例更新满足 filterequalsand 并将值设置为 of 的第一个文档：`i``10``i``110`
+
+```java
+collection.updateOne(eq("i", 10), new Document("$set", new Document("i", 110)));
+```
+
+### 更新多个文档
+
+若要更新与筛选器匹配的所有文档，请使用[`updateMany`](http://mongodb.github.io/mongo-java-driver/3.8/javadoc?com/mongodb/async/client/MongoCollection.html#updateMany-org.bson.conversions.Bson-org.bson.conversions.Bson-)方法。
+
+以下示例递增 ofbyfor 所有文档的值，其中 = 小于：`i``100``i``100`
+
+```java
+UpdateResult updateResult = collection.updateMany(lt("i", 100), inc("i", 100));
+System.out.println(updateResult.getModifiedCount());
+```
+
+## 删除文档
+
+若要从集合中删除文档，可以使用集合的[`deleteOne`](http://mongodb.github.io/mongo-java-driver/3.8/javadoc?com/mongodb/client/MongoCollection.html#deleteOne-org.bson.conversions.Bson-)和[`deleteMany`](http://mongodb.github.io/mongo-java-driver/3.8/javadoc?com/mongodb/client/MongoCollection.html#deleteMany-org.bson.conversions.Bson-)方法。
+
+将筛选器对象传递给方法，以确定要删除的一个或多个文档。为了便于创建过滤器对象，Java 驱动程序提供了[`过滤器`](http://mongodb.github.io/mongo-java-driver/3.8/javadoc?com/mongodb/client/model/Filters.html)帮助程序。要指定空筛选器（即匹配集合中的所有文档），请使用空[`的 Document`](http://mongodb.github.io/mongo-java-driver/3.8/javadoc?org/bson/Document.html)对象。
+
+删除方法返回一个[`DeleteResult`](http://mongodb.github.io/mongo-java-driver/3.8/javadoc?com/mongodb/client/result/DeleteResult.html)，该结果提供有关操作的信息，包括删除的文档数。
+
+### 删除与筛选器匹配的单个文档
+
+若要最多删除与筛选器匹配的单个文档，请使用[`deleteOne`](http://mongodb.github.io/mongo-java-driver/3.8/javadoc?com/mongodb/client/MongoCollection.html#deleteOne-org.bson.conversions.Bson-)方法：
+
+下面的示例最多删除一个满足筛选器等于的文档：`i``110`
+
+```java
+collection.deleteOne(eq("i", 110));
+```
+
+### 删除与筛选器匹配的所有文档
+
+若要删除与筛选器匹配的所有文档，请使用[`deleteMany`](http://mongodb.github.io/mongo-java-driver/3.8/javadoc?com/mongodb/client/MongoCollection.html#deleteMany-org.bson.conversions.Bson-)方法。
+
+下面的示例删除大于或等于的所有文档：`i``100`
+
+```java
+DeleteResult deleteResult = collection.deleteMany(gte("i", 100));
+System.out.println(deleteResult.getDeletedCount());
+```
+
+## 创建索引
+
+若要在一个或多个字段上创建索引，请将索引规范文档传递给[`createIndex（）`](http://mongodb.github.io/mongo-java-driver/3.8/javadoc?com/mongodb/client/MongoCollection.html#createIndex-org.bson.conversions.Bson-) 方法。索引键规范文档包含要索引的字段以及每个字段的索引类型：
+
+```java
+ new Document(<field1>, <type1>).append(<field2>, <type2>) ...
+```
+
+- 对于升序索引类型，请指定。`1``<type>`
+- 对于降序索引类型，请指定。`-1``<type>`
+
+下面的示例在字段上创建一个升序索引：`i`
+
+```java
+ collection.createIndex(new Document("i", 1));
+```
+
+有关其他索引类型的列表，请参阅[创建索引](http://mongodb.github.io/mongo-java-driver/3.8/driver/tutorials/indexes/)
+
+### 附加信息
+
+有关将 MongoDB 与 Pojos 配合使用的其他教程，请参阅[Pojos 快速入门](http://mongodb.github.io/mongo-java-driver/3.8/driver/getting-started/quick-start-pojo/)。
+
+有关其他教程（例如使用聚合框架、指定写入关注点等），请参阅[Java 驱动程序教程](http://mongodb.github.io/mongo-java-driver/3.8/driver/tutorials/)
+
+
+
 
 
