@@ -3117,6 +3117,18 @@ db1>
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
 # 索引
 
 ## 概述
@@ -3782,6 +3794,138 @@ SpringData家族成员之一，用于操作MongoDB的持久层框架，封装了
 
 ## 文章服务模块搭建
 
+### 第一步：创建spring boot 项目 MongoDB_article
+
+
+
+![image-20221116150053650](img/MongoDB学习笔记/image-20221116150053650.png)
+
+
+
+
+
+
+
+### 第二步：修改pom文件
+
+
+
+```xml
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <parent>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-starter-parent</artifactId>
+        <version>2.7.1</version>
+        <relativePath/> <!-- lookup parent from repository -->
+    </parent>
+    <groupId>mao</groupId>
+    <artifactId>MongoDB_article</artifactId>
+    <version>0.0.1-SNAPSHOT</version>
+    <name>MongoDB_article</name>
+    <description>MongoDB_article</description>
+
+    <properties>
+        <java.version>11</java.version>
+    </properties>
+
+    <dependencies>
+
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-web</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-test</artifactId>
+            <scope>test</scope>
+        </dependency>
+
+        <!--MongoDB spring-boot-starter-->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-data-mongodb</artifactId>
+        </dependency>
+
+
+    </dependencies>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-maven-plugin</artifactId>
+            </plugin>
+        </plugins>
+    </build>
+
+</project>
+
+```
+
+
+
+
+
+### 第三步：修改创建application.yml文件
+
+
+
+```yaml
+spring:
+  data:
+    mongodb:
+      # 库名称
+      database: articledb
+      # mongodb服务地址
+      host: 127.0.0.1
+      # 端口号
+      port: 27017
+      # 可以使用uri连接
+      # uri: mongodb://localhost/test
+```
+
+
+
+
+
+
+
+### 第四步：启动程序
+
+启动程序的目的是看程序是否能正常启动，是否有异常
+
+
+
+```sh
+
+  .   ____          _            __ _ _
+ /\\ / ___'_ __ _ _(_)_ __  __ _ \ \ \ \
+( ( )\___ | '_ | '_| | '_ \/ _` | \ \ \ \
+ \\/  ___)| |_)| | | | | || (_| |  ) ) ) )
+  '  |____| .__|_| |_|_| |_\__, | / / / /
+ =========|_|==============|___/=/_/_/_/
+ :: Spring Boot ::                (v2.7.1)
+
+2022-11-16 15:09:51.763  INFO 16908 --- [           main] m.m.MongoDbArticleApplication            : Starting MongoDbArticleApplication using Java 16.0.2 on mao with PID 16908 (H:\程序\大四上期\MongoDB_article\target\classes started by mao in H:\程序\大四上期\MongoDB_article)
+2022-11-16 15:09:51.766  INFO 16908 --- [           main] m.m.MongoDbArticleApplication            : No active profile set, falling back to 1 default profile: "default"
+2022-11-16 15:09:52.150  INFO 16908 --- [           main] .s.d.r.c.RepositoryConfigurationDelegate : Bootstrapping Spring Data MongoDB repositories in DEFAULT mode.
+2022-11-16 15:09:52.158  INFO 16908 --- [           main] .s.d.r.c.RepositoryConfigurationDelegate : Finished Spring Data repository scanning in 4 ms. Found 0 MongoDB repository interfaces.
+2022-11-16 15:09:52.482  INFO 16908 --- [           main] o.s.b.w.embedded.tomcat.TomcatWebServer  : Tomcat initialized with port(s): 8080 (http)
+2022-11-16 15:09:52.489  INFO 16908 --- [           main] o.apache.catalina.core.StandardService   : Starting service [Tomcat]
+2022-11-16 15:09:52.490  INFO 16908 --- [           main] org.apache.catalina.core.StandardEngine  : Starting Servlet engine: [Apache Tomcat/9.0.64]
+2022-11-16 15:09:52.567  INFO 16908 --- [           main] o.a.c.c.C.[Tomcat].[localhost].[/]       : Initializing Spring embedded WebApplicationContext
+2022-11-16 15:09:52.567  INFO 16908 --- [           main] w.s.c.ServletWebServerApplicationContext : Root WebApplicationContext: initialization completed in 763 ms
+2022-11-16 15:09:52.870  INFO 16908 --- [           main] org.mongodb.driver.client                : MongoClient with metadata {"driver": {"name": "mongo-java-driver|sync|spring-boot", "version": "4.6.1"}, "os": {"type": "Windows", "name": "Windows 10", "architecture": "amd64", "version": "10.0"}, "platform": "Java/Oracle Corporation/16.0.2+7-67"} created with settings MongoClientSettings{readPreference=primary, writeConcern=WriteConcern{w=null, wTimeout=null ms, journal=null}, retryWrites=true, retryReads=true, readConcern=ReadConcern{level=null}, credential=null, streamFactoryFactory=null, commandListeners=[], codecRegistry=ProvidersCodecRegistry{codecProviders=[ValueCodecProvider{}, BsonValueCodecProvider{}, DBRefCodecProvider{}, DBObjectCodecProvider{}, DocumentCodecProvider{}, IterableCodecProvider{}, MapCodecProvider{}, GeoJsonCodecProvider{}, GridFSFileCodecProvider{}, Jsr310CodecProvider{}, JsonObjectCodecProvider{}, BsonCodecProvider{}, EnumCodecProvider{}, com.mongodb.Jep395RecordCodecProvider@68f6e55d]}, clusterSettings={hosts=[127.0.0.1:27017], srvServiceName=mongodb, mode=SINGLE, requiredClusterType=UNKNOWN, requiredReplicaSetName='null', serverSelector='null', clusterListeners='[]', serverSelectionTimeout='30000 ms', localThreshold='30000 ms'}, socketSettings=SocketSettings{connectTimeoutMS=10000, readTimeoutMS=0, receiveBufferSize=0, sendBufferSize=0}, heartbeatSocketSettings=SocketSettings{connectTimeoutMS=10000, readTimeoutMS=10000, receiveBufferSize=0, sendBufferSize=0}, connectionPoolSettings=ConnectionPoolSettings{maxSize=100, minSize=0, maxWaitTimeMS=120000, maxConnectionLifeTimeMS=0, maxConnectionIdleTimeMS=0, maintenanceInitialDelayMS=0, maintenanceFrequencyMS=60000, connectionPoolListeners=[], maxConnecting=2}, serverSettings=ServerSettings{heartbeatFrequencyMS=10000, minHeartbeatFrequencyMS=500, serverListeners='[]', serverMonitorListeners='[]'}, sslSettings=SslSettings{enabled=false, invalidHostNameAllowed=false, context=null}, applicationName='null', compressorList=[], uuidRepresentation=JAVA_LEGACY, serverApi=null, autoEncryptionSettings=null, contextProvider=null}
+2022-11-16 15:09:52.895  INFO 16908 --- [127.0.0.1:27017] org.mongodb.driver.connection            : Opened connection [connectionId{localValue:2, serverValue:9}] to 127.0.0.1:27017
+2022-11-16 15:09:52.895  INFO 16908 --- [127.0.0.1:27017] org.mongodb.driver.connection            : Opened connection [connectionId{localValue:1, serverValue:8}] to 127.0.0.1:27017
+2022-11-16 15:09:52.895  INFO 16908 --- [127.0.0.1:27017] org.mongodb.driver.cluster               : Monitor thread successfully connected to server with description ServerDescription{address=127.0.0.1:27017, type=STANDALONE, state=CONNECTED, ok=true, minWireVersion=0, maxWireVersion=17, maxDocumentSize=16777216, logicalSessionTimeoutMinutes=30, roundTripTimeNanos=30787200}
+2022-11-16 15:09:53.041  INFO 16908 --- [           main] o.s.b.w.embedded.tomcat.TomcatWebServer  : Tomcat started on port(s): 8080 (http) with context path ''
+2022-11-16 15:09:53.051  INFO 16908 --- [           main] m.m.MongoDbArticleApplication            : Started MongoDbArticleApplication in 1.605 seconds (JVM running for 2.267)
+```
 
 
 
@@ -3793,6 +3937,1370 @@ SpringData家族成员之一，用于操作MongoDB的持久层框架，封装了
 
 
 
+## 文章评论实体类的编写
+
+
+
+```java
+package mao.mongodb_article.entity;
+
+import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.index.CompoundIndex;
+import org.springframework.data.mongodb.core.index.Indexed;
+import org.springframework.data.mongodb.core.mapping.Document;
+import org.springframework.data.mongodb.core.mapping.Field;
+
+import java.time.LocalDateTime;
+import java.util.Date;
+
+/**
+ * Project name(项目名称)：MongoDB_article
+ * Package(包名): mao.mongodb_article.entity
+ * Class(类名): Comment
+ * Author(作者）: mao
+ * Author QQ：1296193245
+ * GitHub：https://github.com/maomao124/
+ * Date(创建日期)： 2022/11/16
+ * Time(创建时间)： 19:35
+ * Version(版本): 1.0
+ * Description(描述)： 评论表
+ */
+
+
+@Document(collection="comment")//可以省略，如果省略，则默认使用类名小写映射集合
+//复合索引
+@CompoundIndex( def = "{'userid': 1, 'nickname': -1}")
+public class Comment
+{
+
+    /**
+     * id
+     */
+    @Id
+    private String id;
+    /**
+     * 内容
+     */
+    //该属性对应mongodb的字段的名字，如果一致，则无需该注解
+    @Field("content")
+    private String content;
+
+    /**
+     * 发布时间
+     */
+    private Date publishTime;
+    /**
+     * 用户标识
+     */
+    private String userid;
+    /**
+     * 昵称
+     */
+    private String nickname;
+    /**
+     * 创建日期时间
+     */
+    private LocalDateTime createDateTime;
+    /**
+     * 点赞数
+     */
+    //单字段的索引
+    @Indexed
+    private Integer likeNum;
+    /**
+     * 回复数
+     */
+    private Integer replyNum;
+    /**
+     * 状态
+     */
+    private String state;
+    /**
+     * 上级ID
+     */
+    private String parentId;
+    /**
+     * 文章id
+     */
+    private String articleId;
+
+    /**
+     * Instantiates a new Comment.
+     */
+    public Comment()
+    {
+
+    }
+
+    /**
+     * Instantiates a new Comment.
+     *
+     * @param id             the id
+     * @param content        the content
+     * @param publishTime    the publish time
+     * @param userid         the userid
+     * @param nickname       the nickname
+     * @param createDateTime the create date time
+     * @param likeNum        the like num
+     * @param replyNum       the reply num
+     * @param state          the state
+     * @param parentId       the parent id
+     * @param articleId      the article id
+     */
+    public Comment(String id, String content, Date publishTime, String userid, String nickname,
+                   LocalDateTime createDateTime, Integer likeNum, Integer replyNum,
+                   String state, String parentId, String articleId)
+    {
+        this.id = id;
+        this.content = content;
+        this.publishTime = publishTime;
+        this.userid = userid;
+        this.nickname = nickname;
+        this.createDateTime = createDateTime;
+        this.likeNum = likeNum;
+        this.replyNum = replyNum;
+        this.state = state;
+        this.parentId = parentId;
+        this.articleId = articleId;
+    }
+
+    /**
+     * Gets id.
+     *
+     * @return the id
+     */
+    public String getId()
+    {
+        return id;
+    }
+
+    /**
+     * Sets id.
+     *
+     * @param id the id
+     */
+    public void setId(String id)
+    {
+        this.id = id;
+    }
+
+    /**
+     * Gets content.
+     *
+     * @return the content
+     */
+    public String getContent()
+    {
+        return content;
+    }
+
+    /**
+     * Sets content.
+     *
+     * @param content the content
+     */
+    public void setContent(String content)
+    {
+        this.content = content;
+    }
+
+    /**
+     * Gets publish time.
+     *
+     * @return the publish time
+     */
+    public Date getPublishTime()
+    {
+        return publishTime;
+    }
+
+    /**
+     * Sets publish time.
+     *
+     * @param publishTime the publish time
+     */
+    public void setPublishTime(Date publishTime)
+    {
+        this.publishTime = publishTime;
+    }
+
+    /**
+     * Gets userid.
+     *
+     * @return the userid
+     */
+    public String getUserid()
+    {
+        return userid;
+    }
+
+    /**
+     * Sets userid.
+     *
+     * @param userid the userid
+     */
+    public void setUserid(String userid)
+    {
+        this.userid = userid;
+    }
+
+    /**
+     * Gets nickname.
+     *
+     * @return the nickname
+     */
+    public String getNickname()
+    {
+        return nickname;
+    }
+
+    /**
+     * Sets nickname.
+     *
+     * @param nickname the nickname
+     */
+    public void setNickname(String nickname)
+    {
+        this.nickname = nickname;
+    }
+
+    /**
+     * Gets create date time.
+     *
+     * @return the create date time
+     */
+    public LocalDateTime getCreateDateTime()
+    {
+        return createDateTime;
+    }
+
+    /**
+     * Sets create date time.
+     *
+     * @param createDateTime the create date time
+     */
+    public void setCreateDateTime(LocalDateTime createDateTime)
+    {
+        this.createDateTime = createDateTime;
+    }
+
+    /**
+     * Gets like num.
+     *
+     * @return the like num
+     */
+    public Integer getLikeNum()
+    {
+        return likeNum;
+    }
+
+    /**
+     * Sets like num.
+     *
+     * @param likeNum the like num
+     */
+    public void setLikeNum(Integer likeNum)
+    {
+        this.likeNum = likeNum;
+    }
+
+    /**
+     * Gets reply num.
+     *
+     * @return the reply num
+     */
+    public Integer getReplyNum()
+    {
+        return replyNum;
+    }
+
+    /**
+     * Sets reply num.
+     *
+     * @param replyNum the reply num
+     */
+    public void setReplyNum(Integer replyNum)
+    {
+        this.replyNum = replyNum;
+    }
+
+    /**
+     * Gets state.
+     *
+     * @return the state
+     */
+    public String getState()
+    {
+        return state;
+    }
+
+    /**
+     * Sets state.
+     *
+     * @param state the state
+     */
+    public void setState(String state)
+    {
+        this.state = state;
+    }
+
+    /**
+     * Gets parent id.
+     *
+     * @return the parent id
+     */
+    public String getParentId()
+    {
+        return parentId;
+    }
+
+    /**
+     * Sets parent id.
+     *
+     * @param parentId the parent id
+     */
+    public void setParentId(String parentId)
+    {
+        this.parentId = parentId;
+    }
+
+    /**
+     * Gets article id.
+     *
+     * @return the article id
+     */
+    public String getArticleId()
+    {
+        return articleId;
+    }
+
+    /**
+     * Sets article id.
+     *
+     * @param articleId the article id
+     */
+    public void setArticleId(String articleId)
+    {
+        this.articleId = articleId;
+    }
+
+    @Override
+    @SuppressWarnings("all")
+    public String toString()
+    {
+        final StringBuilder stringbuilder = new StringBuilder();
+        stringbuilder.append("id：").append(id).append('\n');
+        stringbuilder.append("content：").append(content).append('\n');
+        stringbuilder.append("publishTime：").append(publishTime).append('\n');
+        stringbuilder.append("userid：").append(userid).append('\n');
+        stringbuilder.append("nickname：").append(nickname).append('\n');
+        stringbuilder.append("createDateTime：").append(createDateTime).append('\n');
+        stringbuilder.append("likeNum：").append(likeNum).append('\n');
+        stringbuilder.append("replyNum：").append(replyNum).append('\n');
+        stringbuilder.append("state：").append(state).append('\n');
+        stringbuilder.append("parentId：").append(parentId).append('\n');
+        stringbuilder.append("articleId：").append(articleId).append('\n');
+        return stringbuilder.toString();
+    }
+}
+
+```
+
+
+
+
+
+索引可以大大提升查询效率，一般在查询字段上添加索引，索引的添加可以通过Mongo的命令来添加，也可以在Java的实体类中通过注解添加
+
+* 单字段索引注解@Indexed
+
+* 复合索引注解@CompoundIndex
+
+
+
+
+
+
+
+
+
+## 文章评论的增删改查
+
+
+
+第一步：创建CommentDao接口
+
+
+
+```java
+package mao.mongodb_article.dao;
+
+import mao.mongodb_article.entity.Comment;
+import org.springframework.data.mongodb.repository.MongoRepository;
+
+/**
+ * Project name(项目名称)：MongoDB_article
+ * Package(包名): mao.mongodb_article.dao
+ * Interface(接口名): CommentDao
+ * Author(作者）: mao
+ * Author QQ：1296193245
+ * GitHub：https://github.com/maomao124/
+ * Date(创建日期)： 2022/11/16
+ * Time(创建时间)： 19:49
+ * Version(版本): 1.0
+ * Description(描述)： 无
+ */
+
+public interface CommentDao extends MongoRepository<Comment, String>
+{
+
+}
+
+```
+
+
+
+
+
+第二步：创建CommentService接口
+
+
+
+```java
+package mao.mongodb_article.service;
+
+import mao.mongodb_article.entity.Comment;
+
+import java.util.List;
+
+/**
+ * Project name(项目名称)：MongoDB_article
+ * Package(包名): mao.mongodb_article.service
+ * Interface(接口名): CommentService
+ * Author(作者）: mao
+ * Author QQ：1296193245
+ * GitHub：https://github.com/maomao124/
+ * Date(创建日期)： 2022/11/16
+ * Time(创建时间)： 19:50
+ * Version(版本): 1.0
+ * Description(描述)： 无
+ */
+
+public interface CommentService
+{
+    /**
+     * 保存评论
+     *
+     * @param comment 评论
+     */
+    void saveComment(Comment comment);
+
+    /**
+     * 更新评论
+     *
+     * @param comment 评论
+     */
+    void updateComment(Comment comment);
+
+    /**
+     * 通过id删除评论
+     *
+     * @param id id
+     */
+    void deleteCommentById(String id);
+
+    /**
+     * 查询所有评论
+     *
+     * @return {@link List}<{@link Comment}>
+     */
+    List<Comment> findCommentList();
+
+    /**
+     * 根据id查询评论
+     *
+     * @param id id
+     * @return {@link Comment}
+     */
+    Comment findCommentById(String id);
+
+
+}
+```
+
+
+
+
+
+第三步：创建CommentServiceImpl实现类
+
+
+
+```java
+package mao.mongodb_article.service.impl;
+
+import mao.mongodb_article.dao.CommentDao;
+import mao.mongodb_article.entity.Comment;
+import mao.mongodb_article.service.CommentService;
+
+import org.springframework.stereotype.Service;
+
+import javax.annotation.Resource;
+import java.util.List;
+import java.util.Optional;
+
+/**
+ * Project name(项目名称)：MongoDB_article
+ * Package(包名): mao.mongodb_article.service.impl
+ * Class(类名): CommentServiceImpl
+ * Author(作者）: mao
+ * Author QQ：1296193245
+ * GitHub：https://github.com/maomao124/
+ * Date(创建日期)： 2022/11/16
+ * Time(创建时间)： 19:52
+ * Version(版本): 1.0
+ * Description(描述)： 无
+ */
+
+@Service
+public class CommentServiceImpl implements CommentService
+{
+
+    @Resource
+    private CommentDao commentDao;
+
+    @Override
+    public void saveComment(Comment comment)
+    {
+        commentDao.save(comment);
+    }
+
+    @Override
+    public void updateComment(Comment comment)
+    {
+        commentDao.save(comment);
+    }
+
+    @Override
+    public void deleteCommentById(String id)
+    {
+        commentDao.deleteById(id);
+    }
+
+    @Override
+    public List<Comment> findCommentList()
+    {
+        return commentDao.findAll();
+    }
+
+    @Override
+    public Comment findCommentById(String id)
+    {
+        Optional<Comment> commentOptional = commentDao.findById(id);
+        return commentOptional.orElse(null);
+    }
+}
+
+```
+
+
+
+
+
+
+
+第四步：创建CommentController类
+
+
+
+```java
+package mao.mongodb_article.controller;
+
+import mao.mongodb_article.entity.Comment;
+import mao.mongodb_article.service.CommentService;
+import org.springframework.web.bind.annotation.*;
+
+import javax.annotation.Resource;
+import java.util.List;
+
+/**
+ * Project name(项目名称)：MongoDB_article
+ * Package(包名): mao.mongodb_article.controller
+ * Class(类名): CommentController
+ * Author(作者）: mao
+ * Author QQ：1296193245
+ * GitHub：https://github.com/maomao124/
+ * Date(创建日期)： 2022/11/16
+ * Time(创建时间)： 19:58
+ * Version(版本): 1.0
+ * Description(描述)： 无
+ */
+
+@RestController
+@RequestMapping("/comment")
+public class CommentController
+{
+
+    @Resource
+    private CommentService commentService;
+
+    /**
+     * 查询所有
+     *
+     * @return {@link List}<{@link Comment}>
+     */
+    @GetMapping
+    public List<Comment> findAll()
+    {
+        return commentService.findCommentList();
+    }
+
+    /**
+     * 通过id查询
+     *
+     * @param id id
+     * @return {@link Comment}
+     */
+    @GetMapping("/{id}")
+    public Comment findById(@PathVariable String id)
+    {
+        return commentService.findCommentById(id);
+    }
+
+    /**
+     * 保存
+     *
+     * @param comment 评论
+     */
+    @PostMapping
+    public void save(@RequestBody Comment comment)
+    {
+        commentService.saveComment(comment);
+    }
+
+    /**
+     * 更新
+     *
+     * @param comment 评论
+     */
+    @PutMapping
+    public void update(@RequestBody Comment comment)
+    {
+        commentService.updateComment(comment);
+    }
+
+    /**
+     * 通过id删除
+     *
+     * @param id id
+     */
+    @DeleteMapping("/{id}")
+    public void deleteById(@PathVariable String id)
+    {
+        commentService.deleteCommentById(id);
+    }
+}
+```
+
+
+
+
+
+
+
+第五步：编写测试类
+
+
+
+```java
+package mao.mongodb_article.service;
+
+import mao.mongodb_article.entity.Comment;
+import org.junit.jupiter.api.Test;
+import org.springframework.boot.test.context.SpringBootTest;
+
+import javax.annotation.Resource;
+
+import java.time.LocalDateTime;
+import java.util.Date;
+import java.util.List;
+
+import static org.junit.jupiter.api.Assertions.*;
+
+/**
+ * Project name(项目名称)：MongoDB_article
+ * Package(包名): mao.mongodb_article.service
+ * Class(测试类名): CommentServiceTest
+ * Author(作者）: mao
+ * Author QQ：1296193245
+ * GitHub：https://github.com/maomao124/
+ * Date(创建日期)： 2022/11/16
+ * Time(创建时间)： 20:04
+ * Version(版本): 1.0
+ * Description(描述)： 测试类
+ */
+
+@SpringBootTest
+class CommentServiceTest
+{
+
+    @Resource
+    private CommentService commentService;
+
+    @Test
+    void init()
+    {
+        Comment comment1 = new Comment("1", "专家说不能空腹吃饭，影响健康", new Date(), "10001",
+                "u1", LocalDateTime.now(), 254, 2, "1", null, "15");
+        Comment comment2 = new Comment("2", "专家说不能空腹吃饭，影响健康", new Date(), "10002",
+                "u2", LocalDateTime.now(), 125, 2, "1", null, "15");
+        Comment comment3 = new Comment("3", "专家说不能空腹吃饭，影响健康", new Date(), "10001",
+                "u1", LocalDateTime.now(), 13, 2, "1", null, "15");
+        Comment comment4 = new Comment("4", "专家说不能空腹吃饭，影响健康", new Date(), "10003",
+                "u3", LocalDateTime.now(), 1056, 9, "1", null, "15");
+        Comment comment5 = new Comment("5", "专家说不能空腹吃饭，影响健康", new Date(), "10004",
+                "u4", LocalDateTime.now(), 4211, 38, "1", null, "15");
+
+        commentService.saveComment(comment1);
+        commentService.saveComment(comment2);
+        commentService.saveComment(comment3);
+        commentService.saveComment(comment4);
+        commentService.saveComment(comment5);
+
+
+    }
+
+    @Test
+    void saveComment()
+    {
+        Comment comment = new Comment("6", "专家说不能空腹吃饭，影响健康", new Date(), "10001",
+                "u1", LocalDateTime.now(), 254, 2, "1", null, "15");
+        commentService.saveComment(comment);
+    }
+
+    @Test
+    void updateComment()
+    {
+        Comment comment = new Comment("6", "专家说不能空腹吃饭，影响健康", new Date(), "10001",
+                "u1", LocalDateTime.now(), 9822, 9, "1", null, "15");
+        commentService.updateComment(comment);
+    }
+
+    @Test
+    void deleteCommentById()
+    {
+        commentService.deleteCommentById("6");
+    }
+
+    @Test
+    void findCommentList()
+    {
+        List<Comment> commentList = commentService.findCommentList();
+        for (Comment comment : commentList)
+        {
+            System.out.println(comment);
+            System.out.println();
+        }
+    }
+
+    @Test
+    void findCommentById()
+    {
+        Comment comment = commentService.findCommentById("2");
+        System.out.println(comment);
+    }
+}
+```
+
+
+
+
+
+
+
+```sh
+test> show databases
+admin      40.00 KiB
+articledb   8.00 KiB
+config     84.00 KiB
+db1        60.00 KiB
+local      72.00 KiB
+test> use articledb
+switched to db articledb
+articledb> show tables
+comment
+articledb> db.comment.find()
+[
+  {
+    _id: '1',
+    content: '专家说不能空腹吃饭，影响健康',
+    publishTime: ISODate("2022-11-16T12:11:05.758Z"),
+    userid: '10001',
+    nickname: 'u1',
+    createDateTime: ISODate("2022-11-16T12:11:05.761Z"),
+    likeNum: 254,
+    replyNum: 2,
+    state: '1',
+    articleId: '15',
+    _class: 'mao.mongodb_article.entity.Comment'
+  },
+  {
+    _id: '2',
+    content: '专家说不能空腹吃饭，影响健康',
+    publishTime: ISODate("2022-11-16T12:11:05.761Z"),
+    userid: '10002',
+    nickname: 'u2',
+    createDateTime: ISODate("2022-11-16T12:11:05.761Z"),
+    likeNum: 125,
+    replyNum: 2,
+    state: '1',
+    articleId: '15',
+    _class: 'mao.mongodb_article.entity.Comment'
+  },
+  {
+    _id: '3',
+    content: '专家说不能空腹吃饭，影响健康',
+    publishTime: ISODate("2022-11-16T12:11:05.761Z"),
+    userid: '10001',
+    nickname: 'u1',
+    createDateTime: ISODate("2022-11-16T12:11:05.761Z"),
+    likeNum: 13,
+    replyNum: 2,
+    state: '1',
+    articleId: '15',
+    _class: 'mao.mongodb_article.entity.Comment'
+  },
+  {
+    _id: '4',
+    content: '专家说不能空腹吃饭，影响健康',
+    publishTime: ISODate("2022-11-16T12:11:05.761Z"),
+    userid: '10003',
+    nickname: 'u3',
+    createDateTime: ISODate("2022-11-16T12:11:05.761Z"),
+    likeNum: 1056,
+    replyNum: 9,
+    state: '1',
+    articleId: '15',
+    _class: 'mao.mongodb_article.entity.Comment'
+  },
+  {
+    _id: '5',
+    content: '专家说不能空腹吃饭，影响健康',
+    publishTime: ISODate("2022-11-16T12:11:05.761Z"),
+    userid: '10004',
+    nickname: 'u4',
+    createDateTime: ISODate("2022-11-16T12:11:05.761Z"),
+    likeNum: 4211,
+    replyNum: 38,
+    state: '1',
+    articleId: '15',
+    _class: 'mao.mongodb_article.entity.Comment'
+  }
+]
+articledb>
+```
+
+
+
+
+
+
+
+第六步：启动程序
+
+
+
+```sh
+
+  .   ____          _            __ _ _
+ /\\ / ___'_ __ _ _(_)_ __  __ _ \ \ \ \
+( ( )\___ | '_ | '_| | '_ \/ _` | \ \ \ \
+ \\/  ___)| |_)| | | | | || (_| |  ) ) ) )
+  '  |____| .__|_| |_|_| |_\__, | / / / /
+ =========|_|==============|___/=/_/_/_/
+ :: Spring Boot ::                (v2.7.1)
+
+2022-11-16 20:21:26.752  INFO 21652 --- [           main] m.m.MongoDbArticleApplication            : Starting MongoDbArticleApplication using Java 16.0.2 on mao with PID 21652 (H:\程序\大四上期\MongoDB_article\target\classes started by mao in H:\程序\大四上期\MongoDB_article)
+2022-11-16 20:21:26.754  INFO 21652 --- [           main] m.m.MongoDbArticleApplication            : No active profile set, falling back to 1 default profile: "default"
+2022-11-16 20:21:27.134  INFO 21652 --- [           main] .s.d.r.c.RepositoryConfigurationDelegate : Bootstrapping Spring Data MongoDB repositories in DEFAULT mode.
+2022-11-16 20:21:27.165  INFO 21652 --- [           main] .s.d.r.c.RepositoryConfigurationDelegate : Finished Spring Data repository scanning in 28 ms. Found 1 MongoDB repository interfaces.
+2022-11-16 20:21:27.460  INFO 21652 --- [           main] o.s.b.w.embedded.tomcat.TomcatWebServer  : Tomcat initialized with port(s): 8080 (http)
+2022-11-16 20:21:27.467  INFO 21652 --- [           main] o.apache.catalina.core.StandardService   : Starting service [Tomcat]
+2022-11-16 20:21:27.467  INFO 21652 --- [           main] org.apache.catalina.core.StandardEngine  : Starting Servlet engine: [Apache Tomcat/9.0.64]
+2022-11-16 20:21:27.543  INFO 21652 --- [           main] o.a.c.c.C.[Tomcat].[localhost].[/]       : Initializing Spring embedded WebApplicationContext
+2022-11-16 20:21:27.543  INFO 21652 --- [           main] w.s.c.ServletWebServerApplicationContext : Root WebApplicationContext: initialization completed in 750 ms
+2022-11-16 20:21:27.664  INFO 21652 --- [           main] org.mongodb.driver.client                : MongoClient with metadata {"driver": {"name": "mongo-java-driver|sync|spring-boot", "version": "4.6.1"}, "os": {"type": "Windows", "name": "Windows 10", "architecture": "amd64", "version": "10.0"}, "platform": "Java/Oracle Corporation/16.0.2+7-67"} created with settings MongoClientSettings{readPreference=primary, writeConcern=WriteConcern{w=null, wTimeout=null ms, journal=null}, retryWrites=true, retryReads=true, readConcern=ReadConcern{level=null}, credential=null, streamFactoryFactory=null, commandListeners=[], codecRegistry=ProvidersCodecRegistry{codecProviders=[ValueCodecProvider{}, BsonValueCodecProvider{}, DBRefCodecProvider{}, DBObjectCodecProvider{}, DocumentCodecProvider{}, IterableCodecProvider{}, MapCodecProvider{}, GeoJsonCodecProvider{}, GridFSFileCodecProvider{}, Jsr310CodecProvider{}, JsonObjectCodecProvider{}, BsonCodecProvider{}, EnumCodecProvider{}, com.mongodb.Jep395RecordCodecProvider@4bd5849e]}, clusterSettings={hosts=[127.0.0.1:27017], srvServiceName=mongodb, mode=SINGLE, requiredClusterType=UNKNOWN, requiredReplicaSetName='null', serverSelector='null', clusterListeners='[]', serverSelectionTimeout='30000 ms', localThreshold='30000 ms'}, socketSettings=SocketSettings{connectTimeoutMS=10000, readTimeoutMS=0, receiveBufferSize=0, sendBufferSize=0}, heartbeatSocketSettings=SocketSettings{connectTimeoutMS=10000, readTimeoutMS=10000, receiveBufferSize=0, sendBufferSize=0}, connectionPoolSettings=ConnectionPoolSettings{maxSize=100, minSize=0, maxWaitTimeMS=120000, maxConnectionLifeTimeMS=0, maxConnectionIdleTimeMS=0, maintenanceInitialDelayMS=0, maintenanceFrequencyMS=60000, connectionPoolListeners=[], maxConnecting=2}, serverSettings=ServerSettings{heartbeatFrequencyMS=10000, minHeartbeatFrequencyMS=500, serverListeners='[]', serverMonitorListeners='[]'}, sslSettings=SslSettings{enabled=false, invalidHostNameAllowed=false, context=null}, applicationName='null', compressorList=[], uuidRepresentation=JAVA_LEGACY, serverApi=null, autoEncryptionSettings=null, contextProvider=null}
+2022-11-16 20:21:27.677  INFO 21652 --- [127.0.0.1:27017] org.mongodb.driver.connection            : Opened connection [connectionId{localValue:2, serverValue:40}] to 127.0.0.1:27017
+2022-11-16 20:21:27.677  INFO 21652 --- [127.0.0.1:27017] org.mongodb.driver.connection            : Opened connection [connectionId{localValue:1, serverValue:41}] to 127.0.0.1:27017
+2022-11-16 20:21:27.677  INFO 21652 --- [127.0.0.1:27017] org.mongodb.driver.cluster               : Monitor thread successfully connected to server with description ServerDescription{address=127.0.0.1:27017, type=STANDALONE, state=CONNECTED, ok=true, minWireVersion=0, maxWireVersion=17, maxDocumentSize=16777216, logicalSessionTimeoutMinutes=30, roundTripTimeNanos=18599000}
+2022-11-16 20:21:28.063  INFO 21652 --- [           main] o.s.b.w.embedded.tomcat.TomcatWebServer  : Tomcat started on port(s): 8080 (http) with context path ''
+2022-11-16 20:21:28.072  INFO 21652 --- [           main] m.m.MongoDbArticleApplication            : Started MongoDbArticleApplication in 1.608 seconds (JVM running for 2.087)
+
+```
+
+
+
+
+
+第七步：访问
+
+
+
+GET http://localhost:8080/comment
+
+
+
+```json
+[
+    {
+        "id": "1",
+        "content": "专家说不能空腹吃饭，影响健康",
+        "publishTime": "2022-11-16T12:11:05.758+00:00",
+        "userid": "10001",
+        "nickname": "u1",
+        "createDateTime": "2022-11-16T20:11:05.761",
+        "likeNum": 254,
+        "replyNum": 2,
+        "state": "1",
+        "parentId": null,
+        "articleId": "15"
+    },
+    {
+        "id": "2",
+        "content": "专家说不能空腹吃饭，影响健康",
+        "publishTime": "2022-11-16T12:11:05.761+00:00",
+        "userid": "10002",
+        "nickname": "u2",
+        "createDateTime": "2022-11-16T20:11:05.761",
+        "likeNum": 125,
+        "replyNum": 2,
+        "state": "1",
+        "parentId": null,
+        "articleId": "15"
+    },
+    {
+        "id": "3",
+        "content": "专家说不能空腹吃饭，影响健康",
+        "publishTime": "2022-11-16T12:11:05.761+00:00",
+        "userid": "10001",
+        "nickname": "u1",
+        "createDateTime": "2022-11-16T20:11:05.761",
+        "likeNum": 13,
+        "replyNum": 2,
+        "state": "1",
+        "parentId": null,
+        "articleId": "15"
+    },
+    {
+        "id": "4",
+        "content": "专家说不能空腹吃饭，影响健康",
+        "publishTime": "2022-11-16T12:11:05.761+00:00",
+        "userid": "10003",
+        "nickname": "u3",
+        "createDateTime": "2022-11-16T20:11:05.761",
+        "likeNum": 1056,
+        "replyNum": 9,
+        "state": "1",
+        "parentId": null,
+        "articleId": "15"
+    },
+    {
+        "id": "5",
+        "content": "专家说不能空腹吃饭，影响健康",
+        "publishTime": "2022-11-16T12:11:05.761+00:00",
+        "userid": "10004",
+        "nickname": "u4",
+        "createDateTime": "2022-11-16T20:11:05.761",
+        "likeNum": 4211,
+        "replyNum": 38,
+        "state": "1",
+        "parentId": null,
+        "articleId": "15"
+    }
+]
+```
+
+
+
+![image-20221116202349513](img/MongoDB学习笔记/image-20221116202349513.png)
+
+
+
+
+
+
+
+GET http://localhost:8080/comment/3
+
+
+
+```sh
+{
+    "id": "3",
+    "content": "专家说不能空腹吃饭，影响健康",
+    "publishTime": "2022-11-16T12:11:05.761+00:00",
+    "userid": "10001",
+    "nickname": "u1",
+    "createDateTime": "2022-11-16T20:11:05.761",
+    "likeNum": 13,
+    "replyNum": 2,
+    "state": "1",
+    "parentId": null,
+    "articleId": "15"
+}
+```
+
+
+
+
+
+![image-20221116202429103](img/MongoDB学习笔记/image-20221116202429103.png)
+
+
+
+
+
+
+
+POST  http://localhost:8080/comment
+
+
+
+请求体：
+
+```json
+{
+    "id": "7",
+    "content": "专家说不能空腹吃饭，影响健康",
+    "publishTime": "2022-11-16T12:11:05.761+00:00",
+    "userid": "10009",
+    "nickname": "u9",
+    "createDateTime": "2022-11-16T20:11:05.761",
+    "likeNum": 987,
+    "replyNum": 45,
+    "state": "1",
+    "parentId": null,
+    "articleId": "15"
+}
+```
+
+
+
+![image-20221116202603946](img/MongoDB学习笔记/image-20221116202603946.png)
+
+
+
+
+
+
+
+再次查询
+
+
+
+```json
+[
+    {
+        "id": "1",
+        "content": "专家说不能空腹吃饭，影响健康",
+        "publishTime": "2022-11-16T12:11:05.758+00:00",
+        "userid": "10001",
+        "nickname": "u1",
+        "createDateTime": "2022-11-16T20:11:05.761",
+        "likeNum": 254,
+        "replyNum": 2,
+        "state": "1",
+        "parentId": null,
+        "articleId": "15"
+    },
+    {
+        "id": "2",
+        "content": "专家说不能空腹吃饭，影响健康",
+        "publishTime": "2022-11-16T12:11:05.761+00:00",
+        "userid": "10002",
+        "nickname": "u2",
+        "createDateTime": "2022-11-16T20:11:05.761",
+        "likeNum": 125,
+        "replyNum": 2,
+        "state": "1",
+        "parentId": null,
+        "articleId": "15"
+    },
+    {
+        "id": "3",
+        "content": "专家说不能空腹吃饭，影响健康",
+        "publishTime": "2022-11-16T12:11:05.761+00:00",
+        "userid": "10001",
+        "nickname": "u1",
+        "createDateTime": "2022-11-16T20:11:05.761",
+        "likeNum": 13,
+        "replyNum": 2,
+        "state": "1",
+        "parentId": null,
+        "articleId": "15"
+    },
+    {
+        "id": "4",
+        "content": "专家说不能空腹吃饭，影响健康",
+        "publishTime": "2022-11-16T12:11:05.761+00:00",
+        "userid": "10003",
+        "nickname": "u3",
+        "createDateTime": "2022-11-16T20:11:05.761",
+        "likeNum": 1056,
+        "replyNum": 9,
+        "state": "1",
+        "parentId": null,
+        "articleId": "15"
+    },
+    {
+        "id": "5",
+        "content": "专家说不能空腹吃饭，影响健康",
+        "publishTime": "2022-11-16T12:11:05.761+00:00",
+        "userid": "10004",
+        "nickname": "u4",
+        "createDateTime": "2022-11-16T20:11:05.761",
+        "likeNum": 4211,
+        "replyNum": 38,
+        "state": "1",
+        "parentId": null,
+        "articleId": "15"
+    },
+    {
+        "id": "7",
+        "content": "专家说不能空腹吃饭，影响健康",
+        "publishTime": "2022-11-16T12:11:05.761+00:00",
+        "userid": "10009",
+        "nickname": "u9",
+        "createDateTime": "2022-11-16T20:11:05.761",
+        "likeNum": 987,
+        "replyNum": 45,
+        "state": "1",
+        "parentId": null,
+        "articleId": "15"
+    }
+]
+```
+
+
+
+
+
+
+
+PUT http://localhost:8080/comment
+
+
+
+请求体：
+
+```json
+{
+    "id": "7",
+    "content": "专家说不能空腹吃饭，影响健康",
+    "publishTime": "2022-11-16T12:11:05.761+00:00",
+    "userid": "10009",
+    "nickname": "u9",
+    "createDateTime": "2022-11-16T20:11:05.761",
+    "likeNum": 989,
+    "replyNum": 58,
+    "state": "1",
+    "parentId": null,
+    "articleId": "15"
+}
+```
+
+
+
+
+
+![image-20221116202758329](img/MongoDB学习笔记/image-20221116202758329.png)
+
+
+
+
+
+
+
+查询
+
+
+
+```json
+[
+    {
+        "id": "1",
+        "content": "专家说不能空腹吃饭，影响健康",
+        "publishTime": "2022-11-16T12:11:05.758+00:00",
+        "userid": "10001",
+        "nickname": "u1",
+        "createDateTime": "2022-11-16T20:11:05.761",
+        "likeNum": 254,
+        "replyNum": 2,
+        "state": "1",
+        "parentId": null,
+        "articleId": "15"
+    },
+    {
+        "id": "2",
+        "content": "专家说不能空腹吃饭，影响健康",
+        "publishTime": "2022-11-16T12:11:05.761+00:00",
+        "userid": "10002",
+        "nickname": "u2",
+        "createDateTime": "2022-11-16T20:11:05.761",
+        "likeNum": 125,
+        "replyNum": 2,
+        "state": "1",
+        "parentId": null,
+        "articleId": "15"
+    },
+    {
+        "id": "3",
+        "content": "专家说不能空腹吃饭，影响健康",
+        "publishTime": "2022-11-16T12:11:05.761+00:00",
+        "userid": "10001",
+        "nickname": "u1",
+        "createDateTime": "2022-11-16T20:11:05.761",
+        "likeNum": 13,
+        "replyNum": 2,
+        "state": "1",
+        "parentId": null,
+        "articleId": "15"
+    },
+    {
+        "id": "4",
+        "content": "专家说不能空腹吃饭，影响健康",
+        "publishTime": "2022-11-16T12:11:05.761+00:00",
+        "userid": "10003",
+        "nickname": "u3",
+        "createDateTime": "2022-11-16T20:11:05.761",
+        "likeNum": 1056,
+        "replyNum": 9,
+        "state": "1",
+        "parentId": null,
+        "articleId": "15"
+    },
+    {
+        "id": "5",
+        "content": "专家说不能空腹吃饭，影响健康",
+        "publishTime": "2022-11-16T12:11:05.761+00:00",
+        "userid": "10004",
+        "nickname": "u4",
+        "createDateTime": "2022-11-16T20:11:05.761",
+        "likeNum": 4211,
+        "replyNum": 38,
+        "state": "1",
+        "parentId": null,
+        "articleId": "15"
+    },
+    {
+        "id": "7",
+        "content": "专家说不能空腹吃饭，影响健康",
+        "publishTime": "2022-11-16T12:11:05.761+00:00",
+        "userid": "10009",
+        "nickname": "u9",
+        "createDateTime": "2022-11-16T20:11:05.761",
+        "likeNum": 989,
+        "replyNum": 58,
+        "state": "1",
+        "parentId": null,
+        "articleId": "15"
+    }
+]
+```
+
+
+
+
+
+
+
+删除
+
+
+
+DELETE http://localhost:8080/comment/7
+
+
+
+![image-20221116202929486](img/MongoDB学习笔记/image-20221116202929486.png)
+
+
+
+
+
+查询
+
+
+
+```json
+[
+    {
+        "id": "1",
+        "content": "专家说不能空腹吃饭，影响健康",
+        "publishTime": "2022-11-16T12:11:05.758+00:00",
+        "userid": "10001",
+        "nickname": "u1",
+        "createDateTime": "2022-11-16T20:11:05.761",
+        "likeNum": 254,
+        "replyNum": 2,
+        "state": "1",
+        "parentId": null,
+        "articleId": "15"
+    },
+    {
+        "id": "2",
+        "content": "专家说不能空腹吃饭，影响健康",
+        "publishTime": "2022-11-16T12:11:05.761+00:00",
+        "userid": "10002",
+        "nickname": "u2",
+        "createDateTime": "2022-11-16T20:11:05.761",
+        "likeNum": 125,
+        "replyNum": 2,
+        "state": "1",
+        "parentId": null,
+        "articleId": "15"
+    },
+    {
+        "id": "3",
+        "content": "专家说不能空腹吃饭，影响健康",
+        "publishTime": "2022-11-16T12:11:05.761+00:00",
+        "userid": "10001",
+        "nickname": "u1",
+        "createDateTime": "2022-11-16T20:11:05.761",
+        "likeNum": 13,
+        "replyNum": 2,
+        "state": "1",
+        "parentId": null,
+        "articleId": "15"
+    },
+    {
+        "id": "4",
+        "content": "专家说不能空腹吃饭，影响健康",
+        "publishTime": "2022-11-16T12:11:05.761+00:00",
+        "userid": "10003",
+        "nickname": "u3",
+        "createDateTime": "2022-11-16T20:11:05.761",
+        "likeNum": 1056,
+        "replyNum": 9,
+        "state": "1",
+        "parentId": null,
+        "articleId": "15"
+    },
+    {
+        "id": "5",
+        "content": "专家说不能空腹吃饭，影响健康",
+        "publishTime": "2022-11-16T12:11:05.761+00:00",
+        "userid": "10004",
+        "nickname": "u4",
+        "createDateTime": "2022-11-16T20:11:05.761",
+        "likeNum": 4211,
+        "replyNum": 38,
+        "state": "1",
+        "parentId": null,
+        "articleId": "15"
+    }
+]
+```
 
 
 
@@ -3804,17 +5312,7 @@ SpringData家族成员之一，用于操作MongoDB的持久层框架，封装了
 
 
 
-
-
-
-
-
-
-
-
-
-
-
+## 根据上级ID查询文章评论的分页列表
 
 
 
