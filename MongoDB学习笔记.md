@@ -4328,7 +4328,7 @@ public class Comment
 
 
 
-第一步：创建CommentDao接口
+### 第一步：创建CommentDao接口
 
 
 
@@ -4362,7 +4362,7 @@ public interface CommentDao extends MongoRepository<Comment, String>
 
 
 
-第二步：创建CommentService接口
+### 第二步：创建CommentService接口
 
 
 
@@ -4432,7 +4432,7 @@ public interface CommentService
 
 
 
-第三步：创建CommentServiceImpl实现类
+### 第三步：创建CommentServiceImpl实现类
 
 
 
@@ -4509,7 +4509,7 @@ public class CommentServiceImpl implements CommentService
 
 
 
-第四步：创建CommentController类
+### 第四步：创建CommentController类
 
 
 
@@ -4608,7 +4608,7 @@ public class CommentController
 
 
 
-第五步：编写测试类
+### 第五步：编写测试类
 
 
 
@@ -4806,7 +4806,7 @@ articledb>
 
 
 
-第六步：启动程序
+### 第六步：启动程序
 
 
 
@@ -4842,7 +4842,7 @@ articledb>
 
 
 
-第七步：访问
+### 第七步：访问
 
 
 
@@ -5312,7 +5312,744 @@ DELETE http://localhost:8080/comment/7
 
 
 
+
+
 ## 根据上级ID查询文章评论的分页列表
+
+
+
+### 第一步：CommentDao接口里新增方法
+
+
+
+```java
+package mao.mongodb_article.dao;
+
+import mao.mongodb_article.entity.Comment;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.mongodb.repository.MongoRepository;
+
+/**
+ * Project name(项目名称)：MongoDB_article
+ * Package(包名): mao.mongodb_article.dao
+ * Interface(接口名): CommentDao
+ * Author(作者）: mao
+ * Author QQ：1296193245
+ * GitHub：https://github.com/maomao124/
+ * Date(创建日期)： 2022/11/16
+ * Time(创建时间)： 19:49
+ * Version(版本): 1.0
+ * Description(描述)： 无
+ */
+
+public interface CommentDao extends MongoRepository<Comment, String>
+{
+    /**
+     * 根据上级ID查询文章评论的分页列表
+     *
+     * @param parentId 父id
+     * @param pageable Pageable
+     * @return {@link Page}<{@link Comment}>
+     */
+    Page<Comment> findByParentId(String parentId, Pageable pageable);
+}
+```
+
+
+
+
+
+**注意！！！方法名称不能乱写**
+
+
+
+
+
+### 第二步：CommentService接口里新增方法
+
+
+
+```java
+package mao.mongodb_article.service;
+
+import mao.mongodb_article.entity.Comment;
+import org.springframework.data.domain.Page;
+
+import java.util.List;
+
+/**
+ * Project name(项目名称)：MongoDB_article
+ * Package(包名): mao.mongodb_article.service
+ * Interface(接口名): CommentService
+ * Author(作者）: mao
+ * Author QQ：1296193245
+ * GitHub：https://github.com/maomao124/
+ * Date(创建日期)： 2022/11/16
+ * Time(创建时间)： 19:50
+ * Version(版本): 1.0
+ * Description(描述)： 无
+ */
+
+public interface CommentService
+{
+    /**
+     * 保存评论
+     *
+     * @param comment 评论
+     */
+    void saveComment(Comment comment);
+
+    /**
+     * 更新评论
+     *
+     * @param comment 评论
+     */
+    void updateComment(Comment comment);
+
+    /**
+     * 通过id删除评论
+     *
+     * @param id id
+     */
+    void deleteCommentById(String id);
+
+    /**
+     * 查询所有评论
+     *
+     * @return {@link List}<{@link Comment}>
+     */
+    List<Comment> findCommentList();
+
+    /**
+     * 根据id查询评论
+     *
+     * @param id id
+     * @return {@link Comment}
+     */
+    Comment findCommentById(String id);
+
+
+    /**
+     * 通过父id找到评论，分页
+     *
+     * @param parentId 父id
+     * @param page     页面号码
+     * @param size     页大小
+     * @return {@link Page}<{@link Comment}>
+     */
+    Page<Comment> findCommentPageByParentId(String parentId, int page, int size);
+
+}
+```
+
+
+
+
+
+### 第三步：在CommentServiceImpl实现类里新增方法
+
+
+
+```java
+package mao.mongodb_article.service.impl;
+
+import mao.mongodb_article.dao.CommentDao;
+import mao.mongodb_article.entity.Comment;
+import mao.mongodb_article.service.CommentService;
+
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.stereotype.Service;
+
+import javax.annotation.Resource;
+import java.util.List;
+import java.util.Optional;
+
+/**
+ * Project name(项目名称)：MongoDB_article
+ * Package(包名): mao.mongodb_article.service.impl
+ * Class(类名): CommentServiceImpl
+ * Author(作者）: mao
+ * Author QQ：1296193245
+ * GitHub：https://github.com/maomao124/
+ * Date(创建日期)： 2022/11/16
+ * Time(创建时间)： 19:52
+ * Version(版本): 1.0
+ * Description(描述)： 无
+ */
+
+@Service
+public class CommentServiceImpl implements CommentService
+{
+
+    @Resource
+    private CommentDao commentDao;
+
+    @Override
+    public void saveComment(Comment comment)
+    {
+        commentDao.save(comment);
+    }
+
+    @Override
+    public void updateComment(Comment comment)
+    {
+        commentDao.save(comment);
+    }
+
+    @Override
+    public void deleteCommentById(String id)
+    {
+        commentDao.deleteById(id);
+    }
+
+    @Override
+    public List<Comment> findCommentList()
+    {
+        return commentDao.findAll();
+    }
+
+    @Override
+    public Comment findCommentById(String id)
+    {
+        Optional<Comment> commentOptional = commentDao.findById(id);
+        return commentOptional.orElse(null);
+    }
+
+    @Override
+    public Page<Comment> findCommentPageByParentId(String parentId, int page, int size)
+    {
+        return commentDao.findByParentId(parentId, PageRequest.of(page, size));
+    }
+}
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+## MongoTemplate实现评论点赞
+
+
+
+```java
+package mao.mongodb_article.service;
+
+import mao.mongodb_article.entity.Comment;
+import org.springframework.data.domain.Page;
+
+import java.util.List;
+
+/**
+ * Project name(项目名称)：MongoDB_article
+ * Package(包名): mao.mongodb_article.service
+ * Interface(接口名): CommentService
+ * Author(作者）: mao
+ * Author QQ：1296193245
+ * GitHub：https://github.com/maomao124/
+ * Date(创建日期)： 2022/11/16
+ * Time(创建时间)： 19:50
+ * Version(版本): 1.0
+ * Description(描述)： 无
+ */
+
+public interface CommentService
+{
+    /**
+     * 保存评论
+     *
+     * @param comment 评论
+     */
+    void saveComment(Comment comment);
+
+    /**
+     * 更新评论
+     *
+     * @param comment 评论
+     */
+    void updateComment(Comment comment);
+
+    /**
+     * 通过id删除评论
+     *
+     * @param id id
+     */
+    void deleteCommentById(String id);
+
+    /**
+     * 查询所有评论
+     *
+     * @return {@link List}<{@link Comment}>
+     */
+    List<Comment> findCommentList();
+
+    /**
+     * 根据id查询评论
+     *
+     * @param id id
+     * @return {@link Comment}
+     */
+    Comment findCommentById(String id);
+
+
+    /**
+     * 通过父id找到评论，分页
+     *
+     * @param parentId 父id
+     * @param page     页面号码
+     * @param size     页大小
+     * @return {@link Page}<{@link Comment}>
+     */
+    Page<Comment> findCommentPageByParentId(String parentId, int page, int size);
+
+    /**
+     * 点赞数量+1
+     *
+     * @param id id
+     */
+    void updateCommentLikeNum(String id);
+
+}
+```
+
+
+
+
+
+```java
+package mao.mongodb_article.service.impl;
+
+import mao.mongodb_article.dao.CommentDao;
+import mao.mongodb_article.entity.Comment;
+import mao.mongodb_article.service.CommentService;
+
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.mongodb.core.MongoTemplate;
+import org.springframework.data.mongodb.core.query.Criteria;
+import org.springframework.data.mongodb.core.query.Query;
+import org.springframework.data.mongodb.core.query.Update;
+import org.springframework.stereotype.Service;
+
+import javax.annotation.Resource;
+import java.util.List;
+import java.util.Optional;
+
+/**
+ * Project name(项目名称)：MongoDB_article
+ * Package(包名): mao.mongodb_article.service.impl
+ * Class(类名): CommentServiceImpl
+ * Author(作者）: mao
+ * Author QQ：1296193245
+ * GitHub：https://github.com/maomao124/
+ * Date(创建日期)： 2022/11/16
+ * Time(创建时间)： 19:52
+ * Version(版本): 1.0
+ * Description(描述)： 无
+ */
+
+@Service
+public class CommentServiceImpl implements CommentService
+{
+
+    @Resource
+    private MongoTemplate mongoTemplate;
+
+    @Resource
+    private CommentDao commentDao;
+
+    @Override
+    public void saveComment(Comment comment)
+    {
+        commentDao.save(comment);
+    }
+
+    @Override
+    public void updateComment(Comment comment)
+    {
+        commentDao.save(comment);
+    }
+
+    @Override
+    public void deleteCommentById(String id)
+    {
+        commentDao.deleteById(id);
+    }
+
+    @Override
+    public List<Comment> findCommentList()
+    {
+        return commentDao.findAll();
+    }
+
+    @Override
+    public Comment findCommentById(String id)
+    {
+        Optional<Comment> commentOptional = commentDao.findById(id);
+        return commentOptional.orElse(null);
+    }
+
+    @Override
+    public Page<Comment> findCommentPageByParentId(String parentId, int page, int size)
+    {
+        return commentDao.findByParentId(parentId, PageRequest.of(page, size));
+    }
+
+    @Override
+    public void updateCommentLikeNum(String id)
+    {
+        //此方法不能先查询再更新，这样做就对MongoDB服务发起了两次请求，正常的一次网络io的时间大概在1-5毫秒左右，
+        //MongoDB服务对请求的处理时间可能远远小于此值
+        Update update = new Update();
+        update.inc("likeNum", 1);
+        mongoTemplate.updateFirst(Query.query(Criteria.where("_id").is(id)), update, Comment.class);
+    }
+}
+```
+
+
+
+
+
+
+
+
+
+测试类
+
+
+
+```java
+package mao.mongodb_article.service.impl;
+
+import mao.mongodb_article.service.CommentService;
+import org.junit.jupiter.api.Test;
+import org.springframework.boot.test.context.SpringBootTest;
+
+import javax.annotation.Resource;
+
+import static org.junit.jupiter.api.Assertions.*;
+
+/**
+ * Project name(项目名称)：MongoDB_article
+ * Package(包名): mao.mongodb_article.service.impl
+ * Class(测试类名): CommentServiceImplTest
+ * Author(作者）: mao
+ * Author QQ：1296193245
+ * GitHub：https://github.com/maomao124/
+ * Date(创建日期)： 2022/11/16
+ * Time(创建时间)： 21:13
+ * Version(版本): 1.0
+ * Description(描述)： 测试类
+ */
+
+@SpringBootTest
+class CommentServiceImplTest
+{
+
+    @Resource
+    private CommentService commentService;
+
+    @Test
+    void updateCommentLikeNum()
+    {
+        commentService.updateCommentLikeNum("1");
+    }
+}
+```
+
+
+
+
+
+
+
+```sh
+articledb> db.comment.find()
+[
+  {
+    _id: '1',
+    content: '专家说不能空腹吃饭，影响健康',
+    publishTime: ISODate("2022-11-16T12:11:05.758Z"),
+    userid: '10001',
+    nickname: 'u1',
+    createDateTime: ISODate("2022-11-16T12:11:05.761Z"),
+    likeNum: 255,
+    replyNum: 2,
+    state: '1',
+    articleId: '15',
+    _class: 'mao.mongodb_article.entity.Comment'
+  },
+  {
+    _id: '2',
+    content: '专家说不能空腹吃饭，影响健康',
+    publishTime: ISODate("2022-11-16T12:11:05.761Z"),
+    userid: '10002',
+    nickname: 'u2',
+    createDateTime: ISODate("2022-11-16T12:11:05.761Z"),
+    likeNum: 125,
+    replyNum: 2,
+    state: '1',
+    articleId: '15',
+    _class: 'mao.mongodb_article.entity.Comment'
+  },
+  {
+    _id: '3',
+    content: '专家说不能空腹吃饭，影响健康',
+    publishTime: ISODate("2022-11-16T12:11:05.761Z"),
+    userid: '10001',
+    nickname: 'u1',
+    createDateTime: ISODate("2022-11-16T12:11:05.761Z"),
+    likeNum: 13,
+    replyNum: 2,
+    state: '1',
+    articleId: '15',
+    _class: 'mao.mongodb_article.entity.Comment'
+  },
+  {
+    _id: '4',
+    content: '专家说不能空腹吃饭，影响健康',
+    publishTime: ISODate("2022-11-16T12:11:05.761Z"),
+    userid: '10003',
+    nickname: 'u3',
+    createDateTime: ISODate("2022-11-16T12:11:05.761Z"),
+    likeNum: 1056,
+    replyNum: 9,
+    state: '1',
+    articleId: '15',
+    _class: 'mao.mongodb_article.entity.Comment'
+  },
+  {
+    _id: '5',
+    content: '专家说不能空腹吃饭，影响健康',
+    publishTime: ISODate("2022-11-16T12:11:05.761Z"),
+    userid: '10004',
+    nickname: 'u4',
+    createDateTime: ISODate("2022-11-16T12:11:05.761Z"),
+    likeNum: 4211,
+    replyNum: 38,
+    state: '1',
+    articleId: '15',
+    _class: 'mao.mongodb_article.entity.Comment'
+  }
+]
+articledb>
+```
+
+
+
+
+
+![image-20221116211528068](img/MongoDB学习笔记/image-20221116211528068.png)
+
+
+
+
+
+
+
+```sh
+articledb> db.comment.find()
+[
+  {
+    _id: '1',
+    content: '专家说不能空腹吃饭，影响健康',
+    publishTime: ISODate("2022-11-16T12:11:05.758Z"),
+    userid: '10001',
+    nickname: 'u1',
+    createDateTime: ISODate("2022-11-16T12:11:05.761Z"),
+    likeNum: 256,
+    replyNum: 2,
+    state: '1',
+    articleId: '15',
+    _class: 'mao.mongodb_article.entity.Comment'
+  },
+  {
+    _id: '2',
+    content: '专家说不能空腹吃饭，影响健康',
+    publishTime: ISODate("2022-11-16T12:11:05.761Z"),
+    userid: '10002',
+    nickname: 'u2',
+    createDateTime: ISODate("2022-11-16T12:11:05.761Z"),
+    likeNum: 125,
+    replyNum: 2,
+    state: '1',
+    articleId: '15',
+    _class: 'mao.mongodb_article.entity.Comment'
+  },
+  {
+    _id: '3',
+    content: '专家说不能空腹吃饭，影响健康',
+    publishTime: ISODate("2022-11-16T12:11:05.761Z"),
+    userid: '10001',
+    nickname: 'u1',
+    createDateTime: ISODate("2022-11-16T12:11:05.761Z"),
+    likeNum: 13,
+    replyNum: 2,
+    state: '1',
+    articleId: '15',
+    _class: 'mao.mongodb_article.entity.Comment'
+  },
+  {
+    _id: '4',
+    content: '专家说不能空腹吃饭，影响健康',
+    publishTime: ISODate("2022-11-16T12:11:05.761Z"),
+    userid: '10003',
+    nickname: 'u3',
+    createDateTime: ISODate("2022-11-16T12:11:05.761Z"),
+    likeNum: 1056,
+    replyNum: 9,
+    state: '1',
+    articleId: '15',
+    _class: 'mao.mongodb_article.entity.Comment'
+  },
+  {
+    _id: '5',
+    content: '专家说不能空腹吃饭，影响健康',
+    publishTime: ISODate("2022-11-16T12:11:05.761Z"),
+    userid: '10004',
+    nickname: 'u4',
+    createDateTime: ISODate("2022-11-16T12:11:05.761Z"),
+    likeNum: 4211,
+    replyNum: 38,
+    state: '1',
+    articleId: '15',
+    _class: 'mao.mongodb_article.entity.Comment'
+  }
+]
+articledb>
+```
+
+
+
+
+
+
+
+```java
+package mao.mongodb_article.controller;
+
+import mao.mongodb_article.entity.Comment;
+import mao.mongodb_article.service.CommentService;
+import org.springframework.web.bind.annotation.*;
+
+import javax.annotation.Resource;
+import java.util.List;
+
+/**
+ * Project name(项目名称)：MongoDB_article
+ * Package(包名): mao.mongodb_article.controller
+ * Class(类名): CommentController
+ * Author(作者）: mao
+ * Author QQ：1296193245
+ * GitHub：https://github.com/maomao124/
+ * Date(创建日期)： 2022/11/16
+ * Time(创建时间)： 19:58
+ * Version(版本): 1.0
+ * Description(描述)： 无
+ */
+
+@RestController
+@RequestMapping("/comment")
+public class CommentController
+{
+
+    @Resource
+    private CommentService commentService;
+
+    /**
+     * 查询所有
+     *
+     * @return {@link List}<{@link Comment}>
+     */
+    @GetMapping
+    public List<Comment> findAll()
+    {
+        return commentService.findCommentList();
+    }
+
+    /**
+     * 通过id查询
+     *
+     * @param id id
+     * @return {@link Comment}
+     */
+    @GetMapping("/{id}")
+    public Comment findById(@PathVariable String id)
+    {
+        return commentService.findCommentById(id);
+    }
+
+    /**
+     * 保存
+     *
+     * @param comment 评论
+     */
+    @PostMapping
+    public void save(@RequestBody Comment comment)
+    {
+        commentService.saveComment(comment);
+    }
+
+    /**
+     * 更新
+     *
+     * @param comment 评论
+     */
+    @PutMapping
+    public void update(@RequestBody Comment comment)
+    {
+        commentService.updateComment(comment);
+    }
+
+    /**
+     * 通过id删除
+     *
+     * @param id id
+     */
+    @DeleteMapping("/{id}")
+    public void deleteById(@PathVariable String id)
+    {
+        commentService.deleteCommentById(id);
+    }
+
+
+    @PutMapping("/likeNum/{id}")
+    public void updateCommentLikeNum(@PathVariable String id)
+    {
+        commentService.updateCommentLikeNum(id);
+    }
+}
+```
+
+
+
+
+
+![image-20221116211942746](img/MongoDB学习笔记/image-20221116211942746.png)
+
+
+
+
+
+
+
+![image-20221116211958171](img/MongoDB学习笔记/image-20221116211958171.png)
+
+
+
+
+
+
 
 
 
@@ -5772,6 +6509,18 @@ System.out.println(deleteResult.getDeletedCount());
 有关将 MongoDB 与 Pojos 配合使用的其他教程，请参阅[Pojos 快速入门](http://mongodb.github.io/mongo-java-driver/3.8/driver/getting-started/quick-start-pojo/)。
 
 有关其他教程（例如使用聚合框架、指定写入关注点等），请参阅[Java 驱动程序教程](http://mongodb.github.io/mongo-java-driver/3.8/driver/tutorials/)
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
