@@ -6526,3 +6526,722 @@ System.out.println(deleteResult.getDeletedCount());
 
 
 
+
+
+
+
+# 副本集
+
+## 简介
+
+MongoDB中的副本集（Replica Set）是一组维护相同数据集的mongod服务。 副本集可提供冗余和高可用性，是所有生产部署的基础。
+
+也可以说，副本集类似于有自动故障恢复功能的主从集群。通俗的讲就是用多台机器进行同一数据的异步同步，从而使多台机器拥有同一数据的多个副本，并且当主库当掉时在不需要用户干预的情况下自动切换其他备份服务器做主库。而且还可以利用副本服务器做只读服务器，实现读写分离，提高负载。
+
+
+
+**冗余和数据可用性**
+
+复制提供冗余并提高数据可用性。 通过在不同数据库服务器上提供多个数据副本，复制可提供一定级别的容错功能，以防止丢失单个数据库服务器。
+
+在某些情况下，复制可以提供增加的读取性能，因为客户端可以将读取操作发送到不同的服务上， 在不同数据中心维护数据副本可以增加分布式应用程序的数据位置和可用性。 您还可以为专用目的维护其他副本，例如灾难恢复，报告或备份。
+
+
+
+**MongoDB中的复制**
+
+副本集是一组维护相同数据集的mongod实例。 副本集包含多个数据承载节点和可选的一个仲裁节点。 在承载数据的节点中，一个且仅一个成员被视为主节点，而其他节点被视为次要（从）节点。
+
+主节点接收所有写操作。 副本集只能有一个主要能够确认具有{w：“most”}写入关注的写入; 虽然在某些情况下，另一个mongod实例可能暂时认为自己也是主要的。主要记录其操作日志中的数据集的所有更改，即oplog
+
+
+
+**主从复制和副本集区别**
+
+主从集群和副本集最大的区别就是副本集没有固定的“主节点”；整个集群会选出一个“主节点”，当其挂掉后，又在剩下的从节点中选中其他节点为“主节点”，副本集总有一个活跃点(主、primary)和一个或多个备份节点(从、secondary)。
+
+
+
+
+
+
+
+
+
+## 副本集的三个角色
+
+副本集有两种类型三种角色
+
+
+
+两种类型：
+
+* 主节点（Primary）类型：数据操作的主要连接点，可读写
+* 次要（辅助、从）节点（Secondaries）类型：数据冗余备份节点，可以读或选举
+
+
+
+三种角色：
+
+* 主要成员（Primary）：主要接收所有写操作。就是主节点。
+* 副本成员（Replicate）：从主节点通过复制操作以维护相同的数据集，即备份数据，不可写操作，但可以读操作（但需要配置）。是默认的一种从节点类型
+* 仲裁者（Arbiter）：不保留任何数据的副本，只具有投票选举作用。当然也可以将仲裁服务器维护为副 本集的一部分，即副本成员同时也可以是仲裁者。也是一种从节点类型
+
+
+
+
+
+仲裁者不维护数据集。 仲裁者的目的是通过 响应其他副本集成员的心跳和选举请求来维护副本集中的仲裁。 因为它们不存储数据集，所以仲裁器可以是提供副本集仲裁功能的好方法，其资源成本比具有数据集的全功能副本集成员更便宜。
+
+如果您的副本集具有偶数个成员，请添加仲裁者以获得主要选举中的“大多数”投票。 仲裁者不需要专用硬件。
+
+仲裁者将永远是仲裁者，而主要人员可能会退出并成为次要人员，而次要人员可能成为选举期间的主要人员。
+
+如果你的副本+主节点的个数是偶数，建议加一个仲裁者，形成奇数，容易满足大多数的投票。
+
+如果你的副本+主节点的个数是奇数，可以不加仲裁者。
+
+
+
+
+
+
+
+
+
+## 副本集的创建
+
+一主一副本一仲裁
+
+
+
+
+
+第一步：创建主节点的文件夹
+
+
+
+在软件目录下创建master文件夹
+
+master文件夹里有log和data两个文件夹
+
+data文件夹里有db文件夹
+
+
+
+```sh
+PS H:\opensoft\MongoDB> ls
+
+
+    目录: H:\opensoft\MongoDB
+
+
+Mode                 LastWriteTime         Length Name
+----                 -------------         ------ ----
+d-----        2022/11/14     20:18                bin
+d-----        2022/11/14     20:37                conf
+d-----        2022/11/15     12:49                data
+d-----        2022/11/14     20:16                log
+d-----        2022/11/15     21:53                MongoDBCompass
+d-----         2022/9/20      4:08                mongosh
+-a----         2022/9/29      1:03          30608 LICENSE-Community.txt
+-a----         2022/9/29      1:03          16726 MPL-2
+-a----         2022/9/29      1:03           1977 README
+-a----         2022/9/29      1:03          77913 THIRD-PARTY-NOTICES
+-a----        2022/11/14     21:22             50 运行.bat
+
+
+PS H:\opensoft\MongoDB> mkdir master
+
+
+    目录: H:\opensoft\MongoDB
+
+
+Mode                 LastWriteTime         Length Name
+----                 -------------         ------ ----
+d-----        2022/11/17     13:46                master
+
+
+PS H:\opensoft\MongoDB> ls
+
+
+    目录: H:\opensoft\MongoDB
+
+
+Mode                 LastWriteTime         Length Name
+----                 -------------         ------ ----
+d-----        2022/11/14     20:18                bin
+d-----        2022/11/14     20:37                conf
+d-----        2022/11/15     12:49                data
+d-----        2022/11/14     20:16                log
+d-----        2022/11/17     13:46                master
+d-----        2022/11/15     21:53                MongoDBCompass
+d-----         2022/9/20      4:08                mongosh
+-a----         2022/9/29      1:03          30608 LICENSE-Community.txt
+-a----         2022/9/29      1:03          16726 MPL-2
+-a----         2022/9/29      1:03           1977 README
+-a----         2022/9/29      1:03          77913 THIRD-PARTY-NOTICES
+-a----        2022/11/14     21:22             50 运行.bat
+
+
+PS H:\opensoft\MongoDB> cd .\master\
+PS H:\opensoft\MongoDB\master> ls
+PS H:\opensoft\MongoDB\master> mkdir log
+
+
+    目录: H:\opensoft\MongoDB\master
+
+
+Mode                 LastWriteTime         Length Name
+----                 -------------         ------ ----
+d-----        2022/11/17     13:47                log
+
+
+PS H:\opensoft\MongoDB\master> mkdir data
+
+
+    目录: H:\opensoft\MongoDB\master
+
+
+Mode                 LastWriteTime         Length Name
+----                 -------------         ------ ----
+d-----        2022/11/17     13:47                data
+
+
+PS H:\opensoft\MongoDB\master> ls
+
+
+    目录: H:\opensoft\MongoDB\master
+
+
+Mode                 LastWriteTime         Length Name
+----                 -------------         ------ ----
+d-----        2022/11/17     13:47                data
+d-----        2022/11/17     13:47                log
+
+
+PS H:\opensoft\MongoDB\master> cd .\data\
+PS H:\opensoft\MongoDB\master\data> ls
+PS H:\opensoft\MongoDB\master\data> mkdir db
+
+
+    目录: H:\opensoft\MongoDB\master\data
+
+
+Mode                 LastWriteTime         Length Name
+----                 -------------         ------ ----
+d-----        2022/11/17     13:47                db
+
+
+PS H:\opensoft\MongoDB\master\data> ls
+
+
+    目录: H:\opensoft\MongoDB\master\data
+
+
+Mode                 LastWriteTime         Length Name
+----                 -------------         ------ ----
+d-----        2022/11/17     13:47                db
+
+
+PS H:\opensoft\MongoDB\master\data>
+```
+
+
+
+
+
+第二步：在conf目录下创建配置文件master.conf
+
+
+
+填入以下内容：
+
+```sh
+systemLog:
+  #MongoDB发送所有日志输出的目标指定为文件
+  destination: file
+  #mongod或mongos应向其发送所有诊断日志记录信息的日志文件的路径
+  path: "./../master/log/mongod.log"
+  #当mongos或mongod实例重新启动时，mongos或mongod会将新条目附加到现有日志文件的末尾。
+  logAppend: true
+storage:
+  #mongod实例存储其数据的目录。storage.dbPath设置仅适用于mongod
+  dbPath: "./../master/data/db"
+  journal:
+  #启用或禁用持久性日志以确保数据文件保持有效和可恢复。
+    enabled: true
+processManagement:
+  #启用在后台运行mongos或mongod进程的守护进程模式
+  #fork: true
+  #指定用于保存mongos或mongod进程的进程ID的文件位置，其中mongos或mongod将写入其PID
+  pidFilePath: "./../master/log/mongod.pid"
+net:
+  #服务实例绑定所有IP，有副作用，副本集初始化的时候，节点名字会自动设置为本地域名，而不是ip
+  #bindIpAll: true
+  #服务实例绑定的IP
+  bindIp: 127.0.0.1
+  #绑定的端口
+  port: 27017
+replication:
+  #副本集的名称
+  replSetName: mongodb
+```
+
+
+
+```sh
+PS H:\opensoft\MongoDB> cd .\conf\
+PS H:\opensoft\MongoDB\conf> ls
+
+
+    目录: H:\opensoft\MongoDB\conf
+
+
+Mode                 LastWriteTime         Length Name
+----                 -------------         ------ ----
+-a----        2022/11/17     13:56           1008 master.conf
+-a----        2022/11/14     20:50            318 mongod.conf
+
+
+PS H:\opensoft\MongoDB\conf>
+```
+
+
+
+
+
+
+
+第三步：创建从节点的文件夹
+
+
+
+在软件目录下创建slave文件夹
+
+slave文件夹里有log和data两个文件夹
+
+data文件夹里有db文件夹
+
+
+
+```sh
+PS H:\opensoft\MongoDB> ls
+
+
+    目录: H:\opensoft\MongoDB
+
+
+Mode                 LastWriteTime         Length Name
+----                 -------------         ------ ----
+d-----        2022/11/14     20:18                bin
+d-----        2022/11/17     13:56                conf
+d-----        2022/11/15     12:49                data
+d-----        2022/11/14     20:16                log
+d-----        2022/11/17     13:47                master
+d-----        2022/11/15     21:53                MongoDBCompass
+d-----         2022/9/20      4:08                mongosh
+-a----         2022/9/29      1:03          30608 LICENSE-Community.txt
+-a----         2022/9/29      1:03          16726 MPL-2
+-a----         2022/9/29      1:03           1977 README
+-a----         2022/9/29      1:03          77913 THIRD-PARTY-NOTICES
+-a----        2022/11/14     21:22             50 运行.bat
+
+
+PS H:\opensoft\MongoDB> mkdir slave
+
+
+    目录: H:\opensoft\MongoDB
+
+
+Mode                 LastWriteTime         Length Name
+----                 -------------         ------ ----
+d-----        2022/11/17     13:58                slave
+
+
+PS H:\opensoft\MongoDB> ls
+
+
+    目录: H:\opensoft\MongoDB
+
+
+Mode                 LastWriteTime         Length Name
+----                 -------------         ------ ----
+d-----        2022/11/14     20:18                bin
+d-----        2022/11/17     13:56                conf
+d-----        2022/11/15     12:49                data
+d-----        2022/11/14     20:16                log
+d-----        2022/11/17     13:47                master
+d-----        2022/11/15     21:53                MongoDBCompass
+d-----         2022/9/20      4:08                mongosh
+d-----        2022/11/17     13:58                slave
+-a----         2022/9/29      1:03          30608 LICENSE-Community.txt
+-a----         2022/9/29      1:03          16726 MPL-2
+-a----         2022/9/29      1:03           1977 README
+-a----         2022/9/29      1:03          77913 THIRD-PARTY-NOTICES
+-a----        2022/11/14     21:22             50 运行.bat
+
+
+PS H:\opensoft\MongoDB> cd .\slave\
+PS H:\opensoft\MongoDB\slave> ls
+PS H:\opensoft\MongoDB\slave> mkdir log
+
+
+    目录: H:\opensoft\MongoDB\slave
+
+
+Mode                 LastWriteTime         Length Name
+----                 -------------         ------ ----
+d-----        2022/11/17     13:58                log
+
+
+PS H:\opensoft\MongoDB\slave> mkdir data
+
+
+    目录: H:\opensoft\MongoDB\slave
+
+
+Mode                 LastWriteTime         Length Name
+----                 -------------         ------ ----
+d-----        2022/11/17     13:58                data
+
+
+PS H:\opensoft\MongoDB\slave> ls
+
+
+    目录: H:\opensoft\MongoDB\slave
+
+
+Mode                 LastWriteTime         Length Name
+----                 -------------         ------ ----
+d-----        2022/11/17     13:58                data
+d-----        2022/11/17     13:58                log
+
+
+PS H:\opensoft\MongoDB\slave> cd .\data\
+PS H:\opensoft\MongoDB\slave\data> mkdir db
+
+
+    目录: H:\opensoft\MongoDB\slave\data
+
+
+Mode                 LastWriteTime         Length Name
+----                 -------------         ------ ----
+d-----        2022/11/17     13:59                db
+
+
+PS H:\opensoft\MongoDB\slave\data> ls
+
+
+    目录: H:\opensoft\MongoDB\slave\data
+
+
+Mode                 LastWriteTime         Length Name
+----                 -------------         ------ ----
+d-----        2022/11/17     13:59                db
+
+
+PS H:\opensoft\MongoDB\slave\data>
+```
+
+
+
+
+
+
+
+第四步：在conf目录下创建配置文件slave.conf
+
+
+
+```sh
+systemLog:
+  #MongoDB发送所有日志输出的目标指定为文件
+  destination: file
+  #mongod或mongos应向其发送所有诊断日志记录信息的日志文件的路径
+  path: "./../slave/log/mongod.log"
+  #当mongos或mongod实例重新启动时，mongos或mongod会将新条目附加到现有日志文件的末尾。
+  logAppend: true
+storage:
+  #mongod实例存储其数据的目录。storage.dbPath设置仅适用于mongod
+  dbPath: "./../slave/data/db"
+  journal:
+  #启用或禁用持久性日志以确保数据文件保持有效和可恢复。
+    enabled: true
+processManagement:
+  #启用在后台运行mongos或mongod进程的守护进程模式
+  #fork: true
+  #指定用于保存mongos或mongod进程的进程ID的文件位置，其中mongos或mongod将写入其PID
+  pidFilePath: "./../slave/log/mongod.pid"
+net:
+  #服务实例绑定所有IP，有副作用，副本集初始化的时候，节点名字会自动设置为本地域名，而不是ip
+  #bindIpAll: true
+  #服务实例绑定的IP
+  bindIp: 127.0.0.1
+  #绑定的端口
+  port: 27018
+replication:
+  #副本集的名称
+  replSetName: mongodb
+```
+
+
+
+
+
+
+
+第五步：创建仲裁节点的文件夹
+
+
+
+在软件目录下创建arbiter文件夹
+
+arbiter文件夹里有log和data两个文件夹
+
+data文件夹里有db文件夹
+
+
+
+```sh
+PS H:\opensoft\MongoDB> ls
+
+
+    目录: H:\opensoft\MongoDB
+
+
+Mode                 LastWriteTime         Length Name
+----                 -------------         ------ ----
+d-----        2022/11/14     20:18                bin
+d-----        2022/11/17     14:01                conf
+d-----        2022/11/15     12:49                data
+d-----        2022/11/14     20:16                log
+d-----        2022/11/17     13:47                master
+d-----        2022/11/15     21:53                MongoDBCompass
+d-----         2022/9/20      4:08                mongosh
+d-----        2022/11/17     13:58                slave
+-a----         2022/9/29      1:03          30608 LICENSE-Community.txt
+-a----         2022/9/29      1:03          16726 MPL-2
+-a----         2022/9/29      1:03           1977 README
+-a----         2022/9/29      1:03          77913 THIRD-PARTY-NOTICES
+-a----        2022/11/14     21:22             50 运行.bat
+
+
+PS H:\opensoft\MongoDB> mkdir arbiter
+
+
+    目录: H:\opensoft\MongoDB
+
+
+Mode                 LastWriteTime         Length Name
+----                 -------------         ------ ----
+d-----        2022/11/17     14:03                arbiter
+
+
+PS H:\opensoft\MongoDB> ls
+
+
+    目录: H:\opensoft\MongoDB
+
+
+Mode                 LastWriteTime         Length Name
+----                 -------------         ------ ----
+d-----        2022/11/17     14:03                arbiter
+d-----        2022/11/14     20:18                bin
+d-----        2022/11/17     14:01                conf
+d-----        2022/11/15     12:49                data
+d-----        2022/11/14     20:16                log
+d-----        2022/11/17     13:47                master
+d-----        2022/11/15     21:53                MongoDBCompass
+d-----         2022/9/20      4:08                mongosh
+d-----        2022/11/17     13:58                slave
+-a----         2022/9/29      1:03          30608 LICENSE-Community.txt
+-a----         2022/9/29      1:03          16726 MPL-2
+-a----         2022/9/29      1:03           1977 README
+-a----         2022/9/29      1:03          77913 THIRD-PARTY-NOTICES
+-a----        2022/11/14     21:22             50 运行.bat
+
+
+PS H:\opensoft\MongoDB> cd .\arbiter\
+PS H:\opensoft\MongoDB\arbiter> ls
+PS H:\opensoft\MongoDB\arbiter> mkdir log
+
+
+    目录: H:\opensoft\MongoDB\arbiter
+
+
+Mode                 LastWriteTime         Length Name
+----                 -------------         ------ ----
+d-----        2022/11/17     14:04                log
+
+
+PS H:\opensoft\MongoDB\arbiter> mkdir data
+
+
+    目录: H:\opensoft\MongoDB\arbiter
+
+
+Mode                 LastWriteTime         Length Name
+----                 -------------         ------ ----
+d-----        2022/11/17     14:04                data
+
+
+PS H:\opensoft\MongoDB\arbiter> ls
+
+
+    目录: H:\opensoft\MongoDB\arbiter
+
+
+Mode                 LastWriteTime         Length Name
+----                 -------------         ------ ----
+d-----        2022/11/17     14:04                data
+d-----        2022/11/17     14:04                log
+
+
+PS H:\opensoft\MongoDB\arbiter> cd .\data\
+PS H:\opensoft\MongoDB\arbiter\data> mkdir db
+
+
+    目录: H:\opensoft\MongoDB\arbiter\data
+
+
+Mode                 LastWriteTime         Length Name
+----                 -------------         ------ ----
+d-----        2022/11/17     14:04                db
+
+
+PS H:\opensoft\MongoDB\arbiter\data> ls
+
+
+    目录: H:\opensoft\MongoDB\arbiter\data
+
+
+Mode                 LastWriteTime         Length Name
+----                 -------------         ------ ----
+d-----        2022/11/17     14:04                db
+
+
+PS H:\opensoft\MongoDB\arbiter\data>
+```
+
+
+
+
+
+第六步：在conf目录下创建配置文件arbiter.conf
+
+
+
+```sh
+systemLog:
+  #MongoDB发送所有日志输出的目标指定为文件
+  destination: file
+  #mongod或mongos应向其发送所有诊断日志记录信息的日志文件的路径
+  path: "./../arbiter/log/mongod.log"
+  #当mongos或mongod实例重新启动时，mongos或mongod会将新条目附加到现有日志文件的末尾。
+  logAppend: true
+storage:
+  #mongod实例存储其数据的目录。storage.dbPath设置仅适用于mongod
+  dbPath: "./../arbiter/data/db"
+  journal:
+  #启用或禁用持久性日志以确保数据文件保持有效和可恢复。
+    enabled: true
+processManagement:
+  #启用在后台运行mongos或mongod进程的守护进程模式
+  #fork: true
+  #指定用于保存mongos或mongod进程的进程ID的文件位置，其中mongos或mongod将写入其PID
+  pidFilePath: "./../arbiter/log/mongod.pid"
+net:
+  #服务实例绑定所有IP，有副作用，副本集初始化的时候，节点名字会自动设置为本地域名，而不是ip
+  #bindIpAll: true
+  #服务实例绑定的IP
+  bindIp: 127.0.0.1
+  #绑定的端口
+  port: 27019
+replication:
+  #副本集的名称
+  replSetName: mongodb
+```
+
+
+
+
+
+
+
+第七步：编写启动脚本
+
+
+
+```sh
+cd bin
+start "mongod-27017" mongod --config ../conf/master.conf
+start "mongod-27018" mongod --config ../conf/slave.conf
+start "mongod-27019" mongod --config ../conf/arbiter.conf
+```
+
+或者
+
+```sh
+cd bin
+start /b "mongod-27017" mongod --config ../conf/master.conf
+start /b "mongod-27018" mongod --config ../conf/slave.conf
+start /b "mongod-27019" mongod --config ../conf/arbiter.conf
+```
+
+
+
+```sh
+PS H:\opensoft\MongoDB> ls
+
+
+    目录: H:\opensoft\MongoDB
+
+
+Mode                 LastWriteTime         Length Name
+----                 -------------         ------ ----
+d-----        2022/11/17     14:04                arbiter
+d-----        2022/11/14     20:18                bin
+d-----        2022/11/17     14:09                conf
+d-----        2022/11/15     12:49                data
+d-----        2022/11/14     20:16                log
+d-----        2022/11/17     13:47                master
+d-----        2022/11/15     21:53                MongoDBCompass
+d-----         2022/9/20      4:08                mongosh
+d-----        2022/11/17     13:58                slave
+-a----         2022/9/29      1:03          30608 LICENSE-Community.txt
+-a----         2022/9/29      1:03          16726 MPL-2
+-a----         2022/9/29      1:03           1977 README
+-a----         2022/9/29      1:03          77913 THIRD-PARTY-NOTICES
+-a----        2022/11/14     21:22             50 运行.bat
+-a----        2022/11/17     14:32            193 集群启动-单窗口.bat
+-a----        2022/11/17     14:26            184 集群启动.bat
+
+
+PS H:\opensoft\MongoDB> cat .\集群启动.bat
+cd bin
+start "mongod-27017" mongod --config ../conf/master.conf
+start "mongod-27018" mongod --config ../conf/slave.conf
+start "mongod-27019" mongod --config ../conf/arbiter.conf
+
+PS H:\opensoft\MongoDB> cat .\集群启动-单窗口.bat
+cd bin
+start /b "mongod-27017" mongod --config ../conf/master.conf
+start /b "mongod-27018" mongod --config ../conf/slave.conf
+start /b "mongod-27019" mongod --config ../conf/arbiter.conf
+
+PS H:\opensoft\MongoDB>
+```
+
+
+
+
+
+
+
+第八步：使用mongosh连接27017节点
+
+
+
+
+
