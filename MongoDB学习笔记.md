@@ -8429,9 +8429,236 @@ MongoServerError: New config is rejected :: caused by :: replSetReconfig should 
 
 关闭27018副本节点：
 
+
+
 ```sh
-rs.stepDown(600)
+mongodb [direct: secondary] test> rs.status()
+MongoServerSelectionError: connect ECONNREFUSED 127.0.0.1:27018
+test> exit
 ```
 
 
+
+主节点和仲裁节点对27018的心跳失败。因为主节点还在，因此，没有触发投票选举
+
+
+
+如果此时，在主节点写入数据：
+
+```sh
+db.comment.insert({"_id":"1","articleid":"100001","content":"我们不应该把清晨浪费在手机上，健康很重要，一杯温水幸福你我他。","userid":"1002","nickname":"相忘于江湖","createdatetime":new Date("2019-08-05T22:08:15.522Z"),"likenum":NumberInt(1000),"state":"1"})
+```
+
+
+
+再启动从节点，会发现，主节点写入的数据，会自动同步给从节点
+
+
+
+
+
+
+
+### 主节点故障测试
+
+关闭27017节点
+
+* 从节点和仲裁节点对27017的心跳失败，当失败超过10秒，此时因为没有主节点了，会自动发起投票
+
+* 而副本节点只有27018，因此，候选人只有一个就是27018，开始投票
+* 27019向27018投了一票，27018本身自带一票，因此共两票，超过了“大多数”
+* 27019是仲裁节点，没有选举权，27018不向其投票，其票数是0
+* 最终结果，27018成为主节点。具备读写功能
+
+
+
+
+
+```sh
+articledb> exit
+PS C:\Users\mao\Desktop> mongosh --port 27018
+Current Mongosh Log ID: 63764121d9948ddcbb49ae64
+Connecting to:          mongodb://127.0.0.1:27018/?directConnection=true&serverSelectionTimeoutMS=2000&appName=mongosh+1.6.0
+Using MongoDB:          6.0.2
+Using Mongosh:          1.6.0
+
+For mongosh info see: https://docs.mongodb.com/mongodb-shell/
+
+------
+   The server generated these startup warnings when booting
+   2022-11-17T22:08:53.721+08:00: Access control is not enabled for the database. Read and write access to data and configuration is unrestricted
+------
+
+------
+   Enable MongoDB's free cloud-based monitoring service, which will then receive and display
+   metrics about your deployment (disk utilization, CPU, operation statistics, etc).
+
+   The monitoring data will be available on a MongoDB website with a unique URL accessible to you
+   and anyone you share the URL with. MongoDB may use this information to make product
+   improvements and to suggest MongoDB products and deployment options to you.
+
+   To enable free monitoring, run the following command: db.enableFreeMonitoring()
+   To permanently disable this reminder, run the following command: db.disableFreeMonitoring()
+------
+
+mongodb [direct: primary] test>
+```
+
+
+
+
+
+在27018写入数据：
+
+```sh
+db.comment.insert({"_id":"1","articleid":"100001","content":"我们不应该把清晨浪费在手机上，健康很重要，一杯温水幸福你我他。","userid":"1002","nickname":"相忘于江湖","createdatetime":new Date("2019-08-05T22:08:15.522Z"),"likenum":NumberInt(1000),"state":"1"})
+```
+
+
+
+
+
+再启动27017节点，发现27017变成了从节点，27018仍保持主节点
+
+登录27017节点，发现是从节点了，数据自动从27018同步
+
+从而实现了高可用
+
+
+
+
+
+
+
+
+
+### 仲裁节点和主节点故障
+
+先关掉仲裁节点27019
+
+关掉现在的主节点27018
+
+登录27017后，发现，27017仍然是从节点，副本集中没有主节点了，导致此时，副本集是只读状态， 无法写入
+
+为啥不选举了？因为27017的票数，没有获得大多数，即没有大于等于2，它只有默认的一票（优先级是1）
+
+如果要触发选举，随便加入一个成员即可。
+
+
+
+* 如果只加入27019仲裁节点成员，则主节点一定是27017，因为没得选了，仲裁节点不参与选举， 但参与投票
+* 如果只加入27018节点，会发起选举。因为27017和27018都是两票，则按照谁数据新，谁当主节 点
+
+
+
+
+
+
+
+### 仲裁节点和从节点故障
+
+先关掉仲裁节点27019
+
+关掉现在的副本节点27018
+
+10秒后，27017主节点自动降级为副本节点。（服务降级）
+
+副本集不可写数据了，已经故障了
+
+
+
+
+
+
+
+
+
+
+
+
+
+## Compass连接副本集
+
+
+
+重启所有服务，发现27017仍然是master节点
+
+```sh
+PS C:\Users\mao\Desktop> mongosh --port 27017
+Current Mongosh Log ID: 6376430126a965fbb186700e
+Connecting to:          mongodb://127.0.0.1:27017/?directConnection=true&serverSelectionTimeoutMS=2000&appName=mongosh+1.6.0
+Using MongoDB:          6.0.2
+Using Mongosh:          1.6.0
+
+For mongosh info see: https://docs.mongodb.com/mongodb-shell/
+
+------
+   The server generated these startup warnings when booting
+   2022-11-17T22:19:09.667+08:00: Access control is not enabled for the database. Read and write access to data and configuration is unrestricted
+------
+
+------
+   Enable MongoDB's free cloud-based monitoring service, which will then receive and display
+   metrics about your deployment (disk utilization, CPU, operation statistics, etc).
+
+   The monitoring data will be available on a MongoDB website with a unique URL accessible to you
+   and anyone you share the URL with. MongoDB may use this information to make product
+   improvements and to suggest MongoDB products and deployment options to you.
+
+   To enable free monitoring, run the following command: db.enableFreeMonitoring()
+   To permanently disable this reminder, run the following command: db.disableFreeMonitoring()
+------
+
+mongodb [direct: primary] test>
+```
+
+
+
+
+
+
+
+![image-20221117222034828](img/MongoDB学习笔记/image-20221117222034828.png)
+
+
+
+
+
+![image-20221117222229669](img/MongoDB学习笔记/image-20221117222229669.png)
+
+
+
+```sh
+mongodb://localhost:27017/?readPreference=primary&replicaSet=mongodb
+```
+
+
+
+
+
+![image-20221117222425137](img/MongoDB学习笔记/image-20221117222425137.png)
+
+
+
+连接成功
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+## SpringDataMongoDB连接副本集
 
