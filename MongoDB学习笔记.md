@@ -7918,3 +7918,520 @@ mongodb [direct: primary] test>
 
 
 
+登录主节点27017，写入和读取数据：
+
+
+
+```sh
+mongosh --port 27017
+```
+
+
+
+```sh
+PS C:\Users\mao\Desktop> mongosh --port 27017
+Current Mongosh Log ID: 637635b5cd8072d8c4c6f86c
+Connecting to:          mongodb://127.0.0.1:27017/?directConnection=true&serverSelectionTimeoutMS=2000&appName=mongosh+1.6.0
+Using MongoDB:          6.0.2
+Using Mongosh:          1.6.0
+
+For mongosh info see: https://docs.mongodb.com/mongodb-shell/
+
+------
+   The server generated these startup warnings when booting
+   2022-11-17T21:22:17.888+08:00: Access control is not enabled for the database. Read and write access to data and configuration is unrestricted
+------
+
+------
+   Enable MongoDB's free cloud-based monitoring service, which will then receive and display
+   metrics about your deployment (disk utilization, CPU, operation statistics, etc).
+
+   The monitoring data will be available on a MongoDB website with a unique URL accessible to you
+   and anyone you share the URL with. MongoDB may use this information to make product
+   improvements and to suggest MongoDB products and deployment options to you.
+
+   To enable free monitoring, run the following command: db.enableFreeMonitoring()
+   To permanently disable this reminder, run the following command: db.disableFreeMonitoring()
+------
+
+mongodb [direct: primary] test>
+```
+
+```sh
+mongodb [direct: primary] articledb> db.comment.insert({"articleid":"100000","content":"今天天气真好，阳光明媚","userid":"1001","nickname":"Rose","createdatetime":new Date()})
+DeprecationWarning: Collection.insert() is deprecated. Use insertOne, insertMany, or bulkWrite.
+{
+  acknowledged: true,
+  insertedIds: { '0': ObjectId("637636190c026e9fc6373ae0") }
+}
+mongodb [direct: primary] articledb>
+```
+
+```sh
+mongodb [direct: primary] articledb> db.comment.find()
+[
+  {
+    _id: ObjectId("637636190c026e9fc6373ae0"),
+    articleid: '100000',
+    content: '今天天气真好，阳光明媚',
+    userid: '1001',
+    nickname: 'Rose',
+    createdatetime: ISODate("2022-11-17T13:24:41.683Z")
+  }
+]
+mongodb [direct: primary] articledb>
+```
+
+
+
+
+
+
+
+登录从节点27018
+
+
+
+```sh
+mongodb [direct: primary] articledb> exit
+PS C:\Users\mao\Desktop> mongosh --port 27018
+Current Mongosh Log ID: 6376366cee41f7b4d3fb32b7
+Connecting to:          mongodb://127.0.0.1:27018/?directConnection=true&serverSelectionTimeoutMS=2000&appName=mongosh+1.6.0
+Using MongoDB:          6.0.2
+Using Mongosh:          1.6.0
+
+For mongosh info see: https://docs.mongodb.com/mongodb-shell/
+
+------
+   The server generated these startup warnings when booting
+   2022-11-17T21:22:17.664+08:00: Access control is not enabled for the database. Read and write access to data and configuration is unrestricted
+------
+
+------
+   Enable MongoDB's free cloud-based monitoring service, which will then receive and display
+   metrics about your deployment (disk utilization, CPU, operation statistics, etc).
+
+   The monitoring data will be available on a MongoDB website with a unique URL accessible to you
+   and anyone you share the URL with. MongoDB may use this information to make product
+   improvements and to suggest MongoDB products and deployment options to you.
+
+   To enable free monitoring, run the following command: db.enableFreeMonitoring()
+   To permanently disable this reminder, run the following command: db.disableFreeMonitoring()
+------
+
+mongodb [direct: secondary] test>
+```
+
+```sh
+mongodb [direct: secondary] test> show databases
+admin       80.00 KiB
+articledb   40.00 KiB
+config     328.00 KiB
+db1         40.00 KiB
+local      476.00 KiB
+mongodb [direct: secondary] test> use articledb
+switched to db articledb
+mongodb [direct: secondary] articledb> show tables
+comment
+mongodb [direct: secondary] articledb> db.comment.find()
+MongoServerError: not primary and secondaryOk=false - consider using db.getMongo().setReadPref() or readPreference in the connection string
+mongodb [direct: secondary] articledb>
+```
+
+
+
+发现，不能读取集合的数据。当前从节点只是一个备份，不是slave节点，无法读取数据，写当然更不行
+
+因为默认情况下，从节点是没有读写权限的，可以增加读的权限，但需要进行设置
+
+
+
+设置为奴隶节点，允许在从成员上运行读的操作：
+
+```sh
+rs.slaveOk()
+```
+
+或者
+
+```sh
+rs.slaveOk(true)
+```
+
+
+
+新版本：
+
+```sh
+rs.secondaryOk(true);
+```
+
+或者
+
+```sh
+rs.setReadPref("primaryPreferred")
+```
+
+
+
+
+
+```sh
+mongodb [direct: secondary] articledb> rs.secondaryOk(true);
+DeprecationWarning: .setSecondaryOk() is deprecated. Use .setReadPref("primaryPreferred") instead
+Setting read preference from "primary" to "primaryPreferred"
+
+mongodb [direct: secondary] articledb> db.comment.find()
+[
+  {
+    _id: ObjectId("637636190c026e9fc6373ae0"),
+    articleid: '100000',
+    content: '今天天气真好，阳光明媚',
+    userid: '1001',
+    nickname: 'Rose',
+    createdatetime: ISODate("2022-11-17T13:24:41.683Z")
+  }
+]
+mongodb [direct: secondary] articledb>
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+## 主节点的选举原则
+
+MongoDB在副本集中，会自动进行主节点的选举，主节点选举的触发条件：
+
+* 主节点故障
+* 主节点网络不可达（默认心跳信息为10秒）
+* 人工干预（rs.stepDown(600)）
+
+
+
+一旦触发选举，就要根据一定规则来选主节点。
+
+
+
+选举规则是根据票数来决定谁获胜：
+
+* 票数最高，且获得了“大多数”成员的投票支持的节点获胜。
+* 若票数相同，且都获得了“大多数”成员的投票支持的，数据新的节点获胜
+
+
+
+“大多数”的定义为：假设复制集内投票成员数量为N，则大多数为 N/2 + 1。例如：3个投票成员， 则大多数的值是2。当复制集内存活成员数量不足大多数时，整个复制集将无法选举出Primary， 复制集将无法提供写服务，处于只读状态。
+
+数据的新旧是通过操作日志oplog来对比的
+
+
+
+在获得票数的时候，优先级（priority）参数影响重大
+
+可以通过设置优先级（priority）来设置额外票数。优先级即权重，取值为0-1000，相当于可额外增加 0-1000的票数，优先级的值越大，就越可能获得多数成员的投票（votes）数。指定较高的值可使成员 更有资格成为主要成员，更低的值可使成员更不符合条件
+
+
+
+默认情况下，优先级的值是1
+
+
+
+```sh
+mongodb [direct: secondary] articledb> rs.conf()
+{
+  _id: 'mongodb',
+  version: 4,
+  term: 3,
+  members: [
+    {
+      _id: 0,
+      host: '127.0.0.1:27017',
+      arbiterOnly: false,
+      buildIndexes: true,
+      hidden: false,
+      priority: 1,
+      tags: {},
+      secondaryDelaySecs: Long("0"),
+      votes: 1
+    },
+    {
+      _id: 1,
+      host: '127.0.0.1:27018',
+      arbiterOnly: false,
+      buildIndexes: true,
+      hidden: false,
+      priority: 1,
+      tags: {},
+      secondaryDelaySecs: Long("0"),
+      votes: 1
+    },
+    {
+      _id: 2,
+      host: '127.0.0.1:27019',
+      arbiterOnly: true,
+      buildIndexes: true,
+      hidden: false,
+      priority: 0,
+      tags: {},
+      secondaryDelaySecs: Long("0"),
+      votes: 1
+    }
+  ],
+  protocolVersion: Long("1"),
+  writeConcernMajorityJournalDefault: true,
+  settings: {
+    chainingAllowed: true,
+    heartbeatIntervalMillis: 2000,
+    heartbeatTimeoutSecs: 10,
+    electionTimeoutMillis: 10000,
+    catchUpTimeoutMillis: -1,
+    catchUpTakeoverDelayMillis: 30000,
+    getLastErrorModes: {},
+    getLastErrorDefaults: { w: 1, wtimeout: 0 },
+    replicaSetId: ObjectId("6375d897cd9cfebc5f787bc2")
+  }
+}
+mongodb [direct: secondary] articledb>
+```
+
+
+
+
+
+可以看出，主节点和副本节点的优先级各为1，即，默认可以认为都已经有了一票。但选举节点，优先级是0（要注意是，官方说了，选举节点的优先级必须是0，不能是别的值。即不具备选举权，但具有投票权）
+
+
+
+
+
+**修改优先级**
+
+
+
+先将配置导入cfg变量：
+
+```sh
+cfg=rs.conf()
+```
+
+
+
+然后修改值（ID号默认从0开始）:
+
+```sh
+cfg.members[0].priority=2
+```
+
+
+
+重新加载配置：
+
+```sh
+rs.reconfig(cfg)
+```
+
+
+
+
+
+```sh
+PS C:\Users\mao\Desktop> mongosh --port 27017
+Current Mongosh Log ID: 63763cc312ee17fd6c2c6fa8
+Connecting to:          mongodb://127.0.0.1:27017/?directConnection=true&serverSelectionTimeoutMS=2000&appName=mongosh+1.6.0
+Using MongoDB:          6.0.2
+Using Mongosh:          1.6.0
+
+For mongosh info see: https://docs.mongodb.com/mongodb-shell/
+
+------
+   The server generated these startup warnings when booting
+   2022-11-17T21:22:17.888+08:00: Access control is not enabled for the database. Read and write access to data and configuration is unrestricted
+------
+
+------
+   Enable MongoDB's free cloud-based monitoring service, which will then receive and display
+   metrics about your deployment (disk utilization, CPU, operation statistics, etc).
+
+   The monitoring data will be available on a MongoDB website with a unique URL accessible to you
+   and anyone you share the URL with. MongoDB may use this information to make product
+   improvements and to suggest MongoDB products and deployment options to you.
+
+   To enable free monitoring, run the following command: db.enableFreeMonitoring()
+   To permanently disable this reminder, run the following command: db.disableFreeMonitoring()
+------
+
+mongodb [direct: primary] test> cfg=rs.conf()
+{
+  _id: 'mongodb',
+  version: 4,
+  term: 3,
+  members: [
+    {
+      _id: 0,
+      host: '127.0.0.1:27017',
+      arbiterOnly: false,
+      buildIndexes: true,
+      hidden: false,
+      priority: 1,
+      tags: {},
+      secondaryDelaySecs: Long("0"),
+      votes: 1
+    },
+    {
+      _id: 1,
+      host: '127.0.0.1:27018',
+      arbiterOnly: false,
+      buildIndexes: true,
+      hidden: false,
+      priority: 1,
+      tags: {},
+      secondaryDelaySecs: Long("0"),
+      votes: 1
+    },
+    {
+      _id: 2,
+      host: '127.0.0.1:27019',
+      arbiterOnly: true,
+      buildIndexes: true,
+      hidden: false,
+      priority: 0,
+      tags: {},
+      secondaryDelaySecs: Long("0"),
+      votes: 1
+    }
+  ],
+  protocolVersion: Long("1"),
+  writeConcernMajorityJournalDefault: true,
+  settings: {
+    chainingAllowed: true,
+    heartbeatIntervalMillis: 2000,
+    heartbeatTimeoutSecs: 10,
+    electionTimeoutMillis: 10000,
+    catchUpTimeoutMillis: -1,
+    catchUpTakeoverDelayMillis: 30000,
+    getLastErrorModes: {},
+    getLastErrorDefaults: { w: 1, wtimeout: 0 },
+    replicaSetId: ObjectId("6375d897cd9cfebc5f787bc2")
+  }
+}
+mongodb [direct: primary] test> cfg.members[0].priority=2
+2
+mongodb [direct: primary] test> rs.reconfig(cfg)
+{
+  ok: 1,
+  '$clusterTime': {
+    clusterTime: Timestamp({ t: 1668693223, i: 1 }),
+    signature: {
+      hash: Binary(Buffer.from("0000000000000000000000000000000000000000", "hex"), 0),
+      keyId: Long("0")
+    }
+  },
+  operationTime: Timestamp({ t: 1668693223, i: 1 })
+}
+mongodb [direct: primary] test>
+```
+
+```sh
+mongodb [direct: primary] test> rs.conf()
+{
+  _id: 'mongodb',
+  version: 5,
+  term: 3,
+  members: [
+    {
+      _id: 0,
+      host: '127.0.0.1:27017',
+      arbiterOnly: false,
+      buildIndexes: true,
+      hidden: false,
+      priority: 2,
+      tags: {},
+      secondaryDelaySecs: Long("0"),
+      votes: 1
+    },
+    {
+      _id: 1,
+      host: '127.0.0.1:27018',
+      arbiterOnly: false,
+      buildIndexes: true,
+      hidden: false,
+      priority: 1,
+      tags: {},
+      secondaryDelaySecs: Long("0"),
+      votes: 1
+    },
+    {
+      _id: 2,
+      host: '127.0.0.1:27019',
+      arbiterOnly: true,
+      buildIndexes: true,
+      hidden: false,
+      priority: 0,
+      tags: {},
+      secondaryDelaySecs: Long("0"),
+      votes: 1
+    }
+  ],
+  protocolVersion: Long("1"),
+  writeConcernMajorityJournalDefault: true,
+  settings: {
+    chainingAllowed: true,
+    heartbeatIntervalMillis: 2000,
+    heartbeatTimeoutSecs: 10,
+    electionTimeoutMillis: 10000,
+    catchUpTimeoutMillis: -1,
+    catchUpTakeoverDelayMillis: 30000,
+    getLastErrorModes: {},
+    getLastErrorDefaults: { w: 1, wtimeout: 0 },
+    replicaSetId: ObjectId("6375d897cd9cfebc5f787bc2")
+  }
+}
+mongodb [direct: primary] test>
+```
+
+
+
+
+
+
+
+需要在master节点上运行：
+
+MongoServerError: New config is rejected :: caused by :: replSetReconfig should only be run on a writable PRIMARY. Current state SECONDARY;
+
+
+
+
+
+
+
+
+
+
+
+
+
+## 故障测试
+
+### 副本节点故障测试
+
+
+
+关闭27018副本节点：
+
+```sh
+rs.stepDown(600)
+```
+
+
+
