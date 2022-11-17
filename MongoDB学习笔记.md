@@ -7243,5 +7243,312 @@ PS H:\opensoft\MongoDB>
 
 
 
+```sh
+mongosh --host=127.0.0.1 --port=27017
+```
+
+
+
+```sh
+PS H:\opensoft\MongoDB> mongosh --host=127.0.0.1 --port=27017
+Current Mongosh Log ID: 6375d76778549f08d37aed14
+Connecting to:          mongodb://127.0.0.1:27017/?directConnection=true&serverSelectionTimeoutMS=2000&appName=mongosh+1.6.0
+Using MongoDB:          6.0.2
+Using Mongosh:          1.6.0
+
+For mongosh info see: https://docs.mongodb.com/mongodb-shell/
+
+------
+   The server generated these startup warnings when booting
+   2022-11-17T14:40:26.684+08:00: Access control is not enabled for the database. Read and write access to data and configuration is unrestricted
+------
+
+------
+   Enable MongoDB's free cloud-based monitoring service, which will then receive and display
+   metrics about your deployment (disk utilization, CPU, operation statistics, etc).
+
+   The monitoring data will be available on a MongoDB website with a unique URL accessible to you
+   and anyone you share the URL with. MongoDB may use this information to make product
+   improvements and to suggest MongoDB products and deployment options to you.
+
+   To enable free monitoring, run the following command: db.enableFreeMonitoring()
+   To permanently disable this reminder, run the following command: db.disableFreeMonitoring()
+------
+
+test>
+```
+
+
+
+
+
+连接上之后，很多命令无法使用，比如 show dbs 等，必须初始化副本集才行
+
+```sh
+test> show databases
+MongoServerError: node is not in primary or recovering state
+test>
+```
+
+
+
+
+
+第九步：初始化副本集
+
+
+
+语法：
+
+```sh
+rs.initiate(configuration)
+```
+
+
+
+configuration：可选择的指定新副本集。如果未指定配置，MongoDB使用默认副本集配置。
+
+
+
+使用默认的配置来初始化副本集：
+
+```sh
+rs.initiate()
+```
+
+
+
+```sh
+test> rs.initiate()
+{
+  info2: 'no configuration specified. Using a default configuration for the set',
+  me: '127.0.0.1:27017',
+  ok: 1
+}
+mongodb [direct: primary] test>
+
+mongodb [direct: primary] test>
+
+mongodb [direct: primary] test>
+
+mongodb [direct: primary] test>
+```
+
+
+
+“ok”的值为1，说明创建成功
+
+
+
+
+
+第十步：查看副本集的配置内容
+
+
+
+```sh
+rs.conf(configuration)
+```
+
+
+
+rs.config() 是该方法的别名
+
+configuration：可选，如果没有配置，则使用默认主节点配置
+
+
+
+```sh
+mongodb [direct: primary] test> rs.conf()
+{
+  _id: 'mongodb',
+  version: 1,
+  term: 1,
+  members: [
+    {
+      _id: 0,
+      host: '127.0.0.1:27017',
+      arbiterOnly: false,
+      buildIndexes: true,
+      hidden: false,
+      priority: 1,
+      tags: {},
+      secondaryDelaySecs: Long("0"),
+      votes: 1
+    }
+  ],
+  protocolVersion: Long("1"),
+  writeConcernMajorityJournalDefault: true,
+  settings: {
+    chainingAllowed: true,
+    heartbeatIntervalMillis: 2000,
+    heartbeatTimeoutSecs: 10,
+    electionTimeoutMillis: 10000,
+    catchUpTimeoutMillis: -1,
+    catchUpTakeoverDelayMillis: 30000,
+    getLastErrorModes: {},
+    getLastErrorDefaults: { w: 1, wtimeout: 0 },
+    replicaSetId: ObjectId("6375d897cd9cfebc5f787bc2")
+  }
+}
+mongodb [direct: primary] test>
+```
+
+
+
+
+
+* _id: 'mongodb'：副本集的配置数据存储的主键值，默认就是副本集的名字
+* "members"：副本集成员数组，此时只有一个
+* "arbiterOnly" : false：该成员不是仲裁节点
+* "priority" : 1：优先级（权重值）
+* "settings" ：副本集的参数配置
+
+
+
+
+
+副本集配置的查看命令，本质是查询的是 system.replset 的表中的数据
+
+
+
+
+
+第十一步：查看副本集状态
+
+
+
+返回包含状态信息的文档。此输出使用从副本集的其他成员发送的心跳包中获得的数据反映副本集的当前状态
+
+```sh
+rs.status()
+```
+
+
+
+```sh
+mongodb [direct: primary] test> rs.status()
+{
+  set: 'mongodb',
+  date: ISODate("2022-11-17T06:53:40.740Z"),
+  myState: 1,
+  term: Long("1"),
+  syncSourceHost: '',
+  syncSourceId: -1,
+  heartbeatIntervalMillis: Long("2000"),
+  majorityVoteCount: 1,
+  writeMajorityCount: 1,
+  votingMembersCount: 1,
+  writableVotingMembersCount: 1,
+  optimes: {
+    lastCommittedOpTime: { ts: Timestamp({ t: 1668668015, i: 1 }), t: Long("1") },
+    lastCommittedWallTime: ISODate("2022-11-17T06:53:35.011Z"),
+    readConcernMajorityOpTime: { ts: Timestamp({ t: 1668668015, i: 1 }), t: Long("1") },
+    appliedOpTime: { ts: Timestamp({ t: 1668668015, i: 1 }), t: Long("1") },
+    durableOpTime: { ts: Timestamp({ t: 1668668015, i: 1 }), t: Long("1") },
+    lastAppliedWallTime: ISODate("2022-11-17T06:53:35.011Z"),
+    lastDurableWallTime: ISODate("2022-11-17T06:53:35.011Z")
+  },
+  lastStableRecoveryTimestamp: Timestamp({ t: 1668667965, i: 1 }),
+  electionCandidateMetrics: {
+    lastElectionReason: 'electionTimeout',
+    lastElectionDate: ISODate("2022-11-17T06:45:44.608Z"),
+    electionTerm: Long("1"),
+    lastCommittedOpTimeAtElection: { ts: Timestamp({ t: 1668667544, i: 1 }), t: Long("-1") },
+    lastSeenOpTimeAtElection: { ts: Timestamp({ t: 1668667544, i: 1 }), t: Long("-1") },
+    numVotesNeeded: 1,
+    priorityAtElection: 1,
+    electionTimeoutMillis: Long("10000"),
+    newTermStartDate: ISODate("2022-11-17T06:45:44.849Z"),
+    wMajorityWriteAvailabilityDate: ISODate("2022-11-17T06:45:44.997Z")
+  },
+  members: [
+    {
+      _id: 0,
+      name: '127.0.0.1:27017',
+      health: 1,
+      state: 1,
+      stateStr: 'PRIMARY',
+      uptime: 511,
+      optime: { ts: Timestamp({ t: 1668668015, i: 1 }), t: Long("1") },
+      optimeDate: ISODate("2022-11-17T06:53:35.000Z"),
+      lastAppliedWallTime: ISODate("2022-11-17T06:53:35.011Z"),
+      lastDurableWallTime: ISODate("2022-11-17T06:53:35.011Z"),
+      syncSourceHost: '',
+      syncSourceId: -1,
+      infoMessage: '',
+      electionTime: Timestamp({ t: 1668667544, i: 2 }),
+      electionDate: ISODate("2022-11-17T06:45:44.000Z"),
+      configVersion: 1,
+      configTerm: 1,
+      self: true,
+      lastHeartbeatMessage: ''
+    }
+  ],
+  ok: 1,
+  '$clusterTime': {
+    clusterTime: Timestamp({ t: 1668668015, i: 1 }),
+    signature: {
+      hash: Binary(Buffer.from("0000000000000000000000000000000000000000", "hex"), 0),
+      keyId: Long("0")
+    }
+  },
+  operationTime: Timestamp({ t: 1668668015, i: 1 })
+}
+mongodb [direct: primary] test>
+```
+
+
+
+* set: 'mongodb'：副本集的名字
+* "myState" : 1：说明状态正常
+* "members" ：副本集成员数组
+* "stateStr" : "PRIMARY"：该成员的 角色
+* health: 1：该节点是健康的
+
+
+
+
+
+第十二步：添加副本从节点
+
+
+
+在主节点添加从节点，将其他成员加入到副本集
+
+
+
+语法：
+
+```sh
+rs.add(host, arbiterOnly)
+```
+
+
+
+* host：要添加到副本集的新成员。 指定为字符串或配置文档，如果是一个字符串，则需要指定新成员的主机名和可选的端口号，如果是一个文档，请指定在members数组中找到的副本集成员配置文档
+* arbiterOnly：可选的。 仅在值为字符串时适用。 如果为true，则添加的主机是仲裁者
+
+
+
+
+
+将27018的副本节点添加到副本集中：
+
+```sh
+rs.add("127.0.0.1:27018")
+```
+
+
+
+```sh
+```
+
+
+
+
+
+
+
 
 
