@@ -6617,7 +6617,7 @@ MongoDB中的副本集（Replica Set）是一组维护相同数据集的mongod�
 
 
 
-第一步：创建主节点的文件夹
+### 第一步：创建主节点的文件夹
 
 
 
@@ -6751,7 +6751,7 @@ PS H:\opensoft\MongoDB\master\data>
 
 
 
-第二步：在conf目录下创建配置文件master.conf
+### 第二步：在conf目录下创建配置文件master.conf
 
 
 
@@ -6813,7 +6813,7 @@ PS H:\opensoft\MongoDB\conf>
 
 
 
-第三步：创建从节点的文件夹
+### 第三步：创建从节点的文件夹
 
 
 
@@ -6950,7 +6950,7 @@ PS H:\opensoft\MongoDB\slave\data>
 
 
 
-第四步：在conf目录下创建配置文件slave.conf
+### 第四步：在conf目录下创建配置文件slave.conf
 
 
 
@@ -6991,7 +6991,7 @@ replication:
 
 
 
-第五步：创建仲裁节点的文件夹
+### 第五步：创建仲裁节点的文件夹
 
 
 
@@ -7128,7 +7128,7 @@ PS H:\opensoft\MongoDB\arbiter\data>
 
 
 
-第六步：在conf目录下创建配置文件arbiter.conf
+### 第六步：在conf目录下创建配置文件arbiter.conf
 
 
 
@@ -7169,7 +7169,7 @@ replication:
 
 
 
-第七步：编写启动脚本
+### 第七步：编写启动脚本
 
 
 
@@ -7239,7 +7239,7 @@ PS H:\opensoft\MongoDB>
 
 
 
-第八步：使用mongosh连接27017节点
+### 第八步：使用mongosh连接27017节点
 
 
 
@@ -7294,7 +7294,7 @@ test>
 
 
 
-第九步：初始化副本集
+### 第九步：初始化副本集
 
 
 
@@ -7342,7 +7342,7 @@ mongodb [direct: primary] test>
 
 
 
-第十步：查看副本集的配置内容
+### 第十步：查看副本集的配置内容
 
 
 
@@ -7414,7 +7414,7 @@ mongodb [direct: primary] test>
 
 
 
-第十一步：查看副本集状态
+### 第十一步：查看副本集状态
 
 
 
@@ -7510,7 +7510,7 @@ mongodb [direct: primary] test>
 
 
 
-第十二步：添加副本从节点
+### 第十二步：添加副本从节点
 
 
 
@@ -7542,6 +7542,157 @@ rs.add("127.0.0.1:27018")
 
 
 ```sh
+mongodb [direct: primary] test> rs.add("127.0.0.1:27018")
+{
+  ok: 1,
+  '$clusterTime': {
+    clusterTime: Timestamp({ t: 1668668373, i: 1 }),
+    signature: {
+      hash: Binary(Buffer.from("0000000000000000000000000000000000000000", "hex"), 0),
+      keyId: Long("0")
+    }
+  },
+  operationTime: Timestamp({ t: 1668668373, i: 1 })
+}
+mongodb [direct: primary] test>
+```
+
+
+
+"ok" : 1 ：说明添加成功
+
+
+
+查看副本集状态：
+
+```sh
+mongodb [direct: primary] test> rs.status()
+{
+  set: 'mongodb',
+  date: ISODate("2022-11-17T07:00:13.698Z"),
+  myState: 1,
+  term: Long("1"),
+  syncSourceHost: '',
+  syncSourceId: -1,
+  heartbeatIntervalMillis: Long("2000"),
+  majorityVoteCount: 2,
+  writeMajorityCount: 2,
+  votingMembersCount: 2,
+  writableVotingMembersCount: 2,
+  optimes: {
+    lastCommittedOpTime: { ts: Timestamp({ t: 1668668412, i: 1 }), t: Long("1") },
+    lastCommittedWallTime: ISODate("2022-11-17T07:00:12.395Z"),
+    readConcernMajorityOpTime: { ts: Timestamp({ t: 1668668412, i: 1 }), t: Long("1") },
+    appliedOpTime: { ts: Timestamp({ t: 1668668412, i: 1 }), t: Long("1") },
+    durableOpTime: { ts: Timestamp({ t: 1668668412, i: 1 }), t: Long("1") },
+    lastAppliedWallTime: ISODate("2022-11-17T07:00:12.395Z"),
+    lastDurableWallTime: ISODate("2022-11-17T07:00:12.395Z")
+  },
+  lastStableRecoveryTimestamp: Timestamp({ t: 1668668381, i: 1 }),
+  electionCandidateMetrics: {
+    lastElectionReason: 'electionTimeout',
+    lastElectionDate: ISODate("2022-11-17T06:45:44.608Z"),
+    electionTerm: Long("1"),
+    lastCommittedOpTimeAtElection: { ts: Timestamp({ t: 1668667544, i: 1 }), t: Long("-1") },
+    lastSeenOpTimeAtElection: { ts: Timestamp({ t: 1668667544, i: 1 }), t: Long("-1") },
+    numVotesNeeded: 1,
+    priorityAtElection: 1,
+    electionTimeoutMillis: Long("10000"),
+    newTermStartDate: ISODate("2022-11-17T06:45:44.849Z"),
+    wMajorityWriteAvailabilityDate: ISODate("2022-11-17T06:45:44.997Z")
+  },
+  members: [
+    {
+      _id: 0,
+      name: '127.0.0.1:27017',
+      health: 1,
+      state: 1,
+      stateStr: 'PRIMARY',
+      uptime: 904,
+      optime: { ts: Timestamp({ t: 1668668412, i: 1 }), t: Long("1") },
+      optimeDate: ISODate("2022-11-17T07:00:12.000Z"),
+      lastAppliedWallTime: ISODate("2022-11-17T07:00:12.395Z"),
+      lastDurableWallTime: ISODate("2022-11-17T07:00:12.395Z"),
+      syncSourceHost: '',
+      syncSourceId: -1,
+      infoMessage: '',
+      electionTime: Timestamp({ t: 1668667544, i: 2 }),
+      electionDate: ISODate("2022-11-17T06:45:44.000Z"),
+      configVersion: 3,
+      configTerm: 1,
+      self: true,
+      lastHeartbeatMessage: ''
+    },
+    {
+      _id: 1,
+      name: '127.0.0.1:27018',
+      health: 1,
+      state: 2,
+      stateStr: 'SECONDARY',
+      uptime: 40,
+      optime: { ts: Timestamp({ t: 1668668412, i: 1 }), t: Long("1") },
+      optimeDurable: { ts: Timestamp({ t: 1668668412, i: 1 }), t: Long("1") },
+      optimeDate: ISODate("2022-11-17T07:00:12.000Z"),
+      optimeDurableDate: ISODate("2022-11-17T07:00:12.000Z"),
+      lastAppliedWallTime: ISODate("2022-11-17T07:00:12.395Z"),
+      lastDurableWallTime: ISODate("2022-11-17T07:00:12.395Z"),
+      lastHeartbeat: ISODate("2022-11-17T07:00:13.204Z"),
+      lastHeartbeatRecv: ISODate("2022-11-17T07:00:11.754Z"),
+      pingMs: Long("0"),
+      lastHeartbeatMessage: '',
+      syncSourceHost: '127.0.0.1:27017',
+      syncSourceId: 0,
+      infoMessage: '',
+      configVersion: 3,
+      configTerm: 1
+    }
+  ],
+  ok: 1,
+  '$clusterTime': {
+    clusterTime: Timestamp({ t: 1668668412, i: 1 }),
+    signature: {
+      hash: Binary(Buffer.from("0000000000000000000000000000000000000000", "hex"), 0),
+      keyId: Long("0")
+    }
+  },
+  operationTime: Timestamp({ t: 1668668412, i: 1 })
+}
+mongodb [direct: primary] test>
+```
+
+
+
+
+
+"name" : "127.0.0.1:27018" 是第二个节点的名字，其角色是 "stateStr" : "SECONDARY"
+
+
+
+
+
+### 第十三步：添加仲裁从节点
+
+
+
+添加一个仲裁节点到副本集
+
+语法：
+
+```sh
+rs.addArb(host)
+```
+
+
+
+将27019的仲裁节点添加到副本集中：
+
+```sh
+rs.addArb("127.0.0.1:27019")
+```
+
+
+
+```sh
 ```
 
 
@@ -7549,6 +7700,221 @@ rs.add("127.0.0.1:27018")
 
 
 
+
+如果报错：Reconfig attempted to install a config that would change the implicit default write concern. Use the setDefaultRWConcern command to set a cluster-wide write concern and try the reconfig again
+
+可以先执行以下命令
+
+```sh
+db.adminCommand({
+  "setDefaultRWConcern" : 1,
+  "defaultWriteConcern" : {
+    "w" : 2
+  }
+})
+```
+
+
+
+```sh
+mongodb [direct: primary] test> rs.addArb("127.0.0.1:27019")
+MongoServerError: Reconfig attempted to install a config that would change the implicit default write concern. Use the setDefaultRWConcern command to set a cluster-wide write concern and try the reconfig again.
+mongodb [direct: primary] test>
+
+mongodb [direct: primary] test>
+
+mongodb [direct: primary] test> db.adminCommand({
+...   "setDefaultRWConcern" : 1,
+...   "defaultWriteConcern" : {
+...     "w" : 2
+...   }
+... })
+{
+  defaultReadConcern: { level: 'local' },
+  defaultWriteConcern: { w: 2, wtimeout: 0 },
+  updateOpTime: Timestamp({ t: 1668668825, i: 1 }),
+  updateWallClockTime: ISODate("2022-11-17T07:07:05.272Z"),
+  defaultWriteConcernSource: 'global',
+  defaultReadConcernSource: 'implicit',
+  localUpdateWallClockTime: ISODate("2022-11-17T07:07:05.384Z"),
+  ok: 1,
+  '$clusterTime': {
+    clusterTime: Timestamp({ t: 1668668825, i: 3 }),
+    signature: {
+      hash: Binary(Buffer.from("0000000000000000000000000000000000000000", "hex"), 0),
+      keyId: Long("0")
+    }
+  },
+  operationTime: Timestamp({ t: 1668668825, i: 3 })
+}
+mongodb [direct: primary] test>
+```
+
+
+
+
+
+再次执行rs.addArb("127.0.0.1:27019")
+
+```sh
+mongodb [direct: primary] test> rs.addArb("127.0.0.1:27019")
+{
+  ok: 1,
+  '$clusterTime': {
+    clusterTime: Timestamp({ t: 1668668876, i: 1 }),
+    signature: {
+      hash: Binary(Buffer.from("0000000000000000000000000000000000000000", "hex"), 0),
+      keyId: Long("0")
+    }
+  },
+  operationTime: Timestamp({ t: 1668668876, i: 1 })
+}
+mongodb [direct: primary] test>
+```
+
+
+
+
+
+
+
+查看副本集状态：
+
+```sh
+mongodb [direct: primary] test> rs.status()
+{
+  set: 'mongodb',
+  date: ISODate("2022-11-17T07:09:09.959Z"),
+  myState: 1,
+  term: Long("1"),
+  syncSourceHost: '',
+  syncSourceId: -1,
+  heartbeatIntervalMillis: Long("2000"),
+  majorityVoteCount: 2,
+  writeMajorityCount: 2,
+  votingMembersCount: 3,
+  writableVotingMembersCount: 2,
+  optimes: {
+    lastCommittedOpTime: { ts: Timestamp({ t: 1668668945, i: 1 }), t: Long("1") },
+    lastCommittedWallTime: ISODate("2022-11-17T07:09:05.079Z"),
+    readConcernMajorityOpTime: { ts: Timestamp({ t: 1668668945, i: 1 }), t: Long("1") },
+    appliedOpTime: { ts: Timestamp({ t: 1668668945, i: 1 }), t: Long("1") },
+    durableOpTime: { ts: Timestamp({ t: 1668668945, i: 1 }), t: Long("1") },
+    lastAppliedWallTime: ISODate("2022-11-17T07:09:05.079Z"),
+    lastDurableWallTime: ISODate("2022-11-17T07:09:05.079Z")
+  },
+  lastStableRecoveryTimestamp: Timestamp({ t: 1668668925, i: 1 }),
+  electionCandidateMetrics: {
+    lastElectionReason: 'electionTimeout',
+    lastElectionDate: ISODate("2022-11-17T06:45:44.608Z"),
+    electionTerm: Long("1"),
+    lastCommittedOpTimeAtElection: { ts: Timestamp({ t: 1668667544, i: 1 }), t: Long("-1") },
+    lastSeenOpTimeAtElection: { ts: Timestamp({ t: 1668667544, i: 1 }), t: Long("-1") },
+    numVotesNeeded: 1,
+    priorityAtElection: 1,
+    electionTimeoutMillis: Long("10000"),
+    newTermStartDate: ISODate("2022-11-17T06:45:44.849Z"),
+    wMajorityWriteAvailabilityDate: ISODate("2022-11-17T06:45:44.997Z")
+  },
+  members: [
+    {
+      _id: 0,
+      name: '127.0.0.1:27017',
+      health: 1,
+      state: 1,
+      stateStr: 'PRIMARY',
+      uptime: 1440,
+      optime: { ts: Timestamp({ t: 1668668945, i: 1 }), t: Long("1") },
+      optimeDate: ISODate("2022-11-17T07:09:05.000Z"),
+      lastAppliedWallTime: ISODate("2022-11-17T07:09:05.079Z"),
+      lastDurableWallTime: ISODate("2022-11-17T07:09:05.079Z"),
+      syncSourceHost: '',
+      syncSourceId: -1,
+      infoMessage: '',
+      electionTime: Timestamp({ t: 1668667544, i: 2 }),
+      electionDate: ISODate("2022-11-17T06:45:44.000Z"),
+      configVersion: 4,
+      configTerm: 1,
+      self: true,
+      lastHeartbeatMessage: ''
+    },
+    {
+      _id: 1,
+      name: '127.0.0.1:27018',
+      health: 1,
+      state: 2,
+      stateStr: 'SECONDARY',
+      uptime: 576,
+      optime: { ts: Timestamp({ t: 1668668945, i: 1 }), t: Long("1") },
+      optimeDurable: { ts: Timestamp({ t: 1668668945, i: 1 }), t: Long("1") },
+      optimeDate: ISODate("2022-11-17T07:09:05.000Z"),
+      optimeDurableDate: ISODate("2022-11-17T07:09:05.000Z"),
+      lastAppliedWallTime: ISODate("2022-11-17T07:09:05.079Z"),
+      lastDurableWallTime: ISODate("2022-11-17T07:09:05.079Z"),
+      lastHeartbeat: ISODate("2022-11-17T07:09:08.525Z"),
+      lastHeartbeatRecv: ISODate("2022-11-17T07:09:08.585Z"),
+      pingMs: Long("0"),
+      lastHeartbeatMessage: '',
+      syncSourceHost: '127.0.0.1:27017',
+      syncSourceId: 0,
+      infoMessage: '',
+      configVersion: 4,
+      configTerm: 1
+    },
+    {
+      _id: 2,
+      name: '127.0.0.1:27019',
+      health: 1,
+      state: 7,
+      stateStr: 'ARBITER',
+      uptime: 73,
+      lastHeartbeat: ISODate("2022-11-17T07:09:08.523Z"),
+      lastHeartbeatRecv: ISODate("2022-11-17T07:09:08.724Z"),
+      pingMs: Long("0"),
+      lastHeartbeatMessage: '',
+      syncSourceHost: '',
+      syncSourceId: -1,
+      infoMessage: '',
+      configVersion: 4,
+      configTerm: 1
+    }
+  ],
+  ok: 1,
+  '$clusterTime': {
+    clusterTime: Timestamp({ t: 1668668945, i: 1 }),
+    signature: {
+      hash: Binary(Buffer.from("0000000000000000000000000000000000000000", "hex"), 0),
+      keyId: Long("0")
+    }
+  },
+  operationTime: Timestamp({ t: 1668668945, i: 1 })
+}
+mongodb [direct: primary] test>
+```
+
+
+
+"name" : "127.0.0.1:27019" 是第二个节点的名字，其角色是 "stateStr" : "ARBITER"
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+## 副本集的数据读写
 
 
 
