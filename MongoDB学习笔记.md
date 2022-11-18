@@ -8662,3 +8662,933 @@ mongodb://localhost:27017/?readPreference=primary&replicaSet=mongodb
 
 ## SpringDataMongoDB连接副本集
 
+副本集语法：
+
+```sh
+mongodb://host1,host2,host3/articledb?connect=replicaSet&readPreference=secondaryPreferred&replicaSet=副本集名字
+```
+
+
+
+* readPreference=secondaryPreferred：开启副本节点读的功能，可实现读写分离
+* connect=replicaSet：自动到副本集中选择读写的主机。如果slaveOK是打开的，则实现了读写分离
+
+
+
+
+
+修改配置文件application.yml
+
+```sh
+spring:
+  data:
+    mongodb:
+      # 库名称
+      #database: articledb
+      # mongodb服务地址
+      #host: 127.0.0.1
+      # 端口号
+      #port: 27017
+      # 可以使用uri连接
+      uri: mongodb://127.0.0.1:27017,127.0.0.1:27018,127.0.0.1:27019/articledb?connect=replicaSet&readPreference=secondaryPreferred&replicaSet=mongodb
+```
+
+
+
+
+
+主机必须是副本集中所有的主机，包括主节点、副本节点、仲裁节点
+
+SpringDataMongoDB自动实现了读写分离
+
+
+
+
+
+
+
+启动程序：
+
+```sh
+
+  .   ____          _            __ _ _
+ /\\ / ___'_ __ _ _(_)_ __  __ _ \ \ \ \
+( ( )\___ | '_ | '_| | '_ \/ _` | \ \ \ \
+ \\/  ___)| |_)| | | | | || (_| |  ) ) ) )
+  '  |____| .__|_| |_|_| |_\__, | / / / /
+ =========|_|==============|___/=/_/_/_/
+ :: Spring Boot ::                (v2.7.1)
+
+2022-11-18 13:50:41.158  INFO 15044 --- [           main] m.m.MongoDbArticleReplicaSetApplication  : Starting MongoDbArticleReplicaSetApplication using Java 16.0.2 on mao with PID 15044 (H:\程序\大四上期\MongoDB_article_replicaSet\target\classes started by mao in H:\程序\大四上期\MongoDB_article_replicaSet)
+2022-11-18 13:50:41.161  INFO 15044 --- [           main] m.m.MongoDbArticleReplicaSetApplication  : No active profile set, falling back to 1 default profile: "default"
+2022-11-18 13:50:41.559  INFO 15044 --- [           main] .s.d.r.c.RepositoryConfigurationDelegate : Bootstrapping Spring Data MongoDB repositories in DEFAULT mode.
+2022-11-18 13:50:41.594  INFO 15044 --- [           main] .s.d.r.c.RepositoryConfigurationDelegate : Finished Spring Data repository scanning in 32 ms. Found 1 MongoDB repository interfaces.
+2022-11-18 13:50:41.889  INFO 15044 --- [           main] o.s.b.w.embedded.tomcat.TomcatWebServer  : Tomcat initialized with port(s): 8080 (http)
+2022-11-18 13:50:41.896  INFO 15044 --- [           main] o.apache.catalina.core.StandardService   : Starting service [Tomcat]
+2022-11-18 13:50:41.896  INFO 15044 --- [           main] org.apache.catalina.core.StandardEngine  : Starting Servlet engine: [Apache Tomcat/9.0.64]
+2022-11-18 13:50:41.973  INFO 15044 --- [           main] o.a.c.c.C.[Tomcat].[localhost].[/]       : Initializing Spring embedded WebApplicationContext
+2022-11-18 13:50:41.974  INFO 15044 --- [           main] w.s.c.ServletWebServerApplicationContext : Root WebApplicationContext: initialization completed in 770 ms
+2022-11-18 13:50:42.044  WARN 15044 --- [           main] org.mongodb.driver.uri                   : Connection string contains unsupported option 'connect'.
+2022-11-18 13:50:42.054  INFO 15044 --- [           main] org.mongodb.driver.cluster               : Adding discovered server 127.0.0.1:27017 to client view of cluster
+2022-11-18 13:50:42.072  INFO 15044 --- [           main] org.mongodb.driver.cluster               : Adding discovered server 127.0.0.1:27018 to client view of cluster
+2022-11-18 13:50:42.073  INFO 15044 --- [           main] org.mongodb.driver.cluster               : Adding discovered server 127.0.0.1:27019 to client view of cluster
+2022-11-18 13:50:42.094  INFO 15044 --- [           main] org.mongodb.driver.client                : MongoClient with metadata {"driver": {"name": "mongo-java-driver|sync|spring-boot", "version": "4.6.1"}, "os": {"type": "Windows", "name": "Windows 10", "architecture": "amd64", "version": "10.0"}, "platform": "Java/Oracle Corporation/16.0.2+7-67"} created with settings MongoClientSettings{readPreference=ReadPreference{name=secondaryPreferred, hedgeOptions=null}, writeConcern=WriteConcern{w=null, wTimeout=null ms, journal=null}, retryWrites=true, retryReads=true, readConcern=ReadConcern{level=null}, credential=null, streamFactoryFactory=null, commandListeners=[], codecRegistry=ProvidersCodecRegistry{codecProviders=[ValueCodecProvider{}, BsonValueCodecProvider{}, DBRefCodecProvider{}, DBObjectCodecProvider{}, DocumentCodecProvider{}, IterableCodecProvider{}, MapCodecProvider{}, GeoJsonCodecProvider{}, GridFSFileCodecProvider{}, Jsr310CodecProvider{}, JsonObjectCodecProvider{}, BsonCodecProvider{}, EnumCodecProvider{}, com.mongodb.Jep395RecordCodecProvider@3337d04c]}, clusterSettings={hosts=[127.0.0.1:27017, 127.0.0.1:27018, 127.0.0.1:27019], srvServiceName=mongodb, mode=MULTIPLE, requiredClusterType=REPLICA_SET, requiredReplicaSetName='mongodb', serverSelector='null', clusterListeners='[]', serverSelectionTimeout='30000 ms', localThreshold='30000 ms'}, socketSettings=SocketSettings{connectTimeoutMS=10000, readTimeoutMS=0, receiveBufferSize=0, sendBufferSize=0}, heartbeatSocketSettings=SocketSettings{connectTimeoutMS=10000, readTimeoutMS=10000, receiveBufferSize=0, sendBufferSize=0}, connectionPoolSettings=ConnectionPoolSettings{maxSize=100, minSize=0, maxWaitTimeMS=120000, maxConnectionLifeTimeMS=0, maxConnectionIdleTimeMS=0, maintenanceInitialDelayMS=0, maintenanceFrequencyMS=60000, connectionPoolListeners=[], maxConnecting=2}, serverSettings=ServerSettings{heartbeatFrequencyMS=10000, minHeartbeatFrequencyMS=500, serverListeners='[]', serverMonitorListeners='[]'}, sslSettings=SslSettings{enabled=false, invalidHostNameAllowed=false, context=null}, applicationName='null', compressorList=[], uuidRepresentation=JAVA_LEGACY, serverApi=null, autoEncryptionSettings=null, contextProvider=null}
+2022-11-18 13:50:42.097  WARN 15044 --- [           main] org.mongodb.driver.uri                   : Connection string contains unsupported option 'connect'.
+2022-11-18 13:50:42.097  INFO 15044 --- [127.0.0.1:27018] org.mongodb.driver.connection            : Opened connection [connectionId{localValue:4, serverValue:39}] to 127.0.0.1:27018
+2022-11-18 13:50:42.097  INFO 15044 --- [127.0.0.1:27019] org.mongodb.driver.connection            : Opened connection [connectionId{localValue:6, serverValue:24}] to 127.0.0.1:27019
+2022-11-18 13:50:42.097  INFO 15044 --- [127.0.0.1:27017] org.mongodb.driver.connection            : Opened connection [connectionId{localValue:1, serverValue:33}] to 127.0.0.1:27017
+2022-11-18 13:50:42.097  INFO 15044 --- [127.0.0.1:27017] org.mongodb.driver.connection            : Opened connection [connectionId{localValue:3, serverValue:32}] to 127.0.0.1:27017
+2022-11-18 13:50:42.097  INFO 15044 --- [127.0.0.1:27019] org.mongodb.driver.connection            : Opened connection [connectionId{localValue:5, serverValue:23}] to 127.0.0.1:27019
+2022-11-18 13:50:42.097  INFO 15044 --- [127.0.0.1:27018] org.mongodb.driver.connection            : Opened connection [connectionId{localValue:2, serverValue:38}] to 127.0.0.1:27018
+2022-11-18 13:50:42.097  INFO 15044 --- [127.0.0.1:27017] org.mongodb.driver.cluster               : Monitor thread successfully connected to server with description ServerDescription{address=127.0.0.1:27017, type=REPLICA_SET_PRIMARY, state=CONNECTED, ok=true, minWireVersion=0, maxWireVersion=17, maxDocumentSize=16777216, logicalSessionTimeoutMinutes=30, roundTripTimeNanos=20058900, setName='mongodb', canonicalAddress=127.0.0.1:27017, hosts=[127.0.0.1:27017, 127.0.0.1:27018], passives=[], arbiters=[127.0.0.1:27019], primary='127.0.0.1:27017', tagSet=TagSet{[]}, electionId=7fffffff000000000000000e, setVersion=5, topologyVersion=TopologyVersion{processId=63771ab1f45554f6f4a4b370, counter=7}, lastWriteDate=Fri Nov 18 13:50:38 CST 2022, lastUpdateTimeNanos=3071898740100}
+2022-11-18 13:50:42.097  INFO 15044 --- [127.0.0.1:27018] org.mongodb.driver.cluster               : Monitor thread successfully connected to server with description ServerDescription{address=127.0.0.1:27018, type=REPLICA_SET_SECONDARY, state=CONNECTED, ok=true, minWireVersion=0, maxWireVersion=17, maxDocumentSize=16777216, logicalSessionTimeoutMinutes=30, roundTripTimeNanos=20000600, setName='mongodb', canonicalAddress=127.0.0.1:27018, hosts=[127.0.0.1:27017, 127.0.0.1:27018], passives=[], arbiters=[127.0.0.1:27019], primary='127.0.0.1:27017', tagSet=TagSet{[]}, electionId=null, setVersion=5, topologyVersion=TopologyVersion{processId=63771ab23361bf0d8d656851, counter=8}, lastWriteDate=Fri Nov 18 13:50:38 CST 2022, lastUpdateTimeNanos=3071898723400}
+2022-11-18 13:50:42.097  INFO 15044 --- [127.0.0.1:27019] org.mongodb.driver.cluster               : Monitor thread successfully connected to server with description ServerDescription{address=127.0.0.1:27019, type=REPLICA_SET_ARBITER, state=CONNECTED, ok=true, minWireVersion=0, maxWireVersion=17, maxDocumentSize=16777216, logicalSessionTimeoutMinutes=30, roundTripTimeNanos=20020400, setName='mongodb', canonicalAddress=127.0.0.1:27019, hosts=[127.0.0.1:27017, 127.0.0.1:27018], passives=[], arbiters=[127.0.0.1:27019], primary='127.0.0.1:27017', tagSet=TagSet{[]}, electionId=null, setVersion=5, topologyVersion=TopologyVersion{processId=63771ab2500b45b30a2b5e29, counter=3}, lastWriteDate=Fri Nov 18 13:50:38 CST 2022, lastUpdateTimeNanos=3071898726900}
+2022-11-18 13:50:42.100  INFO 15044 --- [127.0.0.1:27017] org.mongodb.driver.cluster               : Setting max election id to 7fffffff000000000000000e from replica set primary 127.0.0.1:27017
+2022-11-18 13:50:42.100  INFO 15044 --- [127.0.0.1:27017] org.mongodb.driver.cluster               : Setting max set version to 5 from replica set primary 127.0.0.1:27017
+2022-11-18 13:50:42.100  INFO 15044 --- [127.0.0.1:27017] org.mongodb.driver.cluster               : Discovered replica set primary 127.0.0.1:27017
+2022-11-18 13:50:42.522  INFO 15044 --- [           main] o.s.b.w.embedded.tomcat.TomcatWebServer  : Tomcat started on port(s): 8080 (http) with context path ''
+2022-11-18 13:50:42.530  INFO 15044 --- [           main] m.m.MongoDbArticleReplicaSetApplication  : Started MongoDbArticleReplicaSetApplication in 1.657 seconds (JVM running for 2.107)
+
+```
+
+
+
+
+
+写数据使用的是主节点
+
+
+
+![image-20221118135256055](img/MongoDB学习笔记/image-20221118135256055.png)
+
+
+
+读数据使用的是从节点
+
+
+
+![image-20221118135325880](img/MongoDB学习笔记/image-20221118135325880.png)
+
+
+
+
+
+
+
+
+
+MongoDB客户端连接语法：
+
+```sh
+mongodb://[username:password@]host1[:port1][,host2[:port2],...[,hostN[:portN]]][/[database][?options]]
+```
+
+
+
+* mongodb:// 这是固定的格式，必须要指定
+* username:password@ 可选项，如果设置，在连接数据库服务器之后，驱动都会尝试登陆这个数据库
+* host1 必须的指定至少一个host, host1 是这个URI唯一要填写的。它指定了要连接服务器的地 址。如果要连接复制集，请指定多个主机地址
+* portX 可选的指定端口，如果不填，默认为27017
+* /database 如果指定username:password@，连接并验证登陆指定数据库。若不指定，默认打开 test 数据库
+* ?options 是连接选项。如果不使用/database，则前面需要加上/。所有连接选项都是键值对 name=value，键值对之间通过&或;（分号）隔开
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+# 分片集群
+
+## 分片概念
+
+分片（sharding）是一种跨多台机器分布数据的方法， MongoDB使用分片来支持具有非常大的数据集和高吞吐量操作的部署。
+
+换句话说：分片(sharding)是指将数据拆分，将其分散存在不同的机器上的过程。有时也用分区 (partitioning)来表示这个概念。将数据分散到不同的机器上，不需要功能强大的大型计算机就可以储存更多的数据，处理更多的负载
+
+具有大型数据集或高吞吐量应用程序的数据库系统可以会挑战单个服务器的容量。例如，高查询率会耗 尽服务器的CPU容量。工作集大小大于系统的RAM会强调磁盘驱动器的I / O容量
+
+有两种解决系统增长的方法：垂直扩展和水平扩展
+
+垂直扩展意味着增加单个服务器的容量，例如使用更强大的CPU，添加更多RAM或增加存储空间量。可 用技术的局限性可能会限制单个机器对于给定工作负载而言足够强大。此外，基于云的提供商基于可用 的硬件配置具有硬性上限。结果，垂直缩放有实际的最大值
+
+水平扩展意味着划分系统数据集并加载多个服务器，添加其他服务器以根据需要增加容量。虽然单个机 器的总体速度或容量可能不高，但每台机器处理整个工作负载的子集，可能提供比单个高速大容量服务器更高的效率。扩展部署容量只需要根据需要添加额外的服务器，这可能比单个机器的高端硬件的总体成本更低。权衡是基础架构和部署维护的复杂性增加
+
+
+
+MongoDB支持通过分片进行水平扩展
+
+
+
+
+
+
+
+
+
+
+
+
+
+## 分片集群包含的组件
+
+MongoDB分片群集包含以下组件：
+
+* 分片（存储）：每个分片包含分片数据的子集。 每个分片都可以部署为副本集
+* mongos（路由）：mongos充当查询路由器，在客户端应用程序和分片集群之间提供接口
+* config servers（“调度”的配置）：配置服务器存储群集的元数据和配置设置。 从MongoDB 3.4开 始，必须将配置服务器部署为副本集（CSRS）
+
+
+
+
+
+
+
+
+
+## 分片集群架构
+
+两个分片节点副本集（3+3）+一个配置节点副本集（3）+两个路由节点（2），共11个服务节点
+
+
+
+![image-20221118145710613](img/MongoDB学习笔记/image-20221118145710613.png)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+## 分片节点副本集的创建
+
+### 第一套副本集
+
+
+
+#### 第一步：创建文件夹
+
+在软件目录下创建文件夹shards
+
+shards里创建文件夹conf
+
+shards里创建文件夹shard1
+
+shard1里创建文件夹master
+
+shard1里创建文件夹svale
+
+shard1里创建文件夹arbiter
+
+master里创建data文件夹和log文件夹
+
+data文件夹里创建db文件夹
+
+svale和arbiter同理
+
+
+
+```sh
+mkdir shards
+cd shards
+mkdir conf
+mkdir shard1
+cd shard1
+mkdir master
+mkdir slave
+mkdir arbiter
+cd master
+mkdir log
+mkdir data
+cd data
+mkdir db
+cd ..
+cd ..
+cd slave
+mkdir log
+mkdir data
+cd data
+mkdir db
+cd ..
+cd ..
+cd arbiter
+mkdir log
+mkdir data
+cd data
+mkdir db
+cd ..
+cd ..
+```
+
+
+
+
+
+```sh
+PS H:\opensoft\MongoDB> mkdir shards
+>> cd shards
+>> mkdir conf
+>> mkdir shard1
+>> cd shard1
+>> mkdir master
+>> mkdir slave
+>> mkdir arbiter
+>> cd master
+>> mkdir log
+>> mkdir data
+>> cd data
+>> mkdir db
+>> cd ..
+>> cd ..
+>> cd slave
+>> mkdir log
+>> mkdir data
+>> cd data
+>> mkdir db
+>> cd ..
+>> cd ..
+>> cd arbiter
+>> mkdir log
+>> mkdir data
+>> cd data
+>> mkdir db
+>> cd ..
+>> cd ..
+
+
+    目录: H:\opensoft\MongoDB
+
+
+Mode                 LastWriteTime         Length Name
+----                 -------------         ------ ----
+d-----        2022/11/18     15:19                shards
+
+
+    目录: H:\opensoft\MongoDB\shards
+
+
+Mode                 LastWriteTime         Length Name
+----                 -------------         ------ ----
+d-----        2022/11/18     15:19                conf
+d-----        2022/11/18     15:19                shard1
+
+
+    目录: H:\opensoft\MongoDB\shards\shard1
+
+
+Mode                 LastWriteTime         Length Name
+----                 -------------         ------ ----
+d-----        2022/11/18     15:19                master
+d-----        2022/11/18     15:19                slave
+d-----        2022/11/18     15:19                arbiter
+
+
+    目录: H:\opensoft\MongoDB\shards\shard1\master
+
+
+Mode                 LastWriteTime         Length Name
+----                 -------------         ------ ----
+d-----        2022/11/18     15:19                log
+d-----        2022/11/18     15:19                data
+
+
+    目录: H:\opensoft\MongoDB\shards\shard1\master\data
+
+
+Mode                 LastWriteTime         Length Name
+----                 -------------         ------ ----
+d-----        2022/11/18     15:19                db
+
+
+    目录: H:\opensoft\MongoDB\shards\shard1\slave
+
+
+Mode                 LastWriteTime         Length Name
+----                 -------------         ------ ----
+d-----        2022/11/18     15:19                log
+d-----        2022/11/18     15:19                data
+
+
+    目录: H:\opensoft\MongoDB\shards\shard1\slave\data
+
+
+Mode                 LastWriteTime         Length Name
+----                 -------------         ------ ----
+d-----        2022/11/18     15:19                db
+
+
+    目录: H:\opensoft\MongoDB\shards\shard1\arbiter
+
+
+Mode                 LastWriteTime         Length Name
+----                 -------------         ------ ----
+d-----        2022/11/18     15:19                log
+d-----        2022/11/18     15:19                data
+
+
+    目录: H:\opensoft\MongoDB\shards\shard1\arbiter\data
+
+
+Mode                 LastWriteTime         Length Name
+----                 -------------         ------ ----
+d-----        2022/11/18     15:19                db
+
+
+PS H:\opensoft\MongoDB\shards\shard1> ls
+
+
+    目录: H:\opensoft\MongoDB\shards\shard1
+
+
+Mode                 LastWriteTime         Length Name
+----                 -------------         ------ ----
+d-----        2022/11/18     15:19                arbiter
+d-----        2022/11/18     15:19                master
+d-----        2022/11/18     15:19                slave
+
+
+PS H:\opensoft\MongoDB\shards\shard1>
+```
+
+
+
+
+
+
+
+#### 第二步：编写master的配置文件
+
+在conf文件夹里创建shard1_master.conf
+
+
+
+文件内容：
+
+```sh
+systemLog:
+  #MongoDB发送所有日志输出的目标指定为文件
+  destination: file
+  #mongod或mongos应向其发送所有诊断日志记录信息的日志文件的路径
+  path: "./../shards/shard1/master/log/mongod.log"
+  #当mongos或mongod实例重新启动时，mongos或mongod会将新条目附加到现有日志文件的末尾。
+  logAppend: true
+storage:
+  #mongod实例存储其数据的目录。storage.dbPath设置仅适用于mongod
+  dbPath: "./../shards/shard1/master/data/db"
+  journal:
+  #启用或禁用持久性日志以确保数据文件保持有效和可恢复。
+    enabled: true
+processManagement:
+  #启用在后台运行mongos或mongod进程的守护进程模式
+  #fork: true
+  #指定用于保存mongos或mongod进程的进程ID的文件位置，其中mongos或mongod将写入其PID
+  pidFilePath: "./../shards/shard1/master/log/mongod.pid"
+net:
+  #服务实例绑定所有IP，有副作用，副本集初始化的时候，节点名字会自动设置为本地域名，而不是ip
+  #bindIpAll: true
+  #服务实例绑定的IP
+  bindIp: 127.0.0.1
+  #绑定的端口
+  port: 27018
+replication:
+  #副本集的名称
+  replSetName: shard1
+sharding:
+  #分片角色
+  clusterRole: shardsvr
+```
+
+
+
+
+
+分片角色：
+
+* configsvr：将此实例作为配置服务器启动
+* shardsvr：将此实例作为shard启动
+
+
+
+设置sharding.clusterRole需要mongod实例运行复制。 要将实例部署为副本集成员，请使用 replSetName设置并指定副本集的名称
+
+
+
+
+
+
+
+#### 第三步：编辑slave节点的配置文件
+
+在conf文件夹里创建shard1_slave.conf
+
+
+
+```sh
+systemLog:
+  #MongoDB发送所有日志输出的目标指定为文件
+  destination: file
+  #mongod或mongos应向其发送所有诊断日志记录信息的日志文件的路径
+  path: "./../shards/shard1/slave/log/mongod.log"
+  #当mongos或mongod实例重新启动时，mongos或mongod会将新条目附加到现有日志文件的末尾。
+  logAppend: true
+storage:
+  #mongod实例存储其数据的目录。storage.dbPath设置仅适用于mongod
+  dbPath: "./../shards/shard1/slave/data/db"
+  journal:
+  #启用或禁用持久性日志以确保数据文件保持有效和可恢复。
+    enabled: true
+processManagement:
+  #启用在后台运行mongos或mongod进程的守护进程模式
+  #fork: true
+  #指定用于保存mongos或mongod进程的进程ID的文件位置，其中mongos或mongod将写入其PID
+  pidFilePath: "./../shards/shard1/slave/log/mongod.pid"
+net:
+  #服务实例绑定所有IP，有副作用，副本集初始化的时候，节点名字会自动设置为本地域名，而不是ip
+  #bindIpAll: true
+  #服务实例绑定的IP
+  bindIp: 127.0.0.1
+  #绑定的端口
+  port: 27118
+replication:
+  #副本集的名称
+  replSetName: shard1
+sharding:
+  #分片角色
+  clusterRole: shardsvr
+```
+
+
+
+
+
+
+
+#### 第四步：创建arbiter节点的配置文件
+
+文件名称：shard1_arbiter.conf
+
+
+
+```sh
+systemLog:
+  #MongoDB发送所有日志输出的目标指定为文件
+  destination: file
+  #mongod或mongos应向其发送所有诊断日志记录信息的日志文件的路径
+  path: "./../shards/shard1/arbiter/log/mongod.log"
+  #当mongos或mongod实例重新启动时，mongos或mongod会将新条目附加到现有日志文件的末尾。
+  logAppend: true
+storage:
+  #mongod实例存储其数据的目录。storage.dbPath设置仅适用于mongod
+  dbPath: "./../shards/shard1/arbiter/data/db"
+  journal:
+  #启用或禁用持久性日志以确保数据文件保持有效和可恢复。
+    enabled: true
+processManagement:
+  #启用在后台运行mongos或mongod进程的守护进程模式
+  #fork: true
+  #指定用于保存mongos或mongod进程的进程ID的文件位置，其中mongos或mongod将写入其PID
+  pidFilePath: "./../shards/shard1/arbiter/log/mongod.pid"
+net:
+  #服务实例绑定所有IP，有副作用，副本集初始化的时候，节点名字会自动设置为本地域名，而不是ip
+  #bindIpAll: true
+  #服务实例绑定的IP
+  bindIp: 127.0.0.1
+  #绑定的端口
+  port: 27218
+replication:
+  #副本集的名称
+  replSetName: shard1
+sharding:
+  #分片角色
+  clusterRole: shardsvr
+```
+
+
+
+
+
+
+
+
+
+
+
+#### 第五步：启动shard1分片的三个mongod服务
+
+
+
+```sh
+cd bin
+start "mongod-shard1-27018" mongod --config ../shards/conf/shard1_master.conf
+start "mongod-shard1-27118" mongod --config ../shards/conf/shard1_slave.conf
+start "mongod-shard1-27218" mongod --config ../shards/conf/shard1_arbiter.conf
+```
+
+
+
+```sh
+PS H:\opensoft\MongoDB> ls
+
+
+    目录: H:\opensoft\MongoDB
+
+
+Mode                 LastWriteTime         Length Name
+----                 -------------         ------ ----
+d-----        2022/11/17     14:04                arbiter
+d-----        2022/11/14     20:18                bin
+d-----        2022/11/17     14:09                conf
+d-----        2022/11/15     12:49                data
+d-----        2022/11/14     20:16                log
+d-----        2022/11/17     13:47                master
+d-----        2022/11/15     21:53                MongoDBCompass
+d-----         2022/9/20      4:08                mongosh
+d-----        2022/11/18     15:34                shards
+d-----        2022/11/17     13:58                slave
+-a----         2022/9/29      1:03          30608 LICENSE-Community.txt
+-a----         2022/9/29      1:03          16726 MPL-2
+-a----         2022/9/29      1:03           1977 README
+-a----        2022/11/18     15:40            247 shard1.bat
+-a----         2022/9/29      1:03          77913 THIRD-PARTY-NOTICES
+-a----        2022/11/14     21:22             50 运行.bat
+-a----        2022/11/17     14:32            193 集群启动-单窗口.bat
+-a----        2022/11/17     14:26            184 集群启动.bat
+
+
+PS H:\opensoft\MongoDB> cat .\shard1.bat
+cd bin
+start "mongod-shard1-27018" mongod --config ../shards/conf/shard1_master.conf
+start "mongod-shard1-27118" mongod --config ../shards/conf/shard1_slave.conf
+start "mongod-shard1-27218" mongod --config ../shards/conf/shard1_arbiter.conf
+
+PS H:\opensoft\MongoDB> start .\shard1.bat
+PS H:\opensoft\MongoDB>
+```
+
+
+
+
+
+
+
+#### 第六步：使用mongosh连接master节点
+
+
+
+```sh
+PS H:\opensoft\MongoDB> mongosh --port 27018
+Current Mongosh Log ID: 6377379d831aa567a80dbab0
+Connecting to:          mongodb://127.0.0.1:27018/?directConnection=true&serverSelectionTimeoutMS=2000&appName=mongosh+1.6.0
+Using MongoDB:          6.0.2
+Using Mongosh:          1.6.0
+
+For mongosh info see: https://docs.mongodb.com/mongodb-shell/
+
+------
+   The server generated these startup warnings when booting
+   2022-11-18T15:41:40.510+08:00: Access control is not enabled for the database. Read and write access to data and configuration is unrestricted
+------
+
+------
+   Enable MongoDB's free cloud-based monitoring service, which will then receive and display
+   metrics about your deployment (disk utilization, CPU, operation statistics, etc).
+
+   The monitoring data will be available on a MongoDB website with a unique URL accessible to you
+   and anyone you share the URL with. MongoDB may use this information to make product
+   improvements and to suggest MongoDB products and deployment options to you.
+
+   To enable free monitoring, run the following command: db.enableFreeMonitoring()
+   To permanently disable this reminder, run the following command: db.disableFreeMonitoring()
+------
+
+test>
+```
+
+
+
+
+
+#### 第七步：初始化副本集
+
+
+
+```sh
+rs.initiate()
+```
+
+
+
+```sh
+test> rs.initiate()
+{
+  info2: 'no configuration specified. Using a default configuration for the set',
+  me: '127.0.0.1:27018',
+  ok: 1
+}
+shard1 [direct: other] test>
+```
+
+
+
+
+
+#### 第八步：查看副本集的配置内容
+
+
+
+```sh
+rs.conf()
+```
+
+
+
+```sh
+shard1 [direct: other] test> rs.conf()
+{
+  _id: 'shard1',
+  version: 1,
+  term: 1,
+  members: [
+    {
+      _id: 0,
+      host: '127.0.0.1:27018',
+      arbiterOnly: false,
+      buildIndexes: true,
+      hidden: false,
+      priority: 1,
+      tags: {},
+      secondaryDelaySecs: Long("0"),
+      votes: 1
+    }
+  ],
+  protocolVersion: Long("1"),
+  writeConcernMajorityJournalDefault: true,
+  settings: {
+    chainingAllowed: true,
+    heartbeatIntervalMillis: 2000,
+    heartbeatTimeoutSecs: 10,
+    electionTimeoutMillis: 10000,
+    catchUpTimeoutMillis: -1,
+    catchUpTakeoverDelayMillis: 30000,
+    getLastErrorModes: {},
+    getLastErrorDefaults: { w: 1, wtimeout: 0 },
+    replicaSetId: ObjectId("637737e51929e8468af91d19")
+  }
+}
+shard1 [direct: primary] test>
+```
+
+
+
+
+
+#### 第九步：添加副本从节点
+
+
+
+```sh
+rs.add("127.0.0.1:27118")
+```
+
+
+
+```sh
+shard1 [direct: primary] test> rs.add("127.0.0.1:27118")
+{
+  ok: 1,
+  '$clusterTime': {
+    clusterTime: Timestamp({ t: 1668757602, i: 1 }),
+    signature: {
+      hash: Binary(Buffer.from("0000000000000000000000000000000000000000", "hex"), 0),
+      keyId: Long("0")
+    }
+  },
+  operationTime: Timestamp({ t: 1668757602, i: 1 })
+}
+shard1 [direct: primary] test>
+```
+
+
+
+
+
+查看状态
+
+
+
+```sh
+shard1 [direct: primary] test> rs.conf()
+{
+  _id: 'shard1',
+  version: 3,
+  term: 1,
+  members: [
+    {
+      _id: 0,
+      host: '127.0.0.1:27018',
+      arbiterOnly: false,
+      buildIndexes: true,
+      hidden: false,
+      priority: 1,
+      tags: {},
+      secondaryDelaySecs: Long("0"),
+      votes: 1
+    },
+    {
+      _id: 1,
+      host: '127.0.0.1:27118',
+      arbiterOnly: false,
+      buildIndexes: true,
+      hidden: false,
+      priority: 1,
+      tags: {},
+      secondaryDelaySecs: Long("0"),
+      votes: 1
+    }
+  ],
+  protocolVersion: Long("1"),
+  writeConcernMajorityJournalDefault: true,
+  settings: {
+    chainingAllowed: true,
+    heartbeatIntervalMillis: 2000,
+    heartbeatTimeoutSecs: 10,
+    electionTimeoutMillis: 10000,
+    catchUpTimeoutMillis: -1,
+    catchUpTakeoverDelayMillis: 30000,
+    getLastErrorModes: {},
+    getLastErrorDefaults: { w: 1, wtimeout: 0 },
+    replicaSetId: ObjectId("637737e51929e8468af91d19")
+  }
+}
+shard1 [direct: primary] test>
+```
+
+
+
+
+
+#### 第十步：添加仲裁从节点
+
+
+
+```sh
+rs.addArb("127.0.0.1:27218")
+```
+
+
+
+```sh
+shard1 [direct: primary] test> rs.addArb("127.0.0.1:27218")
+{
+  ok: 1,
+  '$clusterTime': {
+    clusterTime: Timestamp({ t: 1668757806, i: 1 }),
+    signature: {
+      hash: Binary(Buffer.from("0000000000000000000000000000000000000000", "hex"), 0),
+      keyId: Long("0")
+    }
+  },
+  operationTime: Timestamp({ t: 1668757806, i: 1 })
+}
+shard1 [direct: primary] test>
+```
+
+
+
+```sh
+shard1 [direct: primary] test> rs.conf()
+{
+  _id: 'shard1',
+  version: 7,
+  term: 1,
+  members: [
+    {
+      _id: 0,
+      host: '127.0.0.1:27018',
+      arbiterOnly: false,
+      buildIndexes: true,
+      hidden: false,
+      priority: 1,
+      tags: {},
+      secondaryDelaySecs: Long("0"),
+      votes: 1
+    },
+    {
+      _id: 1,
+      host: '127.0.0.1:27118',
+      arbiterOnly: false,
+      buildIndexes: true,
+      hidden: false,
+      priority: 1,
+      tags: {},
+      secondaryDelaySecs: Long("0"),
+      votes: 1
+    },
+    {
+      _id: 2,
+      host: '127.0.0.1:27218',
+      arbiterOnly: true,
+      buildIndexes: true,
+      hidden: false,
+      priority: 0,
+      tags: {},
+      secondaryDelaySecs: Long("0"),
+      votes: 1
+    }
+  ],
+  protocolVersion: Long("1"),
+  writeConcernMajorityJournalDefault: true,
+  settings: {
+    chainingAllowed: true,
+    heartbeatIntervalMillis: 2000,
+    heartbeatTimeoutSecs: 10,
+    electionTimeoutMillis: 10000,
+    catchUpTimeoutMillis: -1,
+    catchUpTakeoverDelayMillis: 30000,
+    getLastErrorModes: {},
+    getLastErrorDefaults: { w: 1, wtimeout: 0 },
+    replicaSetId: ObjectId("637737e51929e8468af91d19")
+  }
+}
+shard1 [direct: primary] test>
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+### 第二套副本集
