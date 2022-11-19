@@ -10409,3 +10409,629 @@ PS H:\opensoft\MongoDB\shards\config>
 
 
 
+```sh
+systemLog:
+  #MongoDB发送所有日志输出的目标指定为文件
+  destination: file
+  #mongod或mongos应向其发送所有诊断日志记录信息的日志文件的路径
+  path: "./../shards/config/config1/log/mongod.log"
+  #当mongos或mongod实例重新启动时，mongos或mongod会将新条目附加到现有日志文件的末尾。
+  logAppend: true
+storage:
+  #mongod实例存储其数据的目录。storage.dbPath设置仅适用于mongod
+  dbPath: "./../shards/config/config1/data/db"
+  journal:
+  #启用或禁用持久性日志以确保数据文件保持有效和可恢复。
+    enabled: true
+processManagement:
+  #启用在后台运行mongos或mongod进程的守护进程模式
+  #fork: true
+  #指定用于保存mongos或mongod进程的进程ID的文件位置，其中mongos或mongod将写入其PID
+  pidFilePath: "./../shards/config/config1/log/mongod.pid"
+net:
+  #服务实例绑定所有IP，有副作用，副本集初始化的时候，节点名字会自动设置为本地域名，而不是ip
+  #bindIpAll: true
+  #服务实例绑定的IP
+  bindIp: 127.0.0.1
+  #绑定的端口
+  port: 27019
+replication:
+  #副本集的名称
+  replSetName: config
+sharding:
+  #分片角色
+  clusterRole: configsvr
+```
+
+
+
+
+
+#### 第三步：编写config2的配置文件
+
+在conf文件夹里创建config2.conf
+
+
+
+```sh
+systemLog:
+  #MongoDB发送所有日志输出的目标指定为文件
+  destination: file
+  #mongod或mongos应向其发送所有诊断日志记录信息的日志文件的路径
+  path: "./../shards/config/config2/log/mongod.log"
+  #当mongos或mongod实例重新启动时，mongos或mongod会将新条目附加到现有日志文件的末尾。
+  logAppend: true
+storage:
+  #mongod实例存储其数据的目录。storage.dbPath设置仅适用于mongod
+  dbPath: "./../shards/config/config2/data/db"
+  journal:
+  #启用或禁用持久性日志以确保数据文件保持有效和可恢复。
+    enabled: true
+processManagement:
+  #启用在后台运行mongos或mongod进程的守护进程模式
+  #fork: true
+  #指定用于保存mongos或mongod进程的进程ID的文件位置，其中mongos或mongod将写入其PID
+  pidFilePath: "./../shards/config/config2/log/mongod.pid"
+net:
+  #服务实例绑定所有IP，有副作用，副本集初始化的时候，节点名字会自动设置为本地域名，而不是ip
+  #bindIpAll: true
+  #服务实例绑定的IP
+  bindIp: 127.0.0.1
+  #绑定的端口
+  port: 27119
+replication:
+  #副本集的名称
+  replSetName: config
+sharding:
+  #分片角色
+  clusterRole: configsvr
+```
+
+
+
+
+
+
+
+
+
+#### 第四步：编写config2的配置文件
+
+在conf文件夹里创建config2.conf
+
+
+
+```sh
+systemLog:
+  #MongoDB发送所有日志输出的目标指定为文件
+  destination: file
+  #mongod或mongos应向其发送所有诊断日志记录信息的日志文件的路径
+  path: "./../shards/config/config3/log/mongod.log"
+  #当mongos或mongod实例重新启动时，mongos或mongod会将新条目附加到现有日志文件的末尾。
+  logAppend: true
+storage:
+  #mongod实例存储其数据的目录。storage.dbPath设置仅适用于mongod
+  dbPath: "./../shards/config/config3/data/db"
+  journal:
+  #启用或禁用持久性日志以确保数据文件保持有效和可恢复。
+    enabled: true
+processManagement:
+  #启用在后台运行mongos或mongod进程的守护进程模式
+  #fork: true
+  #指定用于保存mongos或mongod进程的进程ID的文件位置，其中mongos或mongod将写入其PID
+  pidFilePath: "./../shards/config/config3/log/mongod.pid"
+net:
+  #服务实例绑定所有IP，有副作用，副本集初始化的时候，节点名字会自动设置为本地域名，而不是ip
+  #bindIpAll: true
+  #服务实例绑定的IP
+  bindIp: 127.0.0.1
+  #绑定的端口
+  port: 27219
+replication:
+  #副本集的名称
+  replSetName: config
+sharding:
+  #分片角色
+  clusterRole: configsvr
+```
+
+
+
+
+
+
+
+#### 第五步：启动三个mongod服务
+
+
+
+```sh
+cd bin
+start "mongod-config-27019" mongod --config ../shards/conf/config1.conf
+start "mongod-config-27119" mongod --config ../shards/conf/config2.conf
+start "mongod-config-27219" mongod --config ../shards/conf/config3.conf
+```
+
+
+
+```sh
+PS H:\opensoft\MongoDB> ls
+
+
+    目录: H:\opensoft\MongoDB
+
+
+Mode                 LastWriteTime         Length Name
+----                 -------------         ------ ----
+d-----        2022/11/17     14:04                arbiter
+d-----        2022/11/18     15:50                bin
+d-----        2022/11/17     14:09                conf
+d-----        2022/11/15     12:49                data
+d-----        2022/11/14     20:16                log
+d-----        2022/11/17     13:47                master
+d-----        2022/11/15     21:53                MongoDBCompass
+d-----         2022/9/20      4:08                mongosh
+d-----        2022/11/19     13:42                shards
+d-----        2022/11/17     13:58                slave
+-a----        2022/11/19     14:01            225 config.bat
+-a----         2022/9/29      1:03          30608 LICENSE-Community.txt
+-a----         2022/9/29      1:03          16726 MPL-2
+-a----         2022/9/29      1:03           1977 README
+-a----        2022/11/18     15:40            247 shard1.bat
+-a----        2022/11/19     13:27            243 shard2.bat
+-a----         2022/9/29      1:03          77913 THIRD-PARTY-NOTICES
+-a----        2022/11/14     21:22             50 运行.bat
+-a----        2022/11/17     14:32            193 集群启动-单窗口.bat
+-a----        2022/11/17     14:26            184 集群启动.bat
+
+
+PS H:\opensoft\MongoDB> cat .\config.bat
+cd bin
+start "mongod-config-27019" mongod --config ../shards/conf/config1.conf
+start "mongod-config-27119" mongod --config ../shards/conf/config2.conf
+start "mongod-config-27219" mongod --config ../shards/conf/config3.conf
+PS H:\opensoft\MongoDB> start .\config.bat
+PS H:\opensoft\MongoDB>
+```
+
+
+
+
+
+
+
+#### 第六步：使用mongosh连接master节点
+
+
+
+```sh
+PS H:\opensoft\MongoDB> mongosh -port 27019
+Current Mongosh Log ID: 637871e088cb1fcbeb18c381
+Connecting to:          mongodb://127.0.0.1:27019/?directConnection=true&serverSelectionTimeoutMS=2000&appName=mongosh+1.6.0
+Using MongoDB:          6.0.2
+Using Mongosh:          1.6.0
+
+For mongosh info see: https://docs.mongodb.com/mongodb-shell/
+
+------
+   The server generated these startup warnings when booting
+   2022-11-19T14:02:07.026+08:00: Access control is not enabled for the database. Read and write access to data and configuration is unrestricted
+------
+
+------
+   Enable MongoDB's free cloud-based monitoring service, which will then receive and display
+   metrics about your deployment (disk utilization, CPU, operation statistics, etc).
+
+   The monitoring data will be available on a MongoDB website with a unique URL accessible to you
+   and anyone you share the URL with. MongoDB may use this information to make product
+   improvements and to suggest MongoDB products and deployment options to you.
+
+   To enable free monitoring, run the following command: db.enableFreeMonitoring()
+   To permanently disable this reminder, run the following command: db.disableFreeMonitoring()
+------
+
+test>
+```
+
+
+
+
+
+
+
+#### 第七步：初始化副本集
+
+
+
+```sh
+rs.initiate()
+```
+
+
+
+
+
+```sh
+test> rs.initiate()
+{
+  info2: 'no configuration specified. Using a default configuration for the set',
+  me: '127.0.0.1:27019',
+  ok: 1,
+  lastCommittedOpTime: Timestamp({ t: 1668837907, i: 1 })
+}
+config [direct: other] test>
+```
+
+
+
+
+
+#### 第八步：查看副本集的配置内容
+
+
+
+```sh
+rs.conf()
+```
+
+
+
+```sh
+test> rs.initiate()
+{
+  info2: 'no configuration specified. Using a default configuration for the set',
+  me: '127.0.0.1:27019',
+  ok: 1,
+  lastCommittedOpTime: Timestamp({ t: 1668837907, i: 1 })
+}
+config [direct: other] test> rs.conf()
+{
+  _id: 'config',
+  version: 1,
+  term: 1,
+  members: [
+    {
+      _id: 0,
+      host: '127.0.0.1:27019',
+      arbiterOnly: false,
+      buildIndexes: true,
+      hidden: false,
+      priority: 1,
+      tags: {},
+      secondaryDelaySecs: Long("0"),
+      votes: 1
+    }
+  ],
+  configsvr: true,
+  protocolVersion: Long("1"),
+  writeConcernMajorityJournalDefault: true,
+  settings: {
+    chainingAllowed: true,
+    heartbeatIntervalMillis: 2000,
+    heartbeatTimeoutSecs: 10,
+    electionTimeoutMillis: 10000,
+    catchUpTimeoutMillis: -1,
+    catchUpTakeoverDelayMillis: 30000,
+    getLastErrorModes: {},
+    getLastErrorDefaults: { w: 1, wtimeout: 0 },
+    replicaSetId: ObjectId("6378721152fa08bd79db7350")
+  }
+}
+config [direct: primary] test>
+```
+
+
+
+
+
+
+
+#### 第九步：添加副本节点27119
+
+
+
+```sh
+rs.add("127.0.0.1:27119")
+```
+
+
+
+```sh
+config [direct: primary] test> rs.add("127.0.0.1:27119")
+{
+  ok: 1,
+  lastCommittedOpTime: Timestamp({ t: 1668838041, i: 1 }),
+  '$clusterTime': {
+    clusterTime: Timestamp({ t: 1668838041, i: 1 }),
+    signature: {
+      hash: Binary(Buffer.from("0000000000000000000000000000000000000000", "hex"), 0),
+      keyId: Long("0")
+    }
+  },
+  operationTime: Timestamp({ t: 1668838041, i: 1 })
+}
+config [direct: primary] test>
+```
+
+
+
+```sh
+config [direct: primary] test> rs.conf()
+{
+  _id: 'config',
+  version: 3,
+  term: 1,
+  members: [
+    {
+      _id: 0,
+      host: '127.0.0.1:27019',
+      arbiterOnly: false,
+      buildIndexes: true,
+      hidden: false,
+      priority: 1,
+      tags: {},
+      secondaryDelaySecs: Long("0"),
+      votes: 1
+    },
+    {
+      _id: 1,
+      host: '127.0.0.1:27119',
+      arbiterOnly: false,
+      buildIndexes: true,
+      hidden: false,
+      priority: 1,
+      tags: {},
+      secondaryDelaySecs: Long("0"),
+      votes: 1
+    }
+  ],
+  configsvr: true,
+  protocolVersion: Long("1"),
+  writeConcernMajorityJournalDefault: true,
+  settings: {
+    chainingAllowed: true,
+    heartbeatIntervalMillis: 2000,
+    heartbeatTimeoutSecs: 10,
+    electionTimeoutMillis: 10000,
+    catchUpTimeoutMillis: -1,
+    catchUpTakeoverDelayMillis: 30000,
+    getLastErrorModes: {},
+    getLastErrorDefaults: { w: 1, wtimeout: 0 },
+    replicaSetId: ObjectId("6378721152fa08bd79db7350")
+  }
+}
+config [direct: primary] test>
+```
+
+
+
+
+
+
+
+第十步：添加副本节点27219
+
+
+
+```sh
+rs.add("127.0.0.1:27219")
+```
+
+
+
+```sh
+config [direct: primary] test> rs.add("127.0.0.1:27219")
+{
+  ok: 1,
+  lastCommittedOpTime: Timestamp({ t: 1668838102, i: 1 }),
+  '$clusterTime': {
+    clusterTime: Timestamp({ t: 1668838102, i: 1 }),
+    signature: {
+      hash: Binary(Buffer.from("0000000000000000000000000000000000000000", "hex"), 0),
+      keyId: Long("0")
+    }
+  },
+  operationTime: Timestamp({ t: 1668838100, i: 2 })
+}
+config [direct: primary] test>
+```
+
+
+
+```sh
+config [direct: primary] test> rs.conf()
+{
+  _id: 'config',
+  version: 5,
+  term: 1,
+  members: [
+    {
+      _id: 0,
+      host: '127.0.0.1:27019',
+      arbiterOnly: false,
+      buildIndexes: true,
+      hidden: false,
+      priority: 1,
+      tags: {},
+      secondaryDelaySecs: Long("0"),
+      votes: 1
+    },
+    {
+      _id: 1,
+      host: '127.0.0.1:27119',
+      arbiterOnly: false,
+      buildIndexes: true,
+      hidden: false,
+      priority: 1,
+      tags: {},
+      secondaryDelaySecs: Long("0"),
+      votes: 1
+    },
+    {
+      _id: 2,
+      host: '127.0.0.1:27219',
+      arbiterOnly: false,
+      buildIndexes: true,
+      hidden: false,
+      priority: 1,
+      tags: {},
+      secondaryDelaySecs: Long("0"),
+      votes: 1
+    }
+  ],
+  configsvr: true,
+  protocolVersion: Long("1"),
+  writeConcernMajorityJournalDefault: true,
+  settings: {
+    chainingAllowed: true,
+    heartbeatIntervalMillis: 2000,
+    heartbeatTimeoutSecs: 10,
+    electionTimeoutMillis: 10000,
+    catchUpTimeoutMillis: -1,
+    catchUpTakeoverDelayMillis: 30000,
+    getLastErrorModes: {},
+    getLastErrorDefaults: { w: 1, wtimeout: 0 },
+    replicaSetId: ObjectId("6378721152fa08bd79db7350")
+  }
+}
+config [direct: primary] test>
+```
+
+```sh
+config [direct: primary] test> rs.status()
+{
+  set: 'config',
+  date: ISODate("2022-11-19T06:08:50.617Z"),
+  myState: 1,
+  term: Long("1"),
+  syncSourceHost: '',
+  syncSourceId: -1,
+  configsvr: true,
+  heartbeatIntervalMillis: Long("2000"),
+  majorityVoteCount: 2,
+  writeMajorityCount: 2,
+  votingMembersCount: 3,
+  writableVotingMembersCount: 3,
+  optimes: {
+    lastCommittedOpTime: { ts: Timestamp({ t: 1668838130, i: 1 }), t: Long("1") },
+    lastCommittedWallTime: ISODate("2022-11-19T06:08:50.063Z"),
+    readConcernMajorityOpTime: { ts: Timestamp({ t: 1668838130, i: 1 }), t: Long("1") },
+    appliedOpTime: { ts: Timestamp({ t: 1668838130, i: 1 }), t: Long("1") },
+    durableOpTime: { ts: Timestamp({ t: 1668838130, i: 1 }), t: Long("1") },
+    lastAppliedWallTime: ISODate("2022-11-19T06:08:50.063Z"),
+    lastDurableWallTime: ISODate("2022-11-19T06:08:50.063Z")
+  },
+  lastStableRecoveryTimestamp: Timestamp({ t: 1668838093, i: 1 }),
+  electionCandidateMetrics: {
+    lastElectionReason: 'electionTimeout',
+    lastElectionDate: ISODate("2022-11-19T06:05:09.083Z"),
+    electionTerm: Long("1"),
+    lastCommittedOpTimeAtElection: { ts: Timestamp({ t: 1668837907, i: 1 }), t: Long("-1") },
+    lastSeenOpTimeAtElection: { ts: Timestamp({ t: 1668837907, i: 1 }), t: Long("-1") },
+    numVotesNeeded: 1,
+    priorityAtElection: 1,
+    electionTimeoutMillis: Long("10000"),
+    newTermStartDate: ISODate("2022-11-19T06:05:09.786Z"),
+    wMajorityWriteAvailabilityDate: ISODate("2022-11-19T06:05:13.956Z")
+  },
+  members: [
+    {
+      _id: 0,
+      name: '127.0.0.1:27019',
+      health: 1,
+      state: 1,
+      stateStr: 'PRIMARY',
+      uptime: 407,
+      optime: { ts: Timestamp({ t: 1668838130, i: 1 }), t: Long("1") },
+      optimeDate: ISODate("2022-11-19T06:08:50.000Z"),
+      lastAppliedWallTime: ISODate("2022-11-19T06:08:50.063Z"),
+      lastDurableWallTime: ISODate("2022-11-19T06:08:50.063Z"),
+      syncSourceHost: '',
+      syncSourceId: -1,
+      infoMessage: '',
+      electionTime: Timestamp({ t: 1668837909, i: 1 }),
+      electionDate: ISODate("2022-11-19T06:05:09.000Z"),
+      configVersion: 5,
+      configTerm: 1,
+      self: true,
+      lastHeartbeatMessage: ''
+    },
+    {
+      _id: 1,
+      name: '127.0.0.1:27119',
+      health: 1,
+      state: 2,
+      stateStr: 'SECONDARY',
+      uptime: 88,
+      optime: { ts: Timestamp({ t: 1668838130, i: 1 }), t: Long("1") },
+      optimeDurable: { ts: Timestamp({ t: 1668838130, i: 1 }), t: Long("1") },
+      optimeDate: ISODate("2022-11-19T06:08:50.000Z"),
+      optimeDurableDate: ISODate("2022-11-19T06:08:50.000Z"),
+      lastAppliedWallTime: ISODate("2022-11-19T06:08:50.063Z"),
+      lastDurableWallTime: ISODate("2022-11-19T06:08:50.063Z"),
+      lastHeartbeat: ISODate("2022-11-19T06:08:50.227Z"),
+      lastHeartbeatRecv: ISODate("2022-11-19T06:08:50.288Z"),
+      pingMs: Long("0"),
+      lastHeartbeatMessage: '',
+      syncSourceHost: '127.0.0.1:27019',
+      syncSourceId: 0,
+      infoMessage: '',
+      configVersion: 5,
+      configTerm: 1
+    },
+    {
+      _id: 2,
+      name: '127.0.0.1:27219',
+      health: 1,
+      state: 2,
+      stateStr: 'SECONDARY',
+      uptime: 30,
+      optime: { ts: Timestamp({ t: 1668838130, i: 1 }), t: Long("1") },
+      optimeDurable: { ts: Timestamp({ t: 1668838130, i: 1 }), t: Long("1") },
+      optimeDate: ISODate("2022-11-19T06:08:50.000Z"),
+      optimeDurableDate: ISODate("2022-11-19T06:08:50.000Z"),
+      lastAppliedWallTime: ISODate("2022-11-19T06:08:50.063Z"),
+      lastDurableWallTime: ISODate("2022-11-19T06:08:50.063Z"),
+      lastHeartbeat: ISODate("2022-11-19T06:08:50.227Z"),
+      lastHeartbeatRecv: ISODate("2022-11-19T06:08:50.310Z"),
+      pingMs: Long("0"),
+      lastHeartbeatMessage: '',
+      syncSourceHost: '127.0.0.1:27119',
+      syncSourceId: 1,
+      infoMessage: '',
+      configVersion: 5,
+      configTerm: 1
+    }
+  ],
+  ok: 1,
+  lastCommittedOpTime: Timestamp({ t: 1668838130, i: 1 }),
+  '$clusterTime': {
+    clusterTime: Timestamp({ t: 1668838130, i: 1 }),
+    signature: {
+      hash: Binary(Buffer.from("0000000000000000000000000000000000000000", "hex"), 0),
+      keyId: Long("0")
+    }
+  },
+  operationTime: Timestamp({ t: 1668838130, i: 1 })
+}
+config [direct: primary] test>
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+### 路由节点
+
