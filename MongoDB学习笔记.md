@@ -9592,3 +9592,820 @@ shard1 [direct: primary] test>
 
 
 ### 第二套副本集
+
+
+
+#### 第一步：创建文件夹
+
+shards里创建文件夹shard2
+
+shard2里创建文件夹master
+
+shard2里创建文件夹svale
+
+shard2里创建文件夹arbiter
+
+master里创建data文件夹和log文件夹
+
+data文件夹里创建db文件夹
+
+svale和arbiter同理
+
+
+
+```sh
+cd shards
+mkdir shard2
+cd shard2
+mkdir master
+mkdir slave
+mkdir arbiter
+cd master
+mkdir log
+mkdir data
+cd data
+mkdir db
+cd ..
+cd ..
+cd slave
+mkdir log
+mkdir data
+cd data
+mkdir db
+cd ..
+cd ..
+cd arbiter
+mkdir log
+mkdir data
+cd data
+mkdir db
+cd ..
+cd ..
+```
+
+
+
+
+
+```sh
+PS H:\opensoft\MongoDB> cd shards
+>> mkdir shard2
+>> cd shard2
+>> mkdir master
+>> mkdir slave
+>> mkdir arbiter
+>> cd master
+>> mkdir log
+>> mkdir data
+>> cd data
+>> mkdir db
+>> cd ..
+>> cd ..
+>> cd slave
+>> mkdir log
+>> mkdir data
+>> cd data
+>> mkdir db
+>> cd ..
+>> cd ..
+>> cd arbiter
+>> mkdir log
+>> mkdir data
+>> cd data
+>> mkdir db
+>> cd ..
+>> cd ..
+
+
+    目录: H:\opensoft\MongoDB\shards
+
+
+Mode                 LastWriteTime         Length Name
+----                 -------------         ------ ----
+d-----        2022/11/19     13:21                shard2
+
+
+    目录: H:\opensoft\MongoDB\shards\shard2
+
+
+Mode                 LastWriteTime         Length Name
+----                 -------------         ------ ----
+d-----        2022/11/19     13:21                master
+d-----        2022/11/19     13:21                slave
+d-----        2022/11/19     13:21                arbiter
+
+
+    目录: H:\opensoft\MongoDB\shards\shard2\master
+
+
+Mode                 LastWriteTime         Length Name
+----                 -------------         ------ ----
+d-----        2022/11/19     13:21                log
+d-----        2022/11/19     13:21                data
+
+
+    目录: H:\opensoft\MongoDB\shards\shard2\master\data
+
+
+Mode                 LastWriteTime         Length Name
+----                 -------------         ------ ----
+d-----        2022/11/19     13:21                db
+
+
+    目录: H:\opensoft\MongoDB\shards\shard2\slave
+
+
+Mode                 LastWriteTime         Length Name
+----                 -------------         ------ ----
+d-----        2022/11/19     13:21                log
+d-----        2022/11/19     13:21                data
+
+
+    目录: H:\opensoft\MongoDB\shards\shard2\slave\data
+
+
+Mode                 LastWriteTime         Length Name
+----                 -------------         ------ ----
+d-----        2022/11/19     13:21                db
+
+
+    目录: H:\opensoft\MongoDB\shards\shard2\arbiter
+
+
+Mode                 LastWriteTime         Length Name
+----                 -------------         ------ ----
+d-----        2022/11/19     13:21                log
+d-----        2022/11/19     13:21                data
+
+
+    目录: H:\opensoft\MongoDB\shards\shard2\arbiter\data
+
+
+Mode                 LastWriteTime         Length Name
+----                 -------------         ------ ----
+d-----        2022/11/19     13:21                db
+
+
+PS H:\opensoft\MongoDB\shards\shard2>
+```
+
+
+
+
+
+
+
+#### 第二步：编写master的配置文件
+
+在conf文件夹里创建shard2_master.conf
+
+
+
+内容：
+
+```sh
+systemLog:
+  #MongoDB发送所有日志输出的目标指定为文件
+  destination: file
+  #mongod或mongos应向其发送所有诊断日志记录信息的日志文件的路径
+  path: "./../shards/shard2/master/log/mongod.log"
+  #当mongos或mongod实例重新启动时，mongos或mongod会将新条目附加到现有日志文件的末尾。
+  logAppend: true
+storage:
+  #mongod实例存储其数据的目录。storage.dbPath设置仅适用于mongod
+  dbPath: "./../shards/shard2/master/data/db"
+  journal:
+  #启用或禁用持久性日志以确保数据文件保持有效和可恢复。
+    enabled: true
+processManagement:
+  #启用在后台运行mongos或mongod进程的守护进程模式
+  #fork: true
+  #指定用于保存mongos或mongod进程的进程ID的文件位置，其中mongos或mongod将写入其PID
+  pidFilePath: "./../shards/shard2/master/log/mongod.pid"
+net:
+  #服务实例绑定所有IP，有副作用，副本集初始化的时候，节点名字会自动设置为本地域名，而不是ip
+  #bindIpAll: true
+  #服务实例绑定的IP
+  bindIp: 127.0.0.1
+  #绑定的端口
+  port: 27318
+replication:
+  #副本集的名称
+  replSetName: shard2
+sharding:
+  #分片角色
+  clusterRole: shardsvr
+```
+
+
+
+
+
+#### 第三步：编辑slave节点的配置文件
+
+在conf文件夹里创建shard2_slave.conf
+
+
+
+```sh
+systemLog:
+  #MongoDB发送所有日志输出的目标指定为文件
+  destination: file
+  #mongod或mongos应向其发送所有诊断日志记录信息的日志文件的路径
+  path: "./../shards/shard2/slave/log/mongod.log"
+  #当mongos或mongod实例重新启动时，mongos或mongod会将新条目附加到现有日志文件的末尾。
+  logAppend: true
+storage:
+  #mongod实例存储其数据的目录。storage.dbPath设置仅适用于mongod
+  dbPath: "./../shards/shard2/slave/data/db"
+  journal:
+  #启用或禁用持久性日志以确保数据文件保持有效和可恢复。
+    enabled: true
+processManagement:
+  #启用在后台运行mongos或mongod进程的守护进程模式
+  #fork: true
+  #指定用于保存mongos或mongod进程的进程ID的文件位置，其中mongos或mongod将写入其PID
+  pidFilePath: "./../shards/shard2/slave/log/mongod.pid"
+net:
+  #服务实例绑定所有IP，有副作用，副本集初始化的时候，节点名字会自动设置为本地域名，而不是ip
+  #bindIpAll: true
+  #服务实例绑定的IP
+  bindIp: 127.0.0.1
+  #绑定的端口
+  port: 27418
+replication:
+  #副本集的名称
+  replSetName: shard2
+sharding:
+  #分片角色
+  clusterRole: shardsvr
+```
+
+
+
+
+
+#### 第四步：创建arbiter节点的配置文件
+
+文件名称：shard2_arbiter.conf
+
+
+
+```sh
+systemLog:
+  #MongoDB发送所有日志输出的目标指定为文件
+  destination: file
+  #mongod或mongos应向其发送所有诊断日志记录信息的日志文件的路径
+  path: "./../shards/shard2/arbiter/log/mongod.log"
+  #当mongos或mongod实例重新启动时，mongos或mongod会将新条目附加到现有日志文件的末尾。
+  logAppend: true
+storage:
+  #mongod实例存储其数据的目录。storage.dbPath设置仅适用于mongod
+  dbPath: "./../shards/shard2/arbiter/data/db"
+  journal:
+  #启用或禁用持久性日志以确保数据文件保持有效和可恢复。
+    enabled: true
+processManagement:
+  #启用在后台运行mongos或mongod进程的守护进程模式
+  #fork: true
+  #指定用于保存mongos或mongod进程的进程ID的文件位置，其中mongos或mongod将写入其PID
+  pidFilePath: "./../shards/shard2/arbiter/log/mongod.pid"
+net:
+  #服务实例绑定所有IP，有副作用，副本集初始化的时候，节点名字会自动设置为本地域名，而不是ip
+  #bindIpAll: true
+  #服务实例绑定的IP
+  bindIp: 127.0.0.1
+  #绑定的端口
+  port: 27518
+replication:
+  #副本集的名称
+  replSetName: shard2
+sharding:
+  #分片角色
+  clusterRole: shardsvr
+```
+
+
+
+
+
+#### 第五步：启动shard1分片的三个mongod服务
+
+
+
+```sh
+cd bin
+start "mongod-shard2-27318" mongod --config ../shards/conf/shard2_master.conf
+start "mongod-shard2-27418" mongod --config ../shards/conf/shard2_slave.conf
+start "mongod-shard2-27518" mongod --config ../shards/conf/shard2_arbiter.conf
+```
+
+
+
+```sh
+PS H:\opensoft\MongoDB> ls
+
+
+    目录: H:\opensoft\MongoDB
+
+
+Mode                 LastWriteTime         Length Name
+----                 -------------         ------ ----
+d-----        2022/11/17     14:04                arbiter
+d-----        2022/11/18     15:50                bin
+d-----        2022/11/17     14:09                conf
+d-----        2022/11/15     12:49                data
+d-----        2022/11/14     20:16                log
+d-----        2022/11/17     13:47                master
+d-----        2022/11/15     21:53                MongoDBCompass
+d-----         2022/9/20      4:08                mongosh
+d-----        2022/11/19     13:21                shards
+d-----        2022/11/17     13:58                slave
+-a----         2022/9/29      1:03          30608 LICENSE-Community.txt
+-a----         2022/9/29      1:03          16726 MPL-2
+-a----         2022/9/29      1:03           1977 README
+-a----        2022/11/18     15:40            247 shard1.bat
+-a----        2022/11/19     13:27            243 shard2.bat
+-a----         2022/9/29      1:03          77913 THIRD-PARTY-NOTICES
+-a----        2022/11/14     21:22             50 运行.bat
+-a----        2022/11/17     14:32            193 集群启动-单窗口.bat
+-a----        2022/11/17     14:26            184 集群启动.bat
+
+
+PS H:\opensoft\MongoDB> cat .\shard2.bat
+cd bin
+start "mongod-shard2-27318" mongod --config ../shards/conf/shard2_master.conf
+start "mongod-shard2-27418" mongod --config ../shards/conf/shard2_slave.conf
+start "mongod-shard2-27518" mongod --config ../shards/conf/shard2_arbiter.conf
+PS H:\opensoft\MongoDB> start .\shard2.bat
+PS H:\opensoft\MongoDB>
+```
+
+
+
+
+
+
+
+#### 第六步：使用mongosh连接master节点
+
+
+
+```sh
+PS H:\opensoft\MongoDB> mongosh -port 27318
+Current Mongosh Log ID: 637869f0855650c535df9beb
+Connecting to:          mongodb://127.0.0.1:27318/?directConnection=true&serverSelectionTimeoutMS=2000&appName=mongosh+1.6.0
+Using MongoDB:          6.0.2
+Using Mongosh:          1.6.0
+
+For mongosh info see: https://docs.mongodb.com/mongodb-shell/
+
+------
+   The server generated these startup warnings when booting
+   2022-11-19T13:29:12.599+08:00: Access control is not enabled for the database. Read and write access to data and configuration is unrestricted
+------
+
+------
+   Enable MongoDB's free cloud-based monitoring service, which will then receive and display
+   metrics about your deployment (disk utilization, CPU, operation statistics, etc).
+
+   The monitoring data will be available on a MongoDB website with a unique URL accessible to you
+   and anyone you share the URL with. MongoDB may use this information to make product
+   improvements and to suggest MongoDB products and deployment options to you.
+
+   To enable free monitoring, run the following command: db.enableFreeMonitoring()
+   To permanently disable this reminder, run the following command: db.disableFreeMonitoring()
+------
+
+test>
+```
+
+
+
+
+
+
+
+#### 第七步：初始化副本集
+
+
+
+```sh
+rs.initiate()
+```
+
+
+
+```sh
+test> rs.initiate()
+{
+  info2: 'no configuration specified. Using a default configuration for the set',
+  me: '127.0.0.1:27318',
+  ok: 1
+}
+shard2 [direct: other] test>
+```
+
+
+
+
+
+#### 第八步：查看副本集的配置内容
+
+
+
+```sh
+rs.conf()
+```
+
+
+
+```sh
+shard2 [direct: other] test> rs.conf()
+{
+  _id: 'shard2',
+  version: 1,
+  term: 1,
+  members: [
+    {
+      _id: 0,
+      host: '127.0.0.1:27318',
+      arbiterOnly: false,
+      buildIndexes: true,
+      hidden: false,
+      priority: 1,
+      tags: {},
+      secondaryDelaySecs: Long("0"),
+      votes: 1
+    }
+  ],
+  protocolVersion: Long("1"),
+  writeConcernMajorityJournalDefault: true,
+  settings: {
+    chainingAllowed: true,
+    heartbeatIntervalMillis: 2000,
+    heartbeatTimeoutSecs: 10,
+    electionTimeoutMillis: 10000,
+    catchUpTimeoutMillis: -1,
+    catchUpTakeoverDelayMillis: 30000,
+    getLastErrorModes: {},
+    getLastErrorDefaults: { w: 1, wtimeout: 0 },
+    replicaSetId: ObjectId("63786a4c4af4864b4128bc9a")
+  }
+}
+shard2 [direct: primary] test>
+```
+
+
+
+
+
+#### 第九步：添加副本从节点
+
+
+
+```sh
+rs.add("127.0.0.1:27418")
+```
+
+
+
+```sh
+shard2 [direct: primary] test> rs.add("127.0.0.1:27418")
+{
+  ok: 1,
+  '$clusterTime': {
+    clusterTime: Timestamp({ t: 1668835999, i: 1 }),
+    signature: {
+      hash: Binary(Buffer.from("0000000000000000000000000000000000000000", "hex"), 0),
+      keyId: Long("0")
+    }
+  },
+  operationTime: Timestamp({ t: 1668835999, i: 1 })
+}
+shard2 [direct: primary] test>
+```
+
+
+
+```sh
+shard2 [direct: primary] test> rs.conf()
+{
+  _id: 'shard2',
+  version: 3,
+  term: 1,
+  members: [
+    {
+      _id: 0,
+      host: '127.0.0.1:27318',
+      arbiterOnly: false,
+      buildIndexes: true,
+      hidden: false,
+      priority: 1,
+      tags: {},
+      secondaryDelaySecs: Long("0"),
+      votes: 1
+    },
+    {
+      _id: 1,
+      host: '127.0.0.1:27418',
+      arbiterOnly: false,
+      buildIndexes: true,
+      hidden: false,
+      priority: 1,
+      tags: {},
+      secondaryDelaySecs: Long("0"),
+      votes: 1
+    }
+  ],
+  protocolVersion: Long("1"),
+  writeConcernMajorityJournalDefault: true,
+  settings: {
+    chainingAllowed: true,
+    heartbeatIntervalMillis: 2000,
+    heartbeatTimeoutSecs: 10,
+    electionTimeoutMillis: 10000,
+    catchUpTimeoutMillis: -1,
+    catchUpTakeoverDelayMillis: 30000,
+    getLastErrorModes: {},
+    getLastErrorDefaults: { w: 1, wtimeout: 0 },
+    replicaSetId: ObjectId("63786a4c4af4864b4128bc9a")
+  }
+}
+shard2 [direct: primary] test>
+```
+
+
+
+
+
+
+
+#### 第十步：添加仲裁从节点
+
+
+
+```sh
+rs.addArb("127.0.0.1:27518")
+```
+
+
+
+```sh
+shard2 [direct: primary] test> rs.addArb("127.0.0.1:27518")
+{
+  ok: 1,
+  '$clusterTime': {
+    clusterTime: Timestamp({ t: 1668836042, i: 1 }),
+    signature: {
+      hash: Binary(Buffer.from("0000000000000000000000000000000000000000", "hex"), 0),
+      keyId: Long("0")
+    }
+  },
+  operationTime: Timestamp({ t: 1668836042, i: 1 })
+}
+shard2 [direct: primary] test>
+```
+
+
+
+
+
+```sh
+shard2 [direct: primary] test> rs.conf()
+{
+  _id: 'shard2',
+  version: 4,
+  term: 1,
+  members: [
+    {
+      _id: 0,
+      host: '127.0.0.1:27318',
+      arbiterOnly: false,
+      buildIndexes: true,
+      hidden: false,
+      priority: 1,
+      tags: {},
+      secondaryDelaySecs: Long("0"),
+      votes: 1
+    },
+    {
+      _id: 1,
+      host: '127.0.0.1:27418',
+      arbiterOnly: false,
+      buildIndexes: true,
+      hidden: false,
+      priority: 1,
+      tags: {},
+      secondaryDelaySecs: Long("0"),
+      votes: 1
+    },
+    {
+      _id: 2,
+      host: '127.0.0.1:27518',
+      arbiterOnly: true,
+      buildIndexes: true,
+      hidden: false,
+      priority: 0,
+      tags: {},
+      secondaryDelaySecs: Long("0"),
+      votes: 1
+    }
+  ],
+  protocolVersion: Long("1"),
+  writeConcernMajorityJournalDefault: true,
+  settings: {
+    chainingAllowed: true,
+    heartbeatIntervalMillis: 2000,
+    heartbeatTimeoutSecs: 10,
+    electionTimeoutMillis: 10000,
+    catchUpTimeoutMillis: -1,
+    catchUpTakeoverDelayMillis: 30000,
+    getLastErrorModes: {},
+    getLastErrorDefaults: { w: 1, wtimeout: 0 },
+    replicaSetId: ObjectId("63786a4c4af4864b4128bc9a")
+  }
+}
+shard2 [direct: primary] test>
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+### 配置节点副本集
+
+#### 第一步：创建文件夹
+
+
+
+shards里创建文件夹config
+
+config里创建文件夹config1
+
+config里创建文件夹config2
+
+config里创建文件夹config3
+
+config1里创建data文件夹和log文件夹
+
+data文件夹里创建db文件夹
+
+config2和config3同理
+
+
+
+```sh
+cd shards
+mkdir config
+cd config
+mkdir config1
+mkdir config2
+mkdir config3
+cd config1
+mkdir log
+mkdir data
+cd data
+mkdir db
+cd ..
+cd ..
+cd config2
+mkdir log
+mkdir data
+cd data
+mkdir db
+cd ..
+cd ..
+cd config3
+mkdir log
+mkdir data
+cd data
+mkdir db
+cd ..
+cd ..
+```
+
+
+
+```sh
+PS H:\opensoft\MongoDB> cd shards
+>> mkdir config
+>> cd config
+>> mkdir config1
+>> mkdir config2
+>> mkdir config3
+>> cd config1
+>> mkdir log
+>> mkdir data
+>> cd data
+>> mkdir db
+>> cd ..
+>> cd ..
+>> cd config2
+>> mkdir log
+>> mkdir data
+>> cd data
+>> mkdir db
+>> cd ..
+>> cd ..
+>> cd config3
+>> mkdir log
+>> mkdir data
+>> cd data
+>> mkdir db
+>> cd ..
+>> cd ..
+
+
+    目录: H:\opensoft\MongoDB\shards
+
+
+Mode                 LastWriteTime         Length Name
+----                 -------------         ------ ----
+d-----        2022/11/19     13:42                config
+
+
+    目录: H:\opensoft\MongoDB\shards\config
+
+
+Mode                 LastWriteTime         Length Name
+----                 -------------         ------ ----
+d-----        2022/11/19     13:42                config1
+d-----        2022/11/19     13:42                config2
+d-----        2022/11/19     13:42                config3
+
+
+    目录: H:\opensoft\MongoDB\shards\config\config1
+
+
+Mode                 LastWriteTime         Length Name
+----                 -------------         ------ ----
+d-----        2022/11/19     13:42                log
+d-----        2022/11/19     13:42                data
+
+
+    目录: H:\opensoft\MongoDB\shards\config\config1\data
+
+
+Mode                 LastWriteTime         Length Name
+----                 -------------         ------ ----
+d-----        2022/11/19     13:42                db
+
+
+    目录: H:\opensoft\MongoDB\shards\config\config2
+
+
+Mode                 LastWriteTime         Length Name
+----                 -------------         ------ ----
+d-----        2022/11/19     13:42                log
+d-----        2022/11/19     13:42                data
+
+
+    目录: H:\opensoft\MongoDB\shards\config\config2\data
+
+
+Mode                 LastWriteTime         Length Name
+----                 -------------         ------ ----
+d-----        2022/11/19     13:42                db
+
+
+    目录: H:\opensoft\MongoDB\shards\config\config3
+
+
+Mode                 LastWriteTime         Length Name
+----                 -------------         ------ ----
+d-----        2022/11/19     13:42                log
+d-----        2022/11/19     13:42                data
+
+
+    目录: H:\opensoft\MongoDB\shards\config\config3\data
+
+
+Mode                 LastWriteTime         Length Name
+----                 -------------         ------ ----
+d-----        2022/11/19     13:42                db
+
+
+PS H:\opensoft\MongoDB\shards\config>
+```
+
+
+
+
+
+
+
+#### 第二步：编写config1的配置文件
+
+在conf文件夹里创建config1.conf
+
+
+
