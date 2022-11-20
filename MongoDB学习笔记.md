@@ -12700,5 +12700,174 @@ shard2 [direct: primary] articledb>
 
 #### 第十步：再增加一个路由节点
 
+使用mongosh客户端登录27117
 
+
+
+```sh
+PS C:\Users\mao\Desktop> mongosh --port 27117
+Current Mongosh Log ID: 6379bb2452c3697d47953b53
+Connecting to:          mongodb://127.0.0.1:27117/?directConnection=true&serverSelectionTimeoutMS=2000&appName=mongosh+1.6.0
+Using MongoDB:          6.0.2
+Using Mongosh:          1.6.0
+
+For mongosh info see: https://docs.mongodb.com/mongodb-shell/
+
+------
+   The server generated these startup warnings when booting
+   2022-11-20T12:12:00.118+08:00: Access control is not enabled for the database. Read and write access to data and configuration is unrestricted
+------
+
+[direct: mongos] test> sh.status()
+shardingVersion
+{
+  _id: 1,
+  minCompatibleVersion: 5,
+  currentVersion: 6,
+  clusterId: ObjectId("6378721952fa08bd79db735d")
+}
+---
+shards
+[
+  {
+    _id: 'shard1',
+    host: 'shard1/127.0.0.1:27018,127.0.0.1:27118',
+    state: 1,
+    topologyTime: Timestamp({ t: 1668871172, i: 1 })
+  },
+  {
+    _id: 'shard2',
+    host: 'shard2/127.0.0.1:27318,127.0.0.1:27418',
+    state: 1,
+    topologyTime: Timestamp({ t: 1668871351, i: 1 })
+  }
+]
+---
+most recently active mongoses
+[ { '6.0.2': 2 } ]
+---
+autosplit
+{ 'Currently enabled': 'yes' }
+---
+balancer
+{
+  'Currently enabled': 'yes',
+  'Currently running': 'no',
+  'Failed balancer rounds in last 5 attempts': 0,
+  'Migration Results for the last 24 hours': { '511': 'Success' }
+}
+---
+databases
+[
+  {
+    database: {
+      _id: 'articledb',
+      primary: 'shard2',
+      partitioned: false,
+      version: {
+        uuid: new UUID("077166aa-0743-4147-a161-a40173443f26"),
+        timestamp: Timestamp({ t: 1668871768, i: 1 }),
+        lastMod: 1
+      }
+    },
+    collections: {
+      'articledb.comment': {
+        shardKey: { _id: 'hashed' },
+        unique: false,
+        balancing: true,
+        chunkMetadata: [
+          { shard: 'shard1', nChunks: 2 },
+          { shard: 'shard2', nChunks: 2 }
+        ],
+        chunks: [
+          { min: { _id: MinKey() }, max: { _id: Long("-4611686018427387902") }, 'on shard': 'shard1', 'last modified': Timestamp({ t: 1, i: 0 }) },
+          { min: { _id: Long("-4611686018427387902") }, max: { _id: Long("0") }, 'on shard': 'shard1', 'last modified': Timestamp({ t: 1, i: 1 }) },
+          { min: { _id: Long("0") }, max: { _id: Long("4611686018427387902") }, 'on shard': 'shard2', 'last modified': Timestamp({ t: 1, i: 2 }) },
+          { min: { _id: Long("4611686018427387902") }, max: { _id: MaxKey() }, 'on shard': 'shard2', 'last modified': Timestamp({ t: 1, i: 3 }) }
+        ],
+        tags: []
+      }
+    }
+  },
+  {
+    database: { _id: 'config', primary: 'config', partitioned: true },
+    collections: {
+      'config.system.sessions': {
+        shardKey: { _id: 1 },
+        unique: false,
+        balancing: true,
+        chunkMetadata: [
+          { shard: 'shard1', nChunks: 512 },
+          { shard: 'shard2', nChunks: 512 }
+        ],
+        chunks: [
+          'too many chunks to print, use verbose if you want to force print'
+        ],
+        tags: []
+      }
+    }
+  }
+]
+[direct: mongos] test>
+```
+
+
+
+
+
+发现，第二个路由无需配置，因为分片配置都保存到了配置服务器中了
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+## Compass连接分片集群
+
+
+
+直接连接路由节点
+
+
+
+![image-20221120133315628](img/MongoDB学习笔记/image-20221120133315628.png)
+
+
+
+
+
+![image-20221120133607361](img/MongoDB学习笔记/image-20221120133607361.png)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+## SpringDataMongDB连接分片集群
 
