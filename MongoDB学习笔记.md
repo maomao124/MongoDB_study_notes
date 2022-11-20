@@ -11605,6 +11605,105 @@ sh.enableSharding("articledb")
 
 
 
+```sh
+[direct: mongos] test> sh.enableSharding("articledb")
+{
+  ok: 1,
+  '$clusterTime': {
+    clusterTime: Timestamp({ t: 1668919671, i: 1 }),
+    signature: {
+      hash: Binary(Buffer.from("0000000000000000000000000000000000000000", "hex"), 0),
+      keyId: Long("0")
+    }
+  },
+  operationTime: Timestamp({ t: 1668919671, i: 1 })
+}
+[direct: mongos] test>
+```
+
+
+
+```sh
+[direct: mongos] test> sh.status()
+shardingVersion
+{
+  _id: 1,
+  minCompatibleVersion: 5,
+  currentVersion: 6,
+  clusterId: ObjectId("6378721952fa08bd79db735d")
+}
+---
+shards
+[
+  {
+    _id: 'shard1',
+    host: 'shard1/127.0.0.1:27018,127.0.0.1:27118',
+    state: 1,
+    topologyTime: Timestamp({ t: 1668871172, i: 1 })
+  },
+  {
+    _id: 'shard2',
+    host: 'shard2/127.0.0.1:27318,127.0.0.1:27418',
+    state: 1,
+    topologyTime: Timestamp({ t: 1668871351, i: 1 })
+  }
+]
+---
+active mongoses
+[ { '6.0.2': 2 } ]
+---
+autosplit
+{ 'Currently enabled': 'yes' }
+---
+balancer
+{
+  'Currently enabled': 'yes',
+  'Currently running': 'no',
+  'Failed balancer rounds in last 5 attempts': 0,
+  'Migration Results for the last 24 hours': { '511': 'Success' }
+}
+---
+databases
+[
+  {
+    database: {
+      _id: 'articledb',
+      primary: 'shard2',
+      partitioned: false,
+      version: {
+        uuid: new UUID("077166aa-0743-4147-a161-a40173443f26"),
+        timestamp: Timestamp({ t: 1668871768, i: 1 }),
+        lastMod: 1
+      }
+    },
+    collections: {}
+  },
+  {
+    database: { _id: 'config', primary: 'config', partitioned: true },
+    collections: {
+      'config.system.sessions': {
+        shardKey: { _id: 1 },
+        unique: false,
+        balancing: true,
+        chunkMetadata: [
+          { shard: 'shard1', nChunks: 512 },
+          { shard: 'shard2', nChunks: 512 }
+        ],
+        chunks: [
+          'too many chunks to print, use verbose if you want to force print'
+        ],
+        tags: []
+      }
+    }
+  }
+]
+[direct: mongos] test>
+```
+
+
+
+
+
 
 
 
@@ -11619,9 +11718,987 @@ sh.shardCollection("库名.集合名",{"key":1})
 
 
 
+* namespace：要（分片）共享的目标集合的命名空间，格式： \<database>.\<collection>
+* key：用作分片键的索引规范文档。shard键决定MongoDB如何在shard之间分发文档。除非集合为空，否则索引必须在shard collection命令之前存在。如果集合为空，则MongoDB在对集合进行分片之前创建索引，前提是支持分片键的索引不存在。简单 的说：由包含字段和该字段的索引遍历方向的文档组成
+* unique：当值为true情况下，片键字段上会限制为确保是唯一索引。哈希策略片键不支持唯一索引。默认是false
 
 
 
+
+
+对集合进行分片时,你需要选择一个 片键（Shard Key） , shard key 是每条记录都必须包含的,且建立了索引的单个字段或复合字段,MongoDB按照片键将数据划分到不同的数据块中,并将数据块均衡地分布到所有分片中。为了按照片键划分数据块,MongoDB使用基于哈希的分片方式（随机平均分配）或者基于范围的分片方式（数值大小分配）
+
+
+
+
+
+**分片规则一：哈希策略**
+
+对于基于哈希的分片 ，MongoDB计算一个字段的哈希值，并用这个哈希值来创建数据块。
+
+在使用基于哈希分片的系统中，拥有”相近”片键的文档 很可能不会存储在同一个数据块中，因此数据的分离性更好一些
+
+
+
+使用nickname作为片键，根据其值的哈希值进行数据分片：
+
+```sh
+sh.shardCollection("articledb.comment",{"nickname":"hashed"})
+```
+
+
+
+
+
+
+
+**分片规则二：范围策略**
+
+对于基于范围的分片 ，MongoDB按照片键的范围把数据分成不同部分。假设有一个数字的片键，想象一个从负无穷到正无穷的直线，每一个片键的值都在直线上画了一个点。MongoDB把这条直线划分为更短的不重叠的片段，并称之为数据块 ，每个数据块包含了片键在一定范围内的数据
+
+
+
+在使用片键做范围划分的系统中，拥有”相近”片键的文档很可能存储在同一个数据块中，因此也会存储在同一个分片中
+
+
+
+如使用作者年龄字段作为片键，按照点赞数的值进行分片：
+
+```sh
+sh.shardCollection("articledb.author",{"age":1})
+```
+
+
+
+
+
+* 一个集合只能指定一个片键，否则报错
+* 一旦对一个集合分片，分片键和分片值就不可改变。 如：不能给集合选择不同的分片键、不能更新分片键的值
+* 根据age索引进行分配数据
+
+
+
+
+
+**基于范围的分片方式与基于哈希的分片方式性能对比：**
+
+基于范围的分片方式提供了更高效的范围查询，给定一个片键的范围，分发路由可以很简单地确定哪个数据块存储了请求需要的数据，并将请求转发到相应的分片中
+
+不过，基于范围的分片会导致数据在不同分片上的不均衡，有时候,带来的消极作用会大于查询性能的积极作用。比如，如果片键所在的字段是线性增长的，一定时间内的所有请求都会落到某个固定的数据块中，最终 导致分布在同一个分片中。在这种情况下，一小部分分片承载了集群大部分的数据，系统并不能很好地进行 扩展
+
+与此相比，基于哈希的分片方式以范围查询性能的损失为代价，保证了集群中数据的均衡。哈希值的随机性使数据随机分布在每个数据块中，因此也随机分布在不同分片中。但是也正由于随机性，一个范围查询很难确定应该请求哪些分片，通常为了返回需要的结果，需要请求所有分片
+
+
+
+如无特殊情况，一般推荐使用 Hash Sharding
+
+
+
+而使用 _id 作为片键是一个不错的选择，因为它是必有的，你可以使用数据文档 _id 的哈希作为片键
+
+这个方案能够是的读和写都能够平均分布，并且它能够保证每个文档都有不同的片键所以数据块能够很精细
+
+似乎还是不够完美，因为这样的话对多个文档的查询必将命中所有的分片。虽说如此，这也是一种比较 好的方案了
+
+
+
+
+
+显示集群的详细信息：
+
+```sh
+db.printShardingStatus()
+```
+
+
+
+查看均衡器是否工作：
+
+```sh
+sh.isBalancerRunning()
+```
+
+
+
+查看当前Balancer状态：
+
+```sh
+sh.getBalancerState()
+```
+
+
+
+
+
+本次使用的是哈希策略，片键为_id
+
+
+
+```sh
+sh.shardCollection("articledb.comment",{"_id":"hashed"})
+```
+
+
+
+```sh
+[direct: mongos] test> sh.shardCollection("articledb.comment",{"_id":"hashed"})
+{
+  collectionsharded: 'articledb.comment',
+  ok: 1,
+  '$clusterTime': {
+    clusterTime: Timestamp({ t: 1668920820, i: 5 }),
+    signature: {
+      hash: Binary(Buffer.from("0000000000000000000000000000000000000000", "hex"), 0),
+      keyId: Long("0")
+    }
+  },
+  operationTime: Timestamp({ t: 1668920820, i: 1 })
+}
+[direct: mongos] test>
+```
+
+
+
+显示集群的详细信息：
+
+```sh
+[direct: mongos] test> db.printShardingStatus()
+shardingVersion
+{
+  _id: 1,
+  minCompatibleVersion: 5,
+  currentVersion: 6,
+  clusterId: ObjectId("6378721952fa08bd79db735d")
+}
+---
+shards
+[
+  {
+    _id: 'shard1',
+    host: 'shard1/127.0.0.1:27018,127.0.0.1:27118',
+    state: 1,
+    topologyTime: Timestamp({ t: 1668871172, i: 1 })
+  },
+  {
+    _id: 'shard2',
+    host: 'shard2/127.0.0.1:27318,127.0.0.1:27418',
+    state: 1,
+    topologyTime: Timestamp({ t: 1668871351, i: 1 })
+  }
+]
+---
+active mongoses
+[ { '6.0.2': 2 } ]
+---
+autosplit
+{ 'Currently enabled': 'yes' }
+---
+balancer
+{
+  'Currently enabled': 'yes',
+  'Currently running': 'no',
+  'Failed balancer rounds in last 5 attempts': 0,
+  'Migration Results for the last 24 hours': { '511': 'Success' }
+}
+---
+databases
+[
+  {
+    database: {
+      _id: 'articledb',
+      primary: 'shard2',
+      partitioned: false,
+      version: {
+        uuid: new UUID("077166aa-0743-4147-a161-a40173443f26"),
+        timestamp: Timestamp({ t: 1668871768, i: 1 }),
+        lastMod: 1
+      }
+    },
+    collections: {
+      'articledb.comment': {
+        shardKey: { _id: 'hashed' },
+        unique: false,
+        balancing: true,
+        chunkMetadata: [
+          { shard: 'shard1', nChunks: 2 },
+          { shard: 'shard2', nChunks: 2 }
+        ],
+        chunks: [
+          { min: { _id: MinKey() }, max: { _id: Long("-4611686018427387902") }, 'on shard': 'shard1', 'last modified': Timestamp({ t: 1, i: 0 }) },
+          { min: { _id: Long("-4611686018427387902") }, max: { _id: Long("0") }, 'on shard': 'shard1', 'last modified': Timestamp({ t: 1, i: 1 }) },
+          { min: { _id: Long("0") }, max: { _id: Long("4611686018427387902") }, 'on shard': 'shard2', 'last modified': Timestamp({ t: 1, i: 2 }) },
+          { min: { _id: Long("4611686018427387902") }, max: { _id: MaxKey() }, 'on shard': 'shard2', 'last modified': Timestamp({ t: 1, i: 3 }) }
+        ],
+        tags: []
+      }
+    }
+  },
+  {
+    database: { _id: 'config', primary: 'config', partitioned: true },
+    collections: {
+      'config.system.sessions': {
+        shardKey: { _id: 1 },
+        unique: false,
+        balancing: true,
+        chunkMetadata: [
+          { shard: 'shard1', nChunks: 512 },
+          { shard: 'shard2', nChunks: 512 }
+        ],
+        chunks: [
+          'too many chunks to print, use verbose if you want to force print'
+        ],
+        tags: []
+      }
+    }
+  }
+]
+[direct: mongos] test>
+```
+
+
+
+
+
+查看均衡器是否工作：
+
+```sh
+[direct: mongos] test> sh.isBalancerRunning()
+{
+  mode: 'full',
+  inBalancerRound: false,
+  numBalancerRounds: Long("573"),
+  ok: 1,
+  '$clusterTime': {
+    clusterTime: Timestamp({ t: 1668920916, i: 1 }),
+    signature: {
+      hash: Binary(Buffer.from("0000000000000000000000000000000000000000", "hex"), 0),
+      keyId: Long("0")
+    }
+  },
+  operationTime: Timestamp({ t: 1668920916, i: 1 })
+}
+[direct: mongos] test>
+```
+
+
+
+
+
+查看当前Balancer状态：
+
+```sh
+[direct: mongos] test> sh.getBalancerState()
+true
+[direct: mongos] test>
+```
+
+
+
+
+
+
+
+
+
+#### 第九步：插入数据测试
+
+
+
+登录mongs后，向comment循环插入1000条数据做测试：
+
+```sh
+use articledb
+```
+
+```sh
+for(var i=1;i<=1000;i++)
+{db.comment.insert({_id:i+"",nickname:"BoBo"+i})}
+```
+
+```sh
+db.comment.count()
+```
+
+
+
+```sh
+[direct: mongos] test> use articledb
+switched to db articledb
+[direct: mongos] articledb> for(var i=1;i<=1000;i++)
+... {db.comment.insert({_id:i+"",nickname:"BoBo"+i})}
+DeprecationWarning: Collection.insert() is deprecated. Use insertOne, insertMany, or bulkWrite.
+{ acknowledged: true, insertedIds: { '0': '1000' } }
+[direct: mongos] articledb>
+
+[direct: mongos] articledb> db.comment.count()
+DeprecationWarning: Collection.count() is deprecated. Use countDocuments or estimatedDocumentCount.
+1000
+[direct: mongos] articledb>
+```
+
+
+
+
+
+分别登陆两个片的主节点，统计文档数量
+
+第一个分片副本集：
+
+```sh
+mongosh --port 27118
+```
+
+```sh
+use articledb
+```
+
+```sh
+db.comment.count()
+```
+
+
+
+```sh
+PS C:\Users\mao\Desktop> mongosh --port 27118
+Current Mongosh Log ID: 6379b87ae05117c5c82c65fb
+Connecting to:          mongodb://127.0.0.1:27118/?directConnection=true&serverSelectionTimeoutMS=2000&appName=mongosh+1.6.0
+Using MongoDB:          6.0.2
+Using Mongosh:          1.6.0
+
+For mongosh info see: https://docs.mongodb.com/mongodb-shell/
+
+------
+   The server generated these startup warnings when booting
+   2022-11-20T12:11:41.105+08:00: Access control is not enabled for the database. Read and write access to data and configuration is unrestricted
+------
+
+------
+   Enable MongoDB's free cloud-based monitoring service, which will then receive and display
+   metrics about your deployment (disk utilization, CPU, operation statistics, etc).
+
+   The monitoring data will be available on a MongoDB website with a unique URL accessible to you
+   and anyone you share the URL with. MongoDB may use this information to make product
+   improvements and to suggest MongoDB products and deployment options to you.
+
+   To enable free monitoring, run the following command: db.enableFreeMonitoring()
+   To permanently disable this reminder, run the following command: db.disableFreeMonitoring()
+------
+
+shard1 [direct: primary] test> rs.status()
+{
+  set: 'shard1',
+  date: ISODate("2022-11-20T05:18:06.217Z"),
+  myState: 1,
+  term: Long("6"),
+  syncSourceHost: '',
+  syncSourceId: -1,
+  heartbeatIntervalMillis: Long("2000"),
+  majorityVoteCount: 2,
+  writeMajorityCount: 2,
+  votingMembersCount: 3,
+  writableVotingMembersCount: 2,
+  optimes: {
+    lastCommittedOpTime: { ts: Timestamp({ t: 1668921481, i: 1 }), t: Long("6") },
+    lastCommittedWallTime: ISODate("2022-11-20T05:18:01.760Z"),
+    readConcernMajorityOpTime: { ts: Timestamp({ t: 1668921481, i: 1 }), t: Long("6") },
+    appliedOpTime: { ts: Timestamp({ t: 1668921481, i: 1 }), t: Long("6") },
+    durableOpTime: { ts: Timestamp({ t: 1668921481, i: 1 }), t: Long("6") },
+    lastAppliedWallTime: ISODate("2022-11-20T05:18:01.760Z"),
+    lastDurableWallTime: ISODate("2022-11-20T05:18:01.760Z")
+  },
+  lastStableRecoveryTimestamp: Timestamp({ t: 1668921432, i: 7 }),
+  electionCandidateMetrics: {
+    lastElectionReason: 'electionTimeout',
+    lastElectionDate: ISODate("2022-11-20T04:12:21.232Z"),
+    electionTerm: Long("6"),
+    lastCommittedOpTimeAtElection: { ts: Timestamp({ t: 0, i: 0 }), t: Long("-1") },
+    lastSeenOpTimeAtElection: { ts: Timestamp({ t: 1668871776, i: 1 }), t: Long("5") },
+    numVotesNeeded: 2,
+    priorityAtElection: 1,
+    electionTimeoutMillis: Long("10000"),
+    numCatchUpOps: Long("0"),
+    newTermStartDate: ISODate("2022-11-20T04:12:21.369Z"),
+    wMajorityWriteAvailabilityDate: ISODate("2022-11-20T04:12:22.209Z")
+  },
+  members: [
+    {
+      _id: 0,
+      name: '127.0.0.1:27018',
+      health: 1,
+      state: 2,
+      stateStr: 'SECONDARY',
+      uptime: 3955,
+      optime: { ts: Timestamp({ t: 1668921481, i: 1 }), t: Long("6") },
+      optimeDurable: { ts: Timestamp({ t: 1668921481, i: 1 }), t: Long("6") },
+      optimeDate: ISODate("2022-11-20T05:18:01.000Z"),
+      optimeDurableDate: ISODate("2022-11-20T05:18:01.000Z"),
+      lastAppliedWallTime: ISODate("2022-11-20T05:18:01.760Z"),
+      lastDurableWallTime: ISODate("2022-11-20T05:18:01.760Z"),
+      lastHeartbeat: ISODate("2022-11-20T05:18:04.422Z"),
+      lastHeartbeatRecv: ISODate("2022-11-20T05:18:05.462Z"),
+      pingMs: Long("0"),
+      lastHeartbeatMessage: '',
+      syncSourceHost: '127.0.0.1:27118',
+      syncSourceId: 1,
+      infoMessage: '',
+      configVersion: 7,
+      configTerm: 6
+    },
+    {
+      _id: 1,
+      name: '127.0.0.1:27118',
+      health: 1,
+      state: 1,
+      stateStr: 'PRIMARY',
+      uptime: 3990,
+      optime: { ts: Timestamp({ t: 1668921481, i: 1 }), t: Long("6") },
+      optimeDate: ISODate("2022-11-20T05:18:01.000Z"),
+      lastAppliedWallTime: ISODate("2022-11-20T05:18:01.760Z"),
+      lastDurableWallTime: ISODate("2022-11-20T05:18:01.760Z"),
+      syncSourceHost: '',
+      syncSourceId: -1,
+      infoMessage: '',
+      electionTime: Timestamp({ t: 1668917541, i: 1 }),
+      electionDate: ISODate("2022-11-20T04:12:21.000Z"),
+      configVersion: 7,
+      configTerm: 6,
+      self: true,
+      lastHeartbeatMessage: ''
+    },
+    {
+      _id: 2,
+      name: '127.0.0.1:27218',
+      health: 1,
+      state: 7,
+      stateStr: 'ARBITER',
+      uptime: 3955,
+      lastHeartbeat: ISODate("2022-11-20T05:18:04.422Z"),
+      lastHeartbeatRecv: ISODate("2022-11-20T05:18:04.423Z"),
+      pingMs: Long("0"),
+      lastHeartbeatMessage: '',
+      syncSourceHost: '',
+      syncSourceId: -1,
+      infoMessage: '',
+      configVersion: 7,
+      configTerm: 6
+    }
+  ],
+  ok: 1,
+  lastCommittedOpTime: Timestamp({ t: 1668921481, i: 1 }),
+  '$clusterTime': {
+    clusterTime: Timestamp({ t: 1668921481, i: 1 }),
+    signature: {
+      hash: Binary(Buffer.from("0000000000000000000000000000000000000000", "hex"), 0),
+      keyId: Long("0")
+    }
+  },
+  operationTime: Timestamp({ t: 1668921481, i: 1 })
+}
+shard1 [direct: primary] test> show databases
+admin       72.00 KiB
+articledb  160.00 KiB
+config       1.05 MiB
+local        1.38 MiB
+shard1 [direct: primary] test> use articledb
+switched to db articledb
+shard1 [direct: primary] articledb> show tables
+comment
+shard1 [direct: primary] articledb> db.comment.count()
+DeprecationWarning: Collection.count() is deprecated. Use countDocuments or estimatedDocumentCount.
+497
+shard1 [direct: primary] articledb>
+```
+
+
+
+
+
+
+
+第二个分片副本集：
+
+```sh
+mongosh --port 27418
+```
+
+
+
+```sh
+PS C:\Users\mao\Desktop> mongosh --port 27418
+Current Mongosh Log ID: 6379b90b3971b5367e140440
+Connecting to:          mongodb://127.0.0.1:27418/?directConnection=true&serverSelectionTimeoutMS=2000&appName=mongosh+1.6.0
+Using MongoDB:          6.0.2
+Using Mongosh:          1.6.0
+
+For mongosh info see: https://docs.mongodb.com/mongodb-shell/
+
+------
+   The server generated these startup warnings when booting
+   2022-11-20T12:11:46.777+08:00: Access control is not enabled for the database. Read and write access to data and configuration is unrestricted
+------
+
+------
+   Enable MongoDB's free cloud-based monitoring service, which will then receive and display
+   metrics about your deployment (disk utilization, CPU, operation statistics, etc).
+
+   The monitoring data will be available on a MongoDB website with a unique URL accessible to you
+   and anyone you share the URL with. MongoDB may use this information to make product
+   improvements and to suggest MongoDB products and deployment options to you.
+
+   To enable free monitoring, run the following command: db.enableFreeMonitoring()
+   To permanently disable this reminder, run the following command: db.disableFreeMonitoring()
+------
+
+shard2 [direct: primary] test> show databases
+admin       72.00 KiB
+articledb  156.00 KiB
+config       1.05 MiB
+local        1.16 MiB
+shard2 [direct: primary] test> use articledb
+switched to db articledb
+shard2 [direct: primary] articledb> show databases
+admin       72.00 KiB
+articledb  156.00 KiB
+config       1.05 MiB
+local        1.16 MiB
+shard2 [direct: primary] articledb> show tables
+comment
+shard2 [direct: primary] articledb> db.comment.count()
+DeprecationWarning: Collection.count() is deprecated. Use countDocuments or estimatedDocumentCount.
+503
+shard2 [direct: primary] articledb>
+```
+
+```sh
+shard2 [direct: primary] articledb> rs.status()
+{
+  set: 'shard2',
+  date: ISODate("2022-11-20T05:21:15.245Z"),
+  myState: 1,
+  term: Long("4"),
+  syncSourceHost: '',
+  syncSourceId: -1,
+  heartbeatIntervalMillis: Long("2000"),
+  majorityVoteCount: 2,
+  writeMajorityCount: 2,
+  votingMembersCount: 3,
+  writableVotingMembersCount: 2,
+  optimes: {
+    lastCommittedOpTime: { ts: Timestamp({ t: 1668921672, i: 1 }), t: Long("4") },
+    lastCommittedWallTime: ISODate("2022-11-20T05:21:12.872Z"),
+    readConcernMajorityOpTime: { ts: Timestamp({ t: 1668921672, i: 1 }), t: Long("4") },
+    appliedOpTime: { ts: Timestamp({ t: 1668921672, i: 1 }), t: Long("4") },
+    durableOpTime: { ts: Timestamp({ t: 1668921672, i: 1 }), t: Long("4") },
+    lastAppliedWallTime: ISODate("2022-11-20T05:21:12.872Z"),
+    lastDurableWallTime: ISODate("2022-11-20T05:21:12.872Z")
+  },
+  lastStableRecoveryTimestamp: Timestamp({ t: 1668921622, i: 1 }),
+  electionCandidateMetrics: {
+    lastElectionReason: 'electionTimeout',
+    lastElectionDate: ISODate("2022-11-20T04:12:22.499Z"),
+    electionTerm: Long("4"),
+    lastCommittedOpTimeAtElection: { ts: Timestamp({ t: 0, i: 0 }), t: Long("-1") },
+    lastSeenOpTimeAtElection: { ts: Timestamp({ t: 1668871776, i: 11 }), t: Long("3") },
+    numVotesNeeded: 2,
+    priorityAtElection: 1,
+    electionTimeoutMillis: Long("10000"),
+    numCatchUpOps: Long("0"),
+    newTermStartDate: ISODate("2022-11-20T04:12:22.587Z"),
+    wMajorityWriteAvailabilityDate: ISODate("2022-11-20T04:12:23.659Z")
+  },
+  members: [
+    {
+      _id: 0,
+      name: '127.0.0.1:27318',
+      health: 1,
+      state: 2,
+      stateStr: 'SECONDARY',
+      uptime: 4142,
+      optime: { ts: Timestamp({ t: 1668921672, i: 1 }), t: Long("4") },
+      optimeDurable: { ts: Timestamp({ t: 1668921672, i: 1 }), t: Long("4") },
+      optimeDate: ISODate("2022-11-20T05:21:12.000Z"),
+      optimeDurableDate: ISODate("2022-11-20T05:21:12.000Z"),
+      lastAppliedWallTime: ISODate("2022-11-20T05:21:12.872Z"),
+      lastDurableWallTime: ISODate("2022-11-20T05:21:12.872Z"),
+      lastHeartbeat: ISODate("2022-11-20T05:21:13.719Z"),
+      lastHeartbeatRecv: ISODate("2022-11-20T05:21:14.680Z"),
+      pingMs: Long("0"),
+      lastHeartbeatMessage: '',
+      syncSourceHost: '127.0.0.1:27418',
+      syncSourceId: 1,
+      infoMessage: '',
+      configVersion: 4,
+      configTerm: 4
+    },
+    {
+      _id: 1,
+      name: '127.0.0.1:27418',
+      health: 1,
+      state: 1,
+      stateStr: 'PRIMARY',
+      uptime: 4172,
+      optime: { ts: Timestamp({ t: 1668921672, i: 1 }), t: Long("4") },
+      optimeDate: ISODate("2022-11-20T05:21:12.000Z"),
+      lastAppliedWallTime: ISODate("2022-11-20T05:21:12.872Z"),
+      lastDurableWallTime: ISODate("2022-11-20T05:21:12.872Z"),
+      syncSourceHost: '',
+      syncSourceId: -1,
+      infoMessage: '',
+      electionTime: Timestamp({ t: 1668917542, i: 1 }),
+      electionDate: ISODate("2022-11-20T04:12:22.000Z"),
+      configVersion: 4,
+      configTerm: 4,
+      self: true,
+      lastHeartbeatMessage: ''
+    },
+    {
+      _id: 2,
+      name: '127.0.0.1:27518',
+      health: 1,
+      state: 7,
+      stateStr: 'ARBITER',
+      uptime: 4143,
+      lastHeartbeat: ISODate("2022-11-20T05:21:13.722Z"),
+      lastHeartbeatRecv: ISODate("2022-11-20T05:21:13.721Z"),
+      pingMs: Long("0"),
+      lastHeartbeatMessage: '',
+      syncSourceHost: '',
+      syncSourceId: -1,
+      infoMessage: '',
+      configVersion: 4,
+      configTerm: 4
+    }
+  ],
+  ok: 1,
+  lastCommittedOpTime: Timestamp({ t: 1668921672, i: 1 }),
+  '$clusterTime': {
+    clusterTime: Timestamp({ t: 1668921672, i: 1 }),
+    signature: {
+      hash: Binary(Buffer.from("0000000000000000000000000000000000000000", "hex"), 0),
+      keyId: Long("0")
+    }
+  },
+  operationTime: Timestamp({ t: 1668921672, i: 1 })
+}
+shard2 [direct: primary] articledb>
+```
+
+
+
+
+
+1000条数据近似均匀的分布到了2个shard上。是根据片键的哈希值分配的
+
+这种分配方式非常易于水平扩展：一旦数据存储需要更大空间，可以直接再增加分片即可，同时提升了性能
+
+
+
+使用db.comment.stats()查看单个集合的完整情况
+
+
+
+```sh
+shard2 [direct: primary] articledb> db.comment.stats()
+{
+  ns: 'articledb.comment',
+  size: 20028,
+  count: 503,
+  avgObjSize: 39,
+  numOrphanDocs: 0,
+  storageSize: 49152,
+  freeStorageSize: 20480,
+  capped: false,
+  wiredTiger: {
+    metadata: { formatVersion: 1 },
+    creationString: 'access_pattern_hint=none,allocation_size=4KB,app_metadata=(formatVersion=1),assert=(commit_timestamp=none,durable_timestamp=none,read_timestamp=none,write_timestamp=off),block_allocation=best,block_compressor=snappy,cache_resident=false,checksum=on,colgroups=,collator=,columns=,dictionary=0,encryption=(keyid=,name=),exclusive=false,extractor=,format=btree,huffman_key=,huffman_value=,ignore_in_memory_cache_size=false,immutable=false,import=(compare_timestamp=oldest_timestamp,enabled=false,file_metadata=,metadata_file=,repair=false),internal_item_max=0,internal_key_max=0,internal_key_truncate=true,internal_page_max=4KB,key_format=q,key_gap=10,leaf_item_max=0,leaf_key_max=0,leaf_page_max=32KB,leaf_value_max=64MB,log=(enabled=false),lsm=(auto_throttle=true,bloom=true,bloom_bit_count=16,bloom_config=,bloom_hash_count=8,bloom_oldest=false,chunk_count_limit=0,chunk_max=5GB,chunk_size=10MB,merge_custom=(prefix=,start_generation=0,suffix=),merge_max=15,merge_min=0),memory_page_image_max=0,memory_page_max=10m,os_cache_dirty_max=0,os_cache_max=0,prefix_compression=false,prefix_compression_min=4,readonly=false,source=,split_deepen_min_child=0,split_deepen_per_child=0,split_pct=90,tiered_object=false,tiered_storage=(auth_token=,bucket=,bucket_prefix=,cache_directory=,local_retention=300,name=,object_target_size=0),type=file,value_format=u,verbose=[],write_timestamp_usage=none',
+    type: 'file',
+    uri: 'statistics:table:collection-4-1239281148376269443',
+    LSM: {
+      'bloom filter false positives': 0,
+      'bloom filter hits': 0,
+      'bloom filter misses': 0,
+      'bloom filter pages evicted from cache': 0,
+      'bloom filter pages read into cache': 0,
+      'bloom filters in the LSM tree': 0,
+      'chunks in the LSM tree': 0,
+      'highest merge generation in the LSM tree': 0,
+      'queries that could have benefited from a Bloom filter that did not exist': 0,
+      'sleep for LSM checkpoint throttle': 0,
+      'sleep for LSM merge throttle': 0,
+      'total size of bloom filters': 0
+    },
+    'block-manager': {
+      'allocations requiring file extension': 8,
+      'blocks allocated': 8,
+      'blocks freed': 1,
+      'checkpoint size': 12288,
+      'file allocation unit size': 4096,
+      'file bytes available for reuse': 20480,
+      'file magic number': 120897,
+      'file major version number': 1,
+      'file size in bytes': 49152,
+      'minor version number': 0
+    },
+    btree: {
+      'btree checkpoint generation': 71,
+      'btree clean tree checkpoint expiration time': Long("9223372036854775807"),
+      'btree compact pages reviewed': 0,
+      'btree compact pages rewritten': 0,
+      'btree compact pages skipped': 0,
+      'btree skipped by compaction as process would not reduce size': 0,
+      'column-store fixed-size leaf pages': 0,
+      'column-store fixed-size time windows': 0,
+      'column-store internal pages': 0,
+      'column-store variable-size RLE encoded values': 0,
+      'column-store variable-size deleted values': 0,
+      'column-store variable-size leaf pages': 0,
+      'fixed-record size': 0,
+      'maximum internal page size': 4096,
+      'maximum leaf page key size': 2867,
+      'maximum leaf page size': 32768,
+      'maximum leaf page value size': 67108864,
+      'maximum tree depth': 3,
+      'number of key/value pairs': 0,
+      'overflow pages': 0,
+      'row-store empty values': 0,
+      'row-store internal pages': 0,
+      'row-store leaf pages': 0
+    },
+    cache: {
+      'bytes currently in the cache': 68912,
+      'bytes dirty in the cache cumulative': 45736,
+      'bytes read into cache': 0,
+      'bytes written from cache': 48703,
+      'checkpoint blocked page eviction': 0,
+      'checkpoint of history store file blocked non-history store page eviction': 0,
+      'data source pages selected for eviction unable to be evicted': 0,
+      'eviction gave up due to detecting an out of order on disk value behind the last update on the chain': 0,
+      'eviction gave up due to detecting an out of order tombstone ahead of the selected on disk update': 0,
+      'eviction gave up due to detecting an out of order tombstone ahead of the selected on disk update after validating the update chain': 0,
+      'eviction gave up due to detecting out of order timestamps on the update chain after the selected on disk update': 0,
+      'eviction walk passes of a file': 0,
+      'eviction walk target pages histogram - 0-9': 0,
+      'eviction walk target pages histogram - 10-31': 0,
+      'eviction walk target pages histogram - 128 and higher': 0,
+      'eviction walk target pages histogram - 32-63': 0,
+      'eviction walk target pages histogram - 64-128': 0,
+      'eviction walk target pages reduced due to history store cache pressure': 0,
+      'eviction walks abandoned': 0,
+      'eviction walks gave up because they restarted their walk twice': 0,
+      'eviction walks gave up because they saw too many pages and found no candidates': 0,
+      'eviction walks gave up because they saw too many pages and found too few candidates': 0,
+      'eviction walks reached end of tree': 0,
+      'eviction walks restarted': 0,
+      'eviction walks started from root of tree': 0,
+      'eviction walks started from saved location in tree': 0,
+      'hazard pointer blocked page eviction': 0,
+      'history store table insert calls': 0,
+      'history store table insert calls that returned restart': 0,
+      'history store table out-of-order resolved updates that lose their durable timestamp': 0,
+      'history store table out-of-order updates that were fixed up by reinserting with the fixed timestamp': 0,
+      'history store table reads': 0,
+      'history store table reads missed': 0,
+      'history store table reads requiring squashed modifies': 0,
+      'history store table truncation by rollback to stable to remove an unstable update': 0,
+      'history store table truncation by rollback to stable to remove an update': 0,
+      'history store table truncation to remove an update': 0,
+      'history store table truncation to remove range of updates due to key being removed from the data page during reconciliation': 0,
+      'history store table truncation to remove range of updates due to out-of-order timestamp update on data page': 0,
+      'history store table writes requiring squashed modifies': 0,
+      'in-memory page passed criteria to be split': 0,
+      'in-memory page splits': 0,
+      'internal pages evicted': 0,
+      'internal pages split during eviction': 0,
+      'leaf pages split during eviction': 0,
+      'modified pages evicted': 0,
+      'overflow pages read into cache': 0,
+      'page split during eviction deepened the tree': 0,
+      'page written requiring history store records': 0,
+      'pages read into cache': 0,
+      'pages read into cache after truncate': 1,
+      'pages read into cache after truncate in prepare state': 0,
+      'pages requested from the cache': 505,
+      'pages seen by eviction walk': 0,
+      'pages written from cache': 4,
+      'pages written requiring in-memory restoration': 0,
+      'the number of times full update inserted to history store': 0,
+      'the number of times reverse modify inserted to history store': 0,
+      'tracked dirty bytes in the cache': 0,
+      'unmodified pages evicted': 0
+    },
+    cache_walk: {
+      'Average difference between current eviction generation when the page was last considered': 0,
+      'Average on-disk page image size seen': 0,
+      'Average time in cache for pages that have been visited by the eviction server': 0,
+      'Average time in cache for pages that have not been visited by the eviction server': 0,
+      'Clean pages currently in cache': 0,
+      'Current eviction generation': 0,
+      'Dirty pages currently in cache': 0,
+      'Entries in the root page': 0,
+      'Internal pages currently in cache': 0,
+      'Leaf pages currently in cache': 0,
+      'Maximum difference between current eviction generation when the page was last considered': 0,
+      'Maximum page size seen': 0,
+      'Minimum on-disk page image size seen': 0,
+      'Number of pages never visited by eviction server': 0,
+      'On-disk page image sizes smaller than a single allocation unit': 0,
+      'Pages created in memory and never written': 0,
+      'Pages currently queued for eviction': 0,
+      'Pages that could not be queued for eviction': 0,
+      'Refs skipped during cache traversal': 0,
+      'Size of the root page': 0,
+      'Total number of pages currently in cache': 0
+    },
+    'checkpoint-cleanup': {
+      'pages added for eviction': 0,
+      'pages removed': 0,
+      'pages skipped during tree walk': 0,
+      'pages visited': 2
+    },
+    compression: {
+      'compressed page maximum internal page size prior to compression': 4096,
+      'compressed page maximum leaf page size prior to compression ': 131072,
+      'compressed pages read': 0,
+      'compressed pages written': 2,
+      'number of blocks with compress ratio greater than 64': 0,
+      'number of blocks with compress ratio smaller than 16': 0,
+      'number of blocks with compress ratio smaller than 2': 0,
+      'number of blocks with compress ratio smaller than 32': 0,
+      'number of blocks with compress ratio smaller than 4': 0,
+      'number of blocks with compress ratio smaller than 64': 0,
+      'number of blocks with compress ratio smaller than 8': 0,
+      'page written failed to compress': 0,
+      'page written was too small to compress': 2
+    },
+    cursor: {
+      'Total number of entries skipped by cursor next calls': 0,
+      'Total number of entries skipped by cursor prev calls': 0,
+      'Total number of entries skipped to position the history store cursor': 0,
+      'Total number of times a search near has exited due to prefix config': 0,
+      'bulk loaded cursor insert calls': 0,
+      'cache cursors reuse count': 501,
+      'close calls that result in cache': 504,
+      'create calls': 5,
+      'cursor next calls that skip due to a globally visible history store tombstone': 0,
+      'cursor next calls that skip greater than or equal to 100 entries': 0,
+      'cursor next calls that skip less than 100 entries': 4,
+      'cursor prev calls that skip due to a globally visible history store tombstone': 0,
+      'cursor prev calls that skip greater than or equal to 100 entries': 0,
+      'cursor prev calls that skip less than 100 entries': 1,
+      'insert calls': 503,
+      'insert key and value bytes': 20971,
+      modify: 0,
+      'modify key and value bytes affected': 0,
+      'modify value bytes modified': 0,
+      'next calls': 4,
+      'open cursor count': 0,
+      'operation restarted': 0,
+      'prev calls': 1,
+      'remove calls': 0,
+      'remove key bytes removed': 0,
+      'reserve calls': 0,
+      'reset calls': 1013,
+      'search calls': 0,
+      'search history store calls': 0,
+      'search near calls': 0,
+      'truncate calls': 0,
+      'update calls': 0,
+      'update key and value bytes': 0,
+      'update value size change': 0
+    },
+    reconciliation: {
+      'approximate byte size of timestamps in pages written': 13232,
+      'approximate byte size of transaction IDs in pages written': 6616,
+      'dictionary matches': 0,
+      'fast-path pages deleted': 0,
+      'internal page key bytes discarded using suffix compression': 0,
+      'internal page multi-block writes': 0,
+      'leaf page key bytes discarded using prefix compression': 0,
+      'leaf page multi-block writes': 0,
+      'leaf-page overflow keys': 0,
+      'maximum blocks required for a page': 1,
+      'overflow values written': 0,
+      'page checksum matches': 0,
+      'page reconciliation calls': 4,
+      'page reconciliation calls for eviction': 0,
+      'pages deleted': 0,
+      'pages written including an aggregated newest start durable timestamp ': 2,
+      'pages written including an aggregated newest stop durable timestamp ': 0,
+      'pages written including an aggregated newest stop timestamp ': 0,
+      'pages written including an aggregated newest stop transaction ID': 0,
+      'pages written including an aggregated newest transaction ID ': 2,
+      'pages written including an aggregated oldest start timestamp ': 2,
+      'pages written including an aggregated prepare': 0,
+      'pages written including at least one prepare': 0,
+      'pages written including at least one start durable timestamp': 2,
+      'pages written including at least one start timestamp': 2,
+      'pages written including at least one start transaction ID': 2,
+      'pages written including at least one stop durable timestamp': 0,
+      'pages written including at least one stop timestamp': 0,
+      'pages written including at least one stop transaction ID': 0,
+      'records written including a prepare': 0,
+      'records written including a start durable timestamp': 827,
+      'records written including a start timestamp': 827,
+      'records written including a start transaction ID': 827,
+      'records written including a stop durable timestamp': 0,
+      'records written including a stop timestamp': 0,
+      'records written including a stop transaction ID': 0
+    },
+    session: {
+      'object compaction': 0,
+      'tiered operations dequeued and processed': 0,
+      'tiered operations scheduled': 0,
+      'tiered storage local retention time (secs)': 0
+    },
+    transaction: {
+      'race to read prepared update retry': 0,
+      'rollback to stable history store records with stop timestamps older than newer records': 0,
+      'rollback to stable inconsistent checkpoint': 0,
+      'rollback to stable keys removed': 0,
+      'rollback to stable keys restored': 0,
+      'rollback to stable restored tombstones from history store': 0,
+      'rollback to stable restored updates from history store': 0,
+      'rollback to stable skipping delete rle': 0,
+      'rollback to stable skipping stable rle': 0,
+      'rollback to stable sweeping history store keys': 0,
+      'rollback to stable updates removed from history store': 0,
+      'transaction checkpoints due to obsolete pages': 0,
+      'update conflicts': 0
+    }
+  },
+  nindexes: 2,
+  indexBuilds: [],
+  totalIndexSize: 110592,
+  totalSize: 159744,
+  indexSizes: { _id_: 53248, _id_hashed: 57344 },
+  scaleFactor: 1,
+  ok: 1,
+  lastCommittedOpTime: Timestamp({ t: 1668921772, i: 2 }),
+  '$clusterTime': {
+    clusterTime: Timestamp({ t: 1668921772, i: 2 }),
+    signature: {
+      hash: Binary(Buffer.from("0000000000000000000000000000000000000000", "hex"), 0),
+      keyId: Long("0")
+    }
+  },
+  operationTime: Timestamp({ t: 1668921772, i: 2 })
+}
+shard2 [direct: primary] articledb>
+```
+
+
+
+
+
+使用sh.status()查看本库内所有集合的分片信息
+
+
+
+
+
+
+
+#### 第十步：再增加一个路由节点
 
 
 
