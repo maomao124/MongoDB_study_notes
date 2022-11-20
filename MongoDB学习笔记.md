@@ -11035,3 +11035,593 @@ config [direct: primary] test>
 
 ### 路由节点
 
+
+
+#### 第一步：创建文件夹
+
+
+
+shards里创建文件夹router
+
+router里创建文件夹router1
+
+router里创建文件夹router2
+
+router1里创建data文件夹和log文件夹
+
+data文件夹里创建db文件夹
+
+router2同理
+
+
+
+```sh
+cd shards
+mkdir router
+cd router
+mkdir router1
+mkdir router2
+cd router1
+mkdir log
+mkdir data
+cd data
+mkdir db
+cd ..
+cd ..
+cd router2
+mkdir log
+mkdir data
+cd data
+mkdir db
+cd ..
+cd ..
+```
+
+
+
+```sh
+PS H:\opensoft\MongoDB> cd shards
+>> mkdir router
+>> cd router
+>> mkdir router1
+>> mkdir router2
+>> cd router1
+>> mkdir log
+>> mkdir data
+>> cd data
+>> mkdir db
+>> cd ..
+>> cd ..
+>> cd router2
+>> mkdir log
+>> mkdir data
+>> cd data
+>> mkdir db
+>> cd ..
+>> cd ..
+
+
+    目录: H:\opensoft\MongoDB\shards
+
+
+Mode                 LastWriteTime         Length Name
+----                 -------------         ------ ----
+d-----        2022/11/19     22:12                router
+
+
+    目录: H:\opensoft\MongoDB\shards\router
+
+
+Mode                 LastWriteTime         Length Name
+----                 -------------         ------ ----
+d-----        2022/11/19     22:12                router1
+d-----        2022/11/19     22:12                router2
+
+
+    目录: H:\opensoft\MongoDB\shards\router\router1
+
+
+Mode                 LastWriteTime         Length Name
+----                 -------------         ------ ----
+d-----        2022/11/19     22:12                log
+d-----        2022/11/19     22:12                data
+
+
+    目录: H:\opensoft\MongoDB\shards\router\router1\data
+
+
+Mode                 LastWriteTime         Length Name
+----                 -------------         ------ ----
+d-----        2022/11/19     22:12                db
+
+
+    目录: H:\opensoft\MongoDB\shards\router\router2
+
+
+Mode                 LastWriteTime         Length Name
+----                 -------------         ------ ----
+d-----        2022/11/19     22:12                log
+d-----        2022/11/19     22:12                data
+
+
+    目录: H:\opensoft\MongoDB\shards\router\router2\data
+
+
+Mode                 LastWriteTime         Length Name
+----                 -------------         ------ ----
+d-----        2022/11/19     22:12                db
+
+
+PS H:\opensoft\MongoDB\shards\router>
+```
+
+
+
+
+
+
+
+#### 第二步：编写router1的配置文件
+
+在conf文件夹里创建router1.conf
+
+
+
+```sh
+systemLog:
+  #MongoDB发送所有日志输出的目标指定为文件
+  destination: file
+  #mongod或mongos应向其发送所有诊断日志记录信息的日志文件的路径
+  path: "./../shards/router/router1/log/mongod.log"
+  #当mongos或mongod实例重新启动时，mongos或mongod会将新条目附加到现有日志文件的末尾。
+  logAppend: true
+processManagement:
+  #启用在后台运行mongos或mongod进程的守护进程模式
+  #fork: true
+  #指定用于保存mongos或mongod进程的进程ID的文件位置，其中mongos或mongod将写入其PID
+  pidFilePath: "./../shards/router/router1/log/mongod.pid"
+net:
+  #服务实例绑定所有IP，有副作用，副本集初始化的时候，节点名字会自动设置为本地域名，而不是ip
+  #bindIpAll: true
+  #服务实例绑定的IP
+  bindIp: 127.0.0.1
+  #绑定的端口
+  port: 27017
+sharding:
+  #指定配置节点副本集
+  configDB: config/127.0.0.1:27019,127.0.0.1:27119,127.0.0.1:27219
+```
+
+
+
+
+
+#### 第三步：编写router2的配置文件
+
+在conf文件夹里创建route2.conf
+
+
+
+```sh
+systemLog:
+  #MongoDB发送所有日志输出的目标指定为文件
+  destination: file
+  #mongod或mongos应向其发送所有诊断日志记录信息的日志文件的路径
+  path: "./../shards/router/router2/log/mongod.log"
+  #当mongos或mongod实例重新启动时，mongos或mongod会将新条目附加到现有日志文件的末尾。
+  logAppend: true
+processManagement:
+  #启用在后台运行mongos或mongod进程的守护进程模式
+  #fork: true
+  #指定用于保存mongos或mongod进程的进程ID的文件位置，其中mongos或mongod将写入其PID
+  pidFilePath: "./../shards/router/router2/log/mongod.pid"
+net:
+  #服务实例绑定所有IP，有副作用，副本集初始化的时候，节点名字会自动设置为本地域名，而不是ip
+  #bindIpAll: true
+  #服务实例绑定的IP
+  bindIp: 127.0.0.1
+  #绑定的端口
+  port: 27117
+sharding:
+  #指定配置节点副本集
+  configDB: config/127.0.0.1:27019,127.0.0.1:27119,127.0.0.1:27219
+```
+
+
+
+
+
+
+
+#### 第四步：启动mongod服务
+
+
+
+```sh
+cd bin
+start "mongos-router-27017" mongod --config ../shards/conf/router1.conf
+start "mongos-router-27117" mongod --config ../shards/conf/router2.conf
+```
+
+
+
+```sh
+PS H:\opensoft\MongoDB> ls
+
+
+    目录: H:\opensoft\MongoDB
+
+
+Mode                 LastWriteTime         Length Name
+----                 -------------         ------ ----
+d-----        2022/11/17     14:04                arbiter
+d-----        2022/11/18     15:50                bin
+d-----        2022/11/17     14:09                conf
+d-----        2022/11/15     12:49                data
+d-----        2022/11/14     20:16                log
+d-----        2022/11/17     13:47                master
+d-----        2022/11/15     21:53                MongoDBCompass
+d-----         2022/9/20      4:08                mongosh
+d-----        2022/11/19     22:12                shards
+d-----        2022/11/17     13:58                slave
+-a----        2022/11/19     14:01            225 config.bat
+-a----         2022/9/29      1:03          30608 LICENSE-Community.txt
+-a----         2022/9/29      1:03          16726 MPL-2
+-a----         2022/9/29      1:03           1977 README
+-a----        2022/11/19     22:48            152 router.bat
+-a----        2022/11/18     15:40            247 shard1.bat
+-a----        2022/11/19     13:27            243 shard2.bat
+-a----         2022/9/29      1:03          77913 THIRD-PARTY-NOTICES
+-a----        2022/11/14     21:22             50 运行.bat
+-a----        2022/11/17     14:32            193 集群启动-单窗口.bat
+-a----        2022/11/17     14:26            184 集群启动.bat
+
+
+PS H:\opensoft\MongoDB> cat .\router.bat
+cd bin
+start "mongos-router-27017" mongos --config ../shards/conf/router1.conf
+start "mongos-router-27117" mongos --config ../shards/conf/router2.conf
+PS H:\opensoft\MongoDB> start .\router.bat
+PS H:\opensoft\MongoDB>
+```
+
+
+
+
+
+**注意：这里使用的是mongos程序，不是mongod**
+
+
+
+
+
+
+
+
+
+#### 第五步：使用mongosh连接
+
+
+
+默认端口，可以省略端口配置
+
+```sh
+PS H:\opensoft\MongoDB> mongosh
+Current Mongosh Log ID: 6378eec083b96d118b649ff0
+Connecting to:          mongodb://127.0.0.1:27017/?directConnection=true&serverSelectionTimeoutMS=2000&appName=mongosh+1.6.0
+Using MongoDB:          6.0.2
+Using Mongosh:          1.6.0
+
+For mongosh info see: https://docs.mongodb.com/mongodb-shell/
+
+------
+   The server generated these startup warnings when booting
+   2022-11-19T22:53:29.951+08:00: Access control is not enabled for the database. Read and write access to data and configuration is unrestricted
+------
+
+[direct: mongos] test>
+```
+
+
+
+
+
+
+
+
+
+#### 第六步：添加分片
+
+语法：
+
+```sh
+sh.addShard("IP:Port")
+```
+
+
+
+将第一套分片副本集添加进来：
+
+```sh
+sh.addShard("shard1/127.0.0.1:27018,127.0.0.1:27118,127.0.0.1:27218")
+```
+
+
+
+将第二套分片副本集添加进来：
+
+```sh
+sh.addShard("shard2/127.0.0.1:27318,127.0.0.1:27418,127.0.0.1:27518")
+```
+
+
+
+查看分片状态情况：
+
+```sh
+sh.status()
+```
+
+
+
+
+
+```sh
+db.adminCommand({"setDefaultRWConcern":1,"defaultWriteConcern":{"w":"majority"},"defaultReadConcern":{"level":"majority"}})
+```
+
+
+
+```sh
+[direct: mongos] test> db.adminCommand({"setDefaultRWConcern":1,"defaultWriteConcern":{"w":"majority"},"defaultReadConcern":{"level":"majority"}})
+{
+  defaultReadConcern: { level: 'majority' },
+  defaultWriteConcern: { w: 'majority', wtimeout: 0 },
+  updateOpTime: Timestamp({ t: 1668871142, i: 1 }),
+  updateWallClockTime: ISODate("2022-11-19T15:19:03.000Z"),
+  defaultWriteConcernSource: 'global',
+  defaultReadConcernSource: 'global',
+  localUpdateWallClockTime: ISODate("2022-11-19T15:19:03.119Z"),
+  ok: 1,
+  '$clusterTime': {
+    clusterTime: Timestamp({ t: 1668871143, i: 2 }),
+    signature: {
+      hash: Binary(Buffer.from("0000000000000000000000000000000000000000", "hex"), 0),
+      keyId: Long("0")
+    }
+  },
+  operationTime: Timestamp({ t: 1668871143, i: 2 })
+}
+[direct: mongos] test>
+```
+
+
+
+```sh
+[direct: mongos] test> sh.addShard("shard1/127.0.0.1:27018,127.0.0.1:27118,127.0.0.1:27218")
+{
+  shardAdded: 'shard1',
+  ok: 1,
+  '$clusterTime': {
+    clusterTime: Timestamp({ t: 1668871172, i: 4 }),
+    signature: {
+      hash: Binary(Buffer.from("0000000000000000000000000000000000000000", "hex"), 0),
+      keyId: Long("0")
+    }
+  },
+  operationTime: Timestamp({ t: 1668871172, i: 4 })
+}
+[direct: mongos] test>
+```
+
+
+
+```sh
+[direct: mongos] test> sh.status()
+shardingVersion
+{
+  _id: 1,
+  minCompatibleVersion: 5,
+  currentVersion: 6,
+  clusterId: ObjectId("6378721952fa08bd79db735d")
+}
+---
+shards
+[
+  {
+    _id: 'shard1',
+    host: 'shard1/127.0.0.1:27018,127.0.0.1:27118',
+    state: 1,
+    topologyTime: Timestamp({ t: 1668871172, i: 1 })
+  }
+]
+---
+most recently active mongoses
+[ { '6.0.2': 2 } ]
+---
+autosplit
+{ 'Currently enabled': 'yes' }
+---
+balancer
+{
+  'Currently enabled': 'yes',
+  'Failed balancer rounds in last 5 attempts': 0,
+  'Currently running': 'no',
+  'Migration Results for the last 24 hours': 'No recent migrations'
+}
+---
+databases
+[
+  {
+    database: { _id: 'config', primary: 'config', partitioned: true },
+    collections: {}
+  }
+]
+[direct: mongos] test>
+```
+
+
+
+```sh
+[direct: mongos] test> sh.addShard("shard2/127.0.0.1:27318,127.0.0.1:27418,127.0.0.1:27518")
+{
+  shardAdded: 'shard2',
+  ok: 1,
+  '$clusterTime': {
+    clusterTime: Timestamp({ t: 1668871351, i: 3 }),
+    signature: {
+      hash: Binary(Buffer.from("0000000000000000000000000000000000000000", "hex"), 0),
+      keyId: Long("0")
+    }
+  },
+  operationTime: Timestamp({ t: 1668871351, i: 3 })
+}
+[direct: mongos] test>
+```
+
+
+
+```sh
+[direct: mongos] test> sh.status()
+shardingVersion
+{
+  _id: 1,
+  minCompatibleVersion: 5,
+  currentVersion: 6,
+  clusterId: ObjectId("6378721952fa08bd79db735d")
+}
+---
+shards
+[
+  {
+    _id: 'shard1',
+    host: 'shard1/127.0.0.1:27018,127.0.0.1:27118',
+    state: 1,
+    topologyTime: Timestamp({ t: 1668871172, i: 1 })
+  },
+  {
+    _id: 'shard2',
+    host: 'shard2/127.0.0.1:27318,127.0.0.1:27418',
+    state: 1,
+    topologyTime: Timestamp({ t: 1668871351, i: 1 })
+  }
+]
+---
+most recently active mongoses
+[ { '6.0.2': 2 } ]
+---
+autosplit
+{ 'Currently enabled': 'yes' }
+---
+balancer
+{
+  'Currently enabled': 'yes',
+  'Currently running': 'no',
+  'Failed balancer rounds in last 5 attempts': 0,
+  'Migration Results for the last 24 hours': { '1': 'Success' }
+}
+---
+databases
+[
+  {
+    database: { _id: 'config', primary: 'config', partitioned: true },
+    collections: {
+      'config.system.sessions': {
+        shardKey: { _id: 1 },
+        unique: false,
+        balancing: true,
+        chunkMetadata: [
+          { shard: 'shard1', nChunks: 1023 },
+          { shard: 'shard2', nChunks: 1 }
+        ],
+        chunks: [
+          'too many chunks to print, use verbose if you want to force print'
+        ],
+        tags: []
+      }
+    }
+  }
+]
+[direct: mongos] test>
+```
+
+
+
+
+
+提示：如果添加分片失败，需要先手动移除分片，检查添加分片的信息的正确性后，再次添加分片
+
+移除分片：
+
+```sh
+db.runCommand({removeShard:"分片名称"})
+```
+
+
+
+例如：
+
+```sh
+db.runCommand( { removeShard: "shard1" } )
+```
+
+
+
+
+
+注意：如果只剩下最后一个shard，是无法删除的
+
+移除时会自动转移分片数据，需要一个时间过程。
+
+完成后，再次执行删除分片命令才能真正删除。
+
+
+
+
+
+
+
+
+
+#### 第七步：开启分片功能
+
+
+
+语法：
+
+```sh
+sh.enableSharding("库名")
+```
+
+
+
+以articledb数据库为例
+
+
+
+```sh
+sh.enableSharding("articledb")
+```
+
+
+
+
+
+
+
+#### 第八步：开启集合分片
+
+
+
+```sh
+sh.shardCollection("库名.集合名",{"key":1})
+```
+
+
+
+
+
+
+
+
+
