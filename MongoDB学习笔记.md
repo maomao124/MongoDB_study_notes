@@ -12823,6 +12823,127 @@ databases
 
 
 
+#### 第十一步：编写启动脚本
+
+
+
+```sh
+cd bin
+start "mongod-shard1-27018" mongod --config ../shards/conf/shard1_master.conf
+start "mongod-shard1-27118" mongod --config ../shards/conf/shard1_slave.conf
+start "mongod-shard1-27218" mongod --config ../shards/conf/shard1_arbiter.conf
+start "mongod-shard2-27318" mongod --config ../shards/conf/shard2_master.conf
+start "mongod-shard2-27418" mongod --config ../shards/conf/shard2_slave.conf
+start "mongod-shard2-27518" mongod --config ../shards/conf/shard2_arbiter.conf
+start "mongod-config-27019" mongod --config ../shards/conf/config1.conf
+start "mongod-config-27119" mongod --config ../shards/conf/config2.conf
+start "mongod-config-27219" mongod --config ../shards/conf/config3.conf
+start "mongos-router-27017" mongos --config ../shards/conf/router1.conf
+start "mongos-router-27117" mongos --config ../shards/conf/router2.conf
+```
+
+
+
+
+
+单窗口模式
+
+```sh
+cd bin
+start /b "mongod-shard1-27018" mongod --config ../shards/conf/shard1_master.conf
+start /b "mongod-shard1-27118" mongod --config ../shards/conf/shard1_slave.conf
+start /b "mongod-shard1-27218" mongod --config ../shards/conf/shard1_arbiter.conf
+start /b "mongod-shard2-27318" mongod --config ../shards/conf/shard2_master.conf
+start /b "mongod-shard2-27418" mongod --config ../shards/conf/shard2_slave.conf
+start /b "mongod-shard2-27518" mongod --config ../shards/conf/shard2_arbiter.conf
+start /b "mongod-config-27019" mongod --config ../shards/conf/config1.conf
+start /b "mongod-config-27119" mongod --config ../shards/conf/config2.conf
+start /b "mongod-config-27219" mongod --config ../shards/conf/config3.conf
+start /b "mongos-router-27017" mongos --config ../shards/conf/router1.conf
+start /b "mongos-router-27117" mongos --config ../shards/conf/router2.conf
+```
+
+
+
+
+
+```sh
+PS H:\opensoft\MongoDB> ls
+
+
+    目录: H:\opensoft\MongoDB
+
+
+Mode                 LastWriteTime         Length Name
+----                 -------------         ------ ----
+d-----        2022/11/17     14:04                arbiter
+d-----        2022/11/18     15:50                bin
+d-----        2022/11/17     14:09                conf
+d-----        2022/11/15     12:49                data
+d-----        2022/11/14     20:16                log
+d-----        2022/11/17     13:47                master
+d-----        2022/11/15     21:53                MongoDBCompass
+d-----         2022/9/20      4:08                mongosh
+d-----        2022/11/19     22:12                shards
+d-----        2022/11/17     13:58                slave
+-a----        2022/11/19     14:01            225 config.bat
+-a----         2022/9/29      1:03          30608 LICENSE-Community.txt
+-a----         2022/9/29      1:03          16726 MPL-2
+-a----         2022/9/29      1:03           1977 README
+-a----        2022/11/19     22:53            152 router.bat
+-a----        2022/11/18     15:40            247 shard1.bat
+-a----        2022/11/19     13:27            243 shard2.bat
+-a----         2022/9/29      1:03          77913 THIRD-PARTY-NOTICES
+-a----        2022/11/20     14:06            878 分片集群-单窗口.bat
+-a----        2022/11/20     14:02            845 分片集群.bat
+-a----        2022/11/14     21:22             50 运行.bat
+-a----        2022/11/17     14:32            193 集群启动-单窗口.bat
+-a----        2022/11/17     14:26            184 集群启动.bat
+
+
+PS H:\opensoft\MongoDB> cat .\分片集群.bat
+cd bin
+start "mongod-shard1-27018" mongod --config ../shards/conf/shard1_master.conf
+start "mongod-shard1-27118" mongod --config ../shards/conf/shard1_slave.conf
+start "mongod-shard1-27218" mongod --config ../shards/conf/shard1_arbiter.conf
+start "mongod-shard2-27318" mongod --config ../shards/conf/shard2_master.conf
+start "mongod-shard2-27418" mongod --config ../shards/conf/shard2_slave.conf
+start "mongod-shard2-27518" mongod --config ../shards/conf/shard2_arbiter.conf
+start "mongod-config-27019" mongod --config ../shards/conf/config1.conf
+start "mongod-config-27119" mongod --config ../shards/conf/config2.conf
+start "mongod-config-27219" mongod --config ../shards/conf/config3.conf
+start "mongos-router-27017" mongos --config ../shards/conf/router1.conf
+start "mongos-router-27117" mongos --config ../shards/conf/router2.conf
+PS H:\opensoft\MongoDB> cat .\分片集群-单窗口.bat
+cd bin
+start /b "mongod-shard1-27018" mongod --config ../shards/conf/shard1_master.conf
+start /b "mongod-shard1-27118" mongod --config ../shards/conf/shard1_slave.conf
+start /b "mongod-shard1-27218" mongod --config ../shards/conf/shard1_arbiter.conf
+start /b "mongod-shard2-27318" mongod --config ../shards/conf/shard2_master.conf
+start /b "mongod-shard2-27418" mongod --config ../shards/conf/shard2_slave.conf
+start /b "mongod-shard2-27518" mongod --config ../shards/conf/shard2_arbiter.conf
+start /b "mongod-config-27019" mongod --config ../shards/conf/config1.conf
+start /b "mongod-config-27119" mongod --config ../shards/conf/config2.conf
+start /b "mongod-config-27219" mongod --config ../shards/conf/config3.conf
+start /b "mongos-router-27017" mongos --config ../shards/conf/router1.conf
+start /b "mongos-router-27117" mongos --config ../shards/conf/router2.conf
+PS H:\opensoft\MongoDB>
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -12870,4 +12991,113 @@ databases
 
 
 ## SpringDataMongDB连接分片集群
+
+
+
+配置文件
+
+```yaml
+spring:
+  data:
+    mongodb:
+      # 库名称
+      #database: articledb
+      # mongodb服务地址
+      #host: 127.0.0.1
+      # 端口号
+      #port: 27017
+      # 可以使用uri连接
+      uri: mongodb://127.0.0.1:27017,127.0.0.1:27117/articledb
+```
+
+
+
+
+
+启动
+
+```sh
+
+  .   ____          _            __ _ _
+ /\\ / ___'_ __ _ _(_)_ __  __ _ \ \ \ \
+( ( )\___ | '_ | '_| | '_ \/ _` | \ \ \ \
+ \\/  ___)| |_)| | | | | || (_| |  ) ) ) )
+  '  |____| .__|_| |_|_| |_\__, | / / / /
+ =========|_|==============|___/=/_/_/_/
+ :: Spring Boot ::                (v2.7.1)
+
+2022-11-20 13:51:01.759  INFO 21068 --- [           main] m.m.MongoDbArticleShardsApplication      : Starting MongoDbArticleShardsApplication using Java 16.0.2 on mao with PID 21068 (H:\程序\大四上期\MongoDB_article_shards\target\classes started by mao in H:\程序\大四上期\MongoDB_article_shards)
+2022-11-20 13:51:01.761  INFO 21068 --- [           main] m.m.MongoDbArticleShardsApplication      : No active profile set, falling back to 1 default profile: "default"
+2022-11-20 13:51:02.216  INFO 21068 --- [           main] .s.d.r.c.RepositoryConfigurationDelegate : Bootstrapping Spring Data MongoDB repositories in DEFAULT mode.
+2022-11-20 13:51:02.250  INFO 21068 --- [           main] .s.d.r.c.RepositoryConfigurationDelegate : Finished Spring Data repository scanning in 31 ms. Found 1 MongoDB repository interfaces.
+2022-11-20 13:51:02.548  INFO 21068 --- [           main] o.s.b.w.embedded.tomcat.TomcatWebServer  : Tomcat initialized with port(s): 8080 (http)
+2022-11-20 13:51:02.555  INFO 21068 --- [           main] o.apache.catalina.core.StandardService   : Starting service [Tomcat]
+2022-11-20 13:51:02.555  INFO 21068 --- [           main] org.apache.catalina.core.StandardEngine  : Starting Servlet engine: [Apache Tomcat/9.0.64]
+2022-11-20 13:51:02.629  INFO 21068 --- [           main] o.a.c.c.C.[Tomcat].[localhost].[/]       : Initializing Spring embedded WebApplicationContext
+2022-11-20 13:51:02.630  INFO 21068 --- [           main] w.s.c.ServletWebServerApplicationContext : Root WebApplicationContext: initialization completed in 821 ms
+2022-11-20 13:51:02.723  INFO 21068 --- [           main] org.mongodb.driver.cluster               : Adding discovered server 127.0.0.1:27017 to client view of cluster
+2022-11-20 13:51:02.744  INFO 21068 --- [           main] org.mongodb.driver.cluster               : Adding discovered server 127.0.0.1:27117 to client view of cluster
+2022-11-20 13:51:02.766  INFO 21068 --- [           main] org.mongodb.driver.client                : MongoClient with metadata {"driver": {"name": "mongo-java-driver|sync|spring-boot", "version": "4.6.1"}, "os": {"type": "Windows", "name": "Windows 10", "architecture": "amd64", "version": "10.0"}, "platform": "Java/Oracle Corporation/16.0.2+7-67"} created with settings MongoClientSettings{readPreference=primary, writeConcern=WriteConcern{w=null, wTimeout=null ms, journal=null}, retryWrites=true, retryReads=true, readConcern=ReadConcern{level=null}, credential=null, streamFactoryFactory=null, commandListeners=[], codecRegistry=ProvidersCodecRegistry{codecProviders=[ValueCodecProvider{}, BsonValueCodecProvider{}, DBRefCodecProvider{}, DBObjectCodecProvider{}, DocumentCodecProvider{}, IterableCodecProvider{}, MapCodecProvider{}, GeoJsonCodecProvider{}, GridFSFileCodecProvider{}, Jsr310CodecProvider{}, JsonObjectCodecProvider{}, BsonCodecProvider{}, EnumCodecProvider{}, com.mongodb.Jep395RecordCodecProvider@6d0b0da6]}, clusterSettings={hosts=[127.0.0.1:27017, 127.0.0.1:27117], srvServiceName=mongodb, mode=MULTIPLE, requiredClusterType=UNKNOWN, requiredReplicaSetName='null', serverSelector='null', clusterListeners='[]', serverSelectionTimeout='30000 ms', localThreshold='30000 ms'}, socketSettings=SocketSettings{connectTimeoutMS=10000, readTimeoutMS=0, receiveBufferSize=0, sendBufferSize=0}, heartbeatSocketSettings=SocketSettings{connectTimeoutMS=10000, readTimeoutMS=10000, receiveBufferSize=0, sendBufferSize=0}, connectionPoolSettings=ConnectionPoolSettings{maxSize=100, minSize=0, maxWaitTimeMS=120000, maxConnectionLifeTimeMS=0, maxConnectionIdleTimeMS=0, maintenanceInitialDelayMS=0, maintenanceFrequencyMS=60000, connectionPoolListeners=[], maxConnecting=2}, serverSettings=ServerSettings{heartbeatFrequencyMS=10000, minHeartbeatFrequencyMS=500, serverListeners='[]', serverMonitorListeners='[]'}, sslSettings=SslSettings{enabled=false, invalidHostNameAllowed=false, context=null}, applicationName='null', compressorList=[], uuidRepresentation=JAVA_LEGACY, serverApi=null, autoEncryptionSettings=null, contextProvider=null}
+2022-11-20 13:51:02.774  INFO 21068 --- [127.0.0.1:27017] org.mongodb.driver.connection            : Opened connection [connectionId{localValue:4, serverValue:104}] to 127.0.0.1:27017
+2022-11-20 13:51:02.774  INFO 21068 --- [127.0.0.1:27017] org.mongodb.driver.connection            : Opened connection [connectionId{localValue:1, serverValue:105}] to 127.0.0.1:27017
+2022-11-20 13:51:02.774  INFO 21068 --- [127.0.0.1:27117] org.mongodb.driver.connection            : Opened connection [connectionId{localValue:2, serverValue:46}] to 127.0.0.1:27117
+2022-11-20 13:51:02.774  INFO 21068 --- [127.0.0.1:27117] org.mongodb.driver.connection            : Opened connection [connectionId{localValue:3, serverValue:45}] to 127.0.0.1:27117
+2022-11-20 13:51:02.774  INFO 21068 --- [127.0.0.1:27017] org.mongodb.driver.cluster               : Monitor thread successfully connected to server with description ServerDescription{address=127.0.0.1:27017, type=SHARD_ROUTER, state=CONNECTED, ok=true, minWireVersion=0, maxWireVersion=17, maxDocumentSize=16777216, logicalSessionTimeoutMinutes=30, roundTripTimeNanos=17529900}
+2022-11-20 13:51:02.774  INFO 21068 --- [127.0.0.1:27117] org.mongodb.driver.cluster               : Monitor thread successfully connected to server with description ServerDescription{address=127.0.0.1:27117, type=SHARD_ROUTER, state=CONNECTED, ok=true, minWireVersion=0, maxWireVersion=17, maxDocumentSize=16777216, logicalSessionTimeoutMinutes=30, roundTripTimeNanos=17529800}
+2022-11-20 13:51:02.777  INFO 21068 --- [127.0.0.1:27017] org.mongodb.driver.cluster               : Discovered cluster type of SHARDED
+2022-11-20 13:51:03.237  INFO 21068 --- [           main] o.s.b.w.embedded.tomcat.TomcatWebServer  : Tomcat started on port(s): 8080 (http) with context path ''
+2022-11-20 13:51:03.248  INFO 21068 --- [           main] m.m.MongoDbArticleShardsApplication      : Started MongoDbArticleShardsApplication in 1.797 seconds (JVM running for 2.379)
+```
+
+
+
+
+
+
+
+
+
+
+
+![image-20221120135431032](img/MongoDB学习笔记/image-20221120135431032.png)
+
+
+
+
+
+![image-20221120135510248](img/MongoDB学习笔记/image-20221120135510248.png)
+
+
+
+
+
+通过日志发现，写入数据的时候，会选择一个路由写入
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+# 安全认证
 
