@@ -13192,3 +13192,745 @@ db.runCommand({rolesInfo: ["<rolename>",{ role: "<rolename>", db: "<database>" }
 
 
 
+查看所有内置角色：
+
+```sh
+test> db.runCommand({ rolesInfo: 1, showBuiltinRoles: true })
+{
+  roles: [
+    {
+      role: 'dbOwner',
+      db: 'test',
+      isBuiltin: true,
+      roles: [],
+      inheritedRoles: []
+    },
+    {
+      role: 'read',
+      db: 'test',
+      isBuiltin: true,
+      roles: [],
+      inheritedRoles: []
+    },
+    {
+      role: 'readWrite',
+      db: 'test',
+      isBuiltin: true,
+      roles: [],
+      inheritedRoles: []
+    },
+    {
+      role: 'userAdmin',
+      db: 'test',
+      isBuiltin: true,
+      roles: [],
+      inheritedRoles: []
+    },
+    {
+      role: 'enableSharding',
+      db: 'test',
+      isBuiltin: true,
+      roles: [],
+      inheritedRoles: []
+    },
+    {
+      role: 'dbAdmin',
+      db: 'test',
+      isBuiltin: true,
+      roles: [],
+      inheritedRoles: []
+    }
+  ],
+  ok: 1
+}
+test>
+```
+
+
+
+
+
+常用的内置角色：
+
+* 数据库用户角色：read、readWrite
+* 所有数据库用户角色：readAnyDatabase、readWriteAnyDatabase、userAdminAnyDatabase、dbAdminAnyDatabase
+* 数据库管理角色：dbAdmin、dbOwner、userAdmin
+* 集群管理角色：clusterAdmin、clusterManager、clusterMonitor、hostManager
+* 备份恢复角色：backup、restore
+* 超级用户角色：root
+* 内部角色：system
+
+
+
+
+
+角色权限描述：
+
+* read：可以读取指定数据库中任何数据
+* readWrite：可以读写指定数据库中任何数据，包括创建、重命名、删除集合
+* readAnyDatabase：可以读取所有数据库中任何数据(除了数据库config和local之外)
+* readWriteAnyDatabase ：可以读写所有数据库中任何数据(除了数据库config和local之外)
+* userAdminAnyDatabase：可以在指定数据库创建和修改用户(除了数据库config和local之外)
+* dbAdminAnyDatabase：可以读取任何数据库以及对数据库进行清理、修改、压缩、获取统计信息、执行检查等操作(除了数据库config和local之外)
+* dbAdmin：可以读取指定数据库以及对数据库进行清理、修改、压缩、获取统 计信息、执行检查等操作
+* userAdmin：可以在指定数据库创建和修改用户
+* clusterAdmin：可以对整个集群或数据库系统进行管理操作
+* backup：备份MongoDB数据最小的权限
+* restore：从备份文件中还原恢复MongoDB数据(除了system.profile集合)的权限
+* root：超级账号，超级权限
+
+
+
+
+
+
+
+## 单实例环境
+
+### 添加用户和权限
+
+
+
+第一步：使用Mongo客户端登录
+
+
+
+```sh
+PS C:\Users\mao\Desktop> mongosh
+Current Mongosh Log ID: 637b78f04cc9d2d1189621d0
+Connecting to:          mongodb://127.0.0.1:27017/?directConnection=true&serverSelectionTimeoutMS=2000&appName=mongosh+1.6.0
+Using MongoDB:          6.0.2
+Using Mongosh:          1.6.0
+
+For mongosh info see: https://docs.mongodb.com/mongodb-shell/
+
+------
+   The server generated these startup warnings when booting
+   2022-11-21T21:09:24.085+08:00: Access control is not enabled for the database. Read and write access to data and configuration is unrestricted
+   2022-11-21T21:09:24.085+08:00: This server is bound to localhost. Remote systems will be unable to connect to this server. Start the server with --bind_ip <address> to specify which IP addresses it should serve responses from, or with --bind_ip_all to bind to all interfaces. If this behavior is desired, start the server with --bind_ip 127.0.0.1 to disable this warning
+------
+
+------
+   Enable MongoDB's free cloud-based monitoring service, which will then receive and display
+   metrics about your deployment (disk utilization, CPU, operation statistics, etc).
+
+   The monitoring data will be available on a MongoDB website with a unique URL accessible to you
+   and anyone you share the URL with. MongoDB may use this information to make product
+   improvements and to suggest MongoDB products and deployment options to you.
+
+   To enable free monitoring, run the following command: db.enableFreeMonitoring()
+   To permanently disable this reminder, run the following command: db.disableFreeMonitoring()
+------
+
+test>
+```
+
+
+
+
+
+第二步：创建两个管理员用户
+
+一个是系统的超级管理员 root ，一个是admin库的管理用户 myadmin
+
+
+
+切换到admin库
+
+```sh
+use admin
+```
+
+
+
+创建系统超级用户：
+
+```sh
+db.createUser({user:"root",pwd:"123456",roles:["root"]})
+```
+
+
+
+创建专门用来管理admin库的账号admin，只用来作为用户权限的管理：
+
+```sh
+db.createUser({user:"myadmin",pwd:"123456",roles:[{role:"userAdminAnyDatabase",db:"admin"}]})
+```
+
+
+
+查看已经创建了的用户的情况：
+
+```sh
+db.system.users.find()
+```
+
+
+
+
+
+```sh
+test> use admin
+switched to db admin
+admin> db.createUser({user:"root",pwd:"123456",roles:["root"]})
+{ ok: 1 }
+admin> db.createUser({user:"myadmin",pwd:"123456",roles:[{role:"userAdminAnyDatabase",db:"admin"}]})
+{ ok: 1 }
+admin>
+```
+
+```sh
+admin> db.system.users.find()
+[
+  {
+    _id: 'admin.root',
+    userId: new UUID("ad18e5af-b351-4cc4-8e68-64b4e7149fe9"),
+    user: 'root',
+    db: 'admin',
+    credentials: {
+      'SCRAM-SHA-1': {
+        iterationCount: 10000,
+        salt: 'QY32FO4BUadrVpwHPVC2wQ==',
+        storedKey: 'UpVaPI8X2KkoivnhNMR50TC0SdU=',
+        serverKey: '4h40vtKipla6TXLXAQM2qYbxbHk='
+      },
+      'SCRAM-SHA-256': {
+        iterationCount: 15000,
+        salt: 'xf0mPa3ZwHYOLQl0J1jb7N718m2mO/W/wMqaXQ==',
+        storedKey: 'FuMsFBWVMQVTlRbUjQrj1zFlfZ8BC2F5+b4S6cUHYhE=',
+        serverKey: '9HvrDw/LPGBCu8U8uFQjvmMNBoTap1iExjtJ0dWyakQ='
+      }
+    },
+    roles: [ { role: 'root', db: 'admin' } ]
+  },
+  {
+    _id: 'admin.myadmin',
+    userId: new UUID("b9067f91-06e4-487f-8779-f80fea6fe1a8"),
+    user: 'myadmin',
+    db: 'admin',
+    credentials: {
+      'SCRAM-SHA-1': {
+        iterationCount: 10000,
+        salt: 'ncKD+fU7H0V97fQtB5+PCg==',
+        storedKey: 'T3IMd/w0G1AyJBmCrxZ5aE5+ZWA=',
+        serverKey: 'W5SxJVlVN555+TV43kyHp6rqDQg='
+      },
+      'SCRAM-SHA-256': {
+        iterationCount: 15000,
+        salt: 'SfG9wxjEI5Ro7KHYvyLihiDNOazFzf4IL8s0bQ==',
+        storedKey: 'f2IEx+bRj05J8beXTx3r/L/uoXEN0lEa+i8VMzQdoWU=',
+        serverKey: 'Xe4rpoGd2PYc2crIlib+YhiRTLYDsPeLuN3oW9uE9IU='
+      }
+    },
+    roles: [ { role: 'userAdminAnyDatabase', db: 'admin' } ]
+  }
+]
+admin>
+```
+
+
+
+
+
+删除用户：
+
+```sh
+db.dropUser("admin.myadmin")
+```
+
+
+
+```sh
+db.changeUserPassword("root", "123456")
+```
+
+
+
+
+
+
+
+第三步：测试添加的用户是否正确
+
+
+
+```sh
+db.auth("用户名","密码")
+```
+
+
+
+
+
+```sh
+admin> db.auth("root","1234")
+MongoServerError: Authentication failed.
+admin> db.auth("root","123456")
+{ ok: 1 }
+admin>
+```
+
+
+
+
+
+
+
+**创建普通用户**
+
+创建普通用户可以在没有开启认证的时候添加，也可以在开启认证之后添加，但开启认证之后，必须使 用有操作admin库的用户登录认证后才能操作。底层都是将用户信息保存在了admin数据库的集合 system.users中
+
+
+
+创建(切换)将来要操作的数据库articledb：
+
+```sh
+use articledb
+```
+
+
+
+创建用户，拥有articledb数据库的读写权限readWrite，密码是123456
+
+```sh
+db.createUser({user: "mao", pwd: "123456", roles: [{ role: "readWrite", db:"articledb" }]})
+```
+
+
+
+测试是否可用：
+
+```sh
+db.auth("mao","123456")
+```
+
+
+
+```sh
+admin> show databases
+admin      180.00 KiB
+articledb   72.00 KiB
+config      72.00 KiB
+db1         60.00 KiB
+local       72.00 KiB
+admin> use articledb
+switched to db articledb
+articledb> db.createUser({user: "mao", pwd: "123456", roles: [{ role: "readWrite", db:"articledb" }]})
+{ ok: 1 }
+articledb> db.auth("mao","123456")
+{ ok: 1 }
+articledb>
+```
+
+```sh
+articledb> use admin
+switched to db admin
+admin> db.system.users.find()
+[
+  {
+    _id: 'admin.root',
+    userId: new UUID("ad18e5af-b351-4cc4-8e68-64b4e7149fe9"),
+    user: 'root',
+    db: 'admin',
+    credentials: {
+      'SCRAM-SHA-1': {
+        iterationCount: 10000,
+        salt: '9ktFGkdzkc1B97dwF3p3uw==',
+        storedKey: 'GzBSJamnP+9L0pkqmJ6fRiLwbec=',
+        serverKey: 'xZFztUVJAvX6zF4EhZhQqCds1ec='
+      },
+      'SCRAM-SHA-256': {
+        iterationCount: 15000,
+        salt: 'jWAOSnsTgts5+ueQCDZKB7FnO3r6jYD6kla7gA==',
+        storedKey: 'NxwPRr4dLSI8rY00afKR40TEUFlmkfnVkHGaGwYkvTE=',
+        serverKey: 'wlazVWALDdoTPhfJmZGsize7NnlfxuDUAtZ6p6XTlwE='
+      }
+    },
+    roles: [ { role: 'root', db: 'admin' } ]
+  },
+  {
+    _id: 'articledb.mao',
+    userId: new UUID("c8a58600-b2b2-4177-89d3-03cd5c5ddc28"),
+    user: 'mao',
+    db: 'articledb',
+    credentials: {
+      'SCRAM-SHA-1': {
+        iterationCount: 10000,
+        salt: '7z/fBvS+x9Sms0fA7YS2iA==',
+        storedKey: '8ml5Jaq+W2yVK/3L43jdJTHDpjE=',
+        serverKey: '5PgYb5PAK9IYaI7zXOfntk3dRbo='
+      },
+      'SCRAM-SHA-256': {
+        iterationCount: 15000,
+        salt: 'NOHgYF6FECRHCoiSPAKCOrvYehUAwrl6X5IvLQ==',
+        storedKey: 'bF5g0VPIcCXC/d6TBybQf2isjiDCQ5XCdWcto+Xw1R4=',
+        serverKey: 'mAuvlC+PwgTEMV+xbU72VhQKAynbmBW3Ssp5oT3R9UQ='
+      }
+    },
+    roles: [ { role: 'readWrite', db: 'articledb' } ]
+  }
+]
+admin>
+```
+
+
+
+
+
+
+
+### 服务端开启认证和客户端登录
+
+
+
+关闭已经启动的服务
+
+```sh
+use admin
+```
+
+```sh
+db.shutdownServer()
+```
+
+
+
+* 必须是在admin库下执行该关闭服务命令
+* 如果没有开启认证，必须是从localhost登陆的，才能执行关闭服务命令
+* 非localhost的、通过远程登录的，必须有登录且必须登录用户有对admin操作权限才可以
+
+
+
+以开启认证的方式启动服务：
+
+有两种方式开启权限认证启动服务：一种是参数方式，一种是配置文件方式
+
+**参数方式：**
+
+在启动时指定参数 --auth
+
+```sh
+mongod --config ../conf/mongod.conf --auth
+```
+
+
+
+```sh
+PS H:\opensoft\MongoDB\bin> .\mongod --config ../conf/mongod.conf --auth
+{"t":{"$date":"2022-11-21T13:55:58.935Z"},"s":"I",  "c":"CONTROL",  "id":5760901, "ctx":"-","msg":"Applied --setParameter options","attr":{"serverParameters":{"enableLocalhostAuthBypass":{"default":true,"value":false}}}}
+{"t":{"$date":"2022-11-21T21:55:58.938+08:00"},"s":"I",  "c":"CONTROL",  "id":23285,   "ctx":"-","msg":"Automatically disabling TLS 1.0, to force-enable TLS 1.0 specify --sslDisabledProtocols 'none'"}
+{"t":{"$date":"2022-11-21T21:55:58.939+08:00"},"s":"I",  "c":"NETWORK",  "id":4915701, "ctx":"-","msg":"Initialized wire specification","attr":{"spec":{"incomingExternalClient":{"minWireVersion":0,"maxWireVersion":17},"incomingInternalClient":{"minWireVersion":0,"maxWireVersion":17},"outgoing":{"minWireVersion":6,"maxWireVersion":17},"isInternalClient":true}}}
+{"t":{"$date":"2022-11-21T21:56:00.135+08:00"},"s":"I",  "c":"NETWORK",  "id":4648602, "ctx":"thread1","msg":"Implicit TCP FastOpen in use."}
+{"t":{"$date":"2022-11-21T21:56:00.137+08:00"},"s":"I",  "c":"REPL",     "id":5123008, "ctx":"thread1","msg":"Successfully registered PrimaryOnlyService","attr":{"service":"TenantMigrationDonorService","namespace":"config.tenantMigrationDonors"}}
+{"t":{"$date":"2022-11-21T21:56:00.137+08:00"},"s":"I",  "c":"REPL",     "id":5123008, "ctx":"thread1","msg":"Successfully registered PrimaryOnlyService","attr":{"service":"TenantMigrationRecipientService","namespace":"config.tenantMigrationRecipients"}}
+{"t":{"$date":"2022-11-21T21:56:00.137+08:00"},"s":"I",  "c":"REPL",     "id":5123008, "ctx":"thread1","msg":"Successfully registered PrimaryOnlyService","attr":{"service":"ShardSplitDonorService","namespace":"config.tenantSplitDonors"}}
+{"t":{"$date":"2022-11-21T21:56:00.138+08:00"},"s":"I",  "c":"CONTROL",  "id":5945603, "ctx":"thread1","msg":"Multi threading initialized"}
+{"t":{"$date":"2022-11-21T21:56:00.139+08:00"},"s":"I",  "c":"CONTROL",  "id":4615611, "ctx":"initandlisten","msg":"MongoDB starting","attr":{"pid":3188,"port":27017,"dbPath":".//..//data//db","architecture":"64-bit","host":"mao"}}
+{"t":{"$date":"2022-11-21T21:56:00.139+08:00"},"s":"I",  "c":"CONTROL",  "id":23398,   "ctx":"initandlisten","msg":"Target operating system minimum version","attr":{"targetMinOS":"Windows 7/Windows Server 2008 R2"}}
+{"t":{"$date":"2022-11-21T21:56:00.139+08:00"},"s":"I",  "c":"CONTROL",  "id":23403,   "ctx":"initandlisten","msg":"Build Info","attr":{"buildInfo":{"version":"6.0.2","gitVersion":"94fb7dfc8b974f1f5343e7ea394d0d9deedba50e","modules":[],"allocator":"tcmalloc","environment":{"distmod":"windows","distarch":"x86_64","target_arch":"x86_64"}}}}
+{"t":{"$date":"2022-11-21T21:56:00.139+08:00"},"s":"I",  "c":"CONTROL",  "id":51765,   "ctx":"initandlisten","msg":"Operating System","attr":{"os":{"name":"Microsoft Windows 10","version":"10.0 (build 19044)"}}}
+{"t":{"$date":"2022-11-21T21:56:00.139+08:00"},"s":"I",  "c":"CONTROL",  "id":21951,   "ctx":"initandlisten","msg":"Options set by command line","attr":{"options":{"config":"../conf/mongod.conf","net":{"port":27017},"security":{"authorization":"enabled"},"setParameter":{"enableLocalhostAuthBypass":"false"},"storage":{"dbPath":".\\\\..\\\\data\\\\db","journal":{"enabled":true}}}}}
+{"t":{"$date":"2022-11-21T21:56:00.141+08:00"},"s":"I",  "c":"STORAGE",  "id":22270,   "ctx":"initandlisten","msg":"Storage engine to use detected by data files","attr":{"dbpath":".//..//data//db","storageEngine":"wiredTiger"}}
+{"t":{"$date":"2022-11-21T21:56:00.142+08:00"},"s":"I",  "c":"STORAGE",  "id":22315,   "ctx":"initandlisten","msg":"Opening WiredTiger","attr":{"config":"create,cache_size=7636M,session_max=33000,eviction=(threads_min=4,threads_max=4),config_base=false,statistics=(fast),log=(enabled=true,remove=true,path=journal,compressor=snappy),builtin_extension_config=(zstd=(compression_level=6)),file_manager=(close_idle_time=600,close_scan_interval=10,close_handle_minimum=2000),statistics_log=(wait=0),json_output=(error,message),verbose=[recovery_progress:1,checkpoint_progress:1,compact_progress:1,backup:0,checkpoint:0,compact:0,evict:0,history_store:0,recovery:0,rts:0,salvage:0,tiered:0,timestamp:0,transaction:0,verify:0,log:0],"}}
+{"t":{"$date":"2022-11-21T21:56:00.695+08:00"},"s":"I",  "c":"STORAGE",  "id":4795906, "ctx":"initandlisten","msg":"WiredTiger opened","attr":{"durationMillis":553}}
+{"t":{"$date":"2022-11-21T21:56:00.695+08:00"},"s":"I",  "c":"RECOVERY", "id":23987,   "ctx":"initandlisten","msg":"WiredTiger recoveryTimestamp","attr":{"recoveryTimestamp":{"$timestamp":{"t":0,"i":0}}}}
+{"t":{"$date":"2022-11-21T21:56:00.773+08:00"},"s":"W",  "c":"CONTROL",  "id":22140,   "ctx":"initandlisten","msg":"This server is bound to localhost. Remote systems will be unable to connect to this server. Start the server with --bind_ip <address> to specify which IP addresses it should serve responses from, or with --bind_ip_all to bind to all interfaces. If this behavior is desired, start the server with --bind_ip 127.0.0.1 to disable this warning","tags":["startupWarnings"]}
+{"t":{"$date":"2022-11-21T21:56:00.777+08:00"},"s":"I",  "c":"NETWORK",  "id":4915702, "ctx":"initandlisten","msg":"Updated wire specification","attr":{"oldSpec":{"incomingExternalClient":{"minWireVersion":0,"maxWireVersion":17},"incomingInternalClient":{"minWireVersion":0,"maxWireVersion":17},"outgoing":{"minWireVersion":6,"maxWireVersion":17},"isInternalClient":true},"newSpec":{"incomingExternalClient":{"minWireVersion":0,"maxWireVersion":17},"incomingInternalClient":{"minWireVersion":17,"maxWireVersion":17},"outgoing":{"minWireVersion":17,"maxWireVersion":17},"isInternalClient":true}}}
+{"t":{"$date":"2022-11-21T21:56:00.777+08:00"},"s":"I",  "c":"REPL",     "id":5853300, "ctx":"initandlisten","msg":"current featureCompatibilityVersion value","attr":{"featureCompatibilityVersion":"6.0","context":"startup"}}
+{"t":{"$date":"2022-11-21T21:56:00.777+08:00"},"s":"I",  "c":"STORAGE",  "id":5071100, "ctx":"initandlisten","msg":"Clearing temp directory"}
+{"t":{"$date":"2022-11-21T21:56:00.782+08:00"},"s":"I",  "c":"CONTROL",  "id":20536,   "ctx":"initandlisten","msg":"Flow Control is enabled on this deployment"}
+{"t":{"$date":"2022-11-21T21:56:01.268+08:00"},"s":"I",  "c":"FTDC",     "id":20625,   "ctx":"initandlisten","msg":"Initializing full-time diagnostic data capture","attr":{"dataDirectory":".//..//data//db/diagnostic.data"}}
+{"t":{"$date":"2022-11-21T21:56:01.274+08:00"},"s":"I",  "c":"REPL",     "id":6015317, "ctx":"initandlisten","msg":"Setting new configuration state","attr":{"newState":"ConfigReplicationDisabled","oldState":"ConfigPreStart"}}
+{"t":{"$date":"2022-11-21T21:56:01.274+08:00"},"s":"I",  "c":"STORAGE",  "id":22262,   "ctx":"initandlisten","msg":"Timestamp monitor starting"}
+{"t":{"$date":"2022-11-21T21:56:01.277+08:00"},"s":"I",  "c":"NETWORK",  "id":23015,   "ctx":"listener","msg":"Listening on","attr":{"address":"127.0.0.1"}}
+{"t":{"$date":"2022-11-21T21:56:01.277+08:00"},"s":"I",  "c":"NETWORK",  "id":23016,   "ctx":"listener","msg":"Waiting for connections","attr":{"port":27017,"ssl":"off"}}
+```
+
+
+
+```sh
+PS C:\Users\mao\Desktop> mongosh
+Current Mongosh Log ID: 637b83c538eac1f00f6405df
+Connecting to:          mongodb://127.0.0.1:27017/?directConnection=true&serverSelectionTimeoutMS=2000&appName=mongosh+1.6.0
+Using MongoDB:          6.0.2
+Using Mongosh:          1.6.0
+
+For mongosh info see: https://docs.mongodb.com/mongodb-shell/
+
+test> show databases
+MongoServerError: command listDatabases requires authentication
+test> db.auth("mao","123456")
+MongoServerError: Authentication failed.
+test> db.auth("root","123456")
+MongoServerError: Authentication failed.
+test> use admin
+switched to db admin
+admin> db.auth("root","123456")
+{ ok: 1 }
+admin> show databases
+admin      180.00 KiB
+articledb   72.00 KiB
+config     108.00 KiB
+db1         60.00 KiB
+local       72.00 KiB
+admin>
+```
+
+
+
+
+
+
+
+**配置文件方式：**
+
+在mongod.conf配置文件中加入：
+
+```sh
+security:
+  #开启授权认证
+  authorization: enabled
+```
+
+
+
+```sh
+storage:
+  dbPath: .\\..\\data\\db
+
+#systemLog:
+  #destination: file
+  #path: "D:/02_Server/DBServer/mongodb-win32-x86_64-2008plus-ssl-4.0.1/log/mongod.log"
+  #logAppend: true
+storage:
+  journal:
+    enabled: true
+
+net:
+  #bindIp: 127.0.0.1
+  port: 27017
+setParameter:
+  enableLocalhostAuthBypass: false
+security:
+  #开启授权认证
+  authorization: enabled
+```
+
+
+
+启动时可不加 --auth 参数
+
+
+
+```sh
+PS H:\opensoft\MongoDB\bin> .\mongod --config ../conf/mongod.conf
+{"t":{"$date":"2022-11-21T14:02:24.352Z"},"s":"I",  "c":"CONTROL",  "id":5760901, "ctx":"-","msg":"Applied --setParameter options","attr":{"serverParameters":{"enableLocalhostAuthBypass":{"default":true,"value":false}}}}
+{"t":{"$date":"2022-11-21T22:02:24.358+08:00"},"s":"I",  "c":"CONTROL",  "id":23285,   "ctx":"thread1","msg":"Automatically disabling TLS 1.0, to force-enable TLS 1.0 specify --sslDisabledProtocols 'none'"}
+{"t":{"$date":"2022-11-21T22:02:25.557+08:00"},"s":"I",  "c":"NETWORK",  "id":4915701, "ctx":"thread1","msg":"Initialized wire specification","attr":{"spec":{"incomingExternalClient":{"minWireVersion":0,"maxWireVersion":17},"incomingInternalClient":{"minWireVersion":0,"maxWireVersion":17},"outgoing":{"minWireVersion":6,"maxWireVersion":17},"isInternalClient":true}}}
+{"t":{"$date":"2022-11-21T22:02:25.558+08:00"},"s":"I",  "c":"NETWORK",  "id":4648602, "ctx":"thread1","msg":"Implicit TCP FastOpen in use."}
+{"t":{"$date":"2022-11-21T22:02:25.560+08:00"},"s":"I",  "c":"REPL",     "id":5123008, "ctx":"thread1","msg":"Successfully registered PrimaryOnlyService","attr":{"service":"TenantMigrationDonorService","namespace":"config.tenantMigrationDonors"}}
+{"t":{"$date":"2022-11-21T22:02:25.560+08:00"},"s":"I",  "c":"REPL",     "id":5123008, "ctx":"thread1","msg":"Successfully registered PrimaryOnlyService","attr":{"service":"TenantMigrationRecipientService","namespace":"config.tenantMigrationRecipients"}}
+{"t":{"$date":"2022-11-21T22:02:25.560+08:00"},"s":"I",  "c":"REPL",     "id":5123008, "ctx":"thread1","msg":"Successfully registered PrimaryOnlyService","attr":{"service":"ShardSplitDonorService","namespace":"config.tenantSplitDonors"}}
+{"t":{"$date":"2022-11-21T22:02:25.560+08:00"},"s":"I",  "c":"CONTROL",  "id":5945603, "ctx":"thread1","msg":"Multi threading initialized"}
+{"t":{"$date":"2022-11-21T22:02:25.561+08:00"},"s":"I",  "c":"CONTROL",  "id":4615611, "ctx":"initandlisten","msg":"MongoDB starting","attr":{"pid":7092,"port":27017,"dbPath":".//..//data//db","architecture":"64-bit","host":"mao"}}
+{"t":{"$date":"2022-11-21T22:02:25.561+08:00"},"s":"I",  "c":"CONTROL",  "id":23398,   "ctx":"initandlisten","msg":"Target operating system minimum version","attr":{"targetMinOS":"Windows 7/Windows Server 2008 R2"}}
+{"t":{"$date":"2022-11-21T22:02:25.562+08:00"},"s":"I",  "c":"CONTROL",  "id":23403,   "ctx":"initandlisten","msg":"Build Info","attr":{"buildInfo":{"version":"6.0.2","gitVersion":"94fb7dfc8b974f1f5343e7ea394d0d9deedba50e","modules":[],"allocator":"tcmalloc","environment":{"distmod":"windows","distarch":"x86_64","target_arch":"x86_64"}}}}
+{"t":{"$date":"2022-11-21T22:02:25.562+08:00"},"s":"I",  "c":"CONTROL",  "id":51765,   "ctx":"initandlisten","msg":"Operating System","attr":{"os":{"name":"Microsoft Windows 10","version":"10.0 (build 19044)"}}}
+{"t":{"$date":"2022-11-21T22:02:25.562+08:00"},"s":"I",  "c":"CONTROL",  "id":21951,   "ctx":"initandlisten","msg":"Options set by command line","attr":{"options":{"config":"../conf/mongod.conf","net":{"port":27017},"security":{"authorization":"enabled"},"setParameter":{"enableLocalhostAuthBypass":"false"},"storage":{"dbPath":".\\\\..\\\\data\\\\db","journal":{"enabled":true}}}}}
+{"t":{"$date":"2022-11-21T22:02:25.564+08:00"},"s":"I",  "c":"STORAGE",  "id":22270,   "ctx":"initandlisten","msg":"Storage engine to use detected by data files","attr":{"dbpath":".//..//data//db","storageEngine":"wiredTiger"}}
+{"t":{"$date":"2022-11-21T22:02:25.564+08:00"},"s":"I",  "c":"STORAGE",  "id":22315,   "ctx":"initandlisten","msg":"Opening WiredTiger","attr":{"config":"create,cache_size=7636M,session_max=33000,eviction=(threads_min=4,threads_max=4),config_base=false,statistics=(fast),log=(enabled=true,remove=true,path=journal,compressor=snappy),builtin_extension_config=(zstd=(compression_level=6)),file_manager=(close_idle_time=600,close_scan_interval=10,close_handle_minimum=2000),statistics_log=(wait=0),json_output=(error,message),verbose=[recovery_progress:1,checkpoint_progress:1,compact_progress:1,backup:0,checkpoint:0,compact:0,evict:0,history_store:0,recovery:0,rts:0,salvage:0,tiered:0,timestamp:0,transaction:0,verify:0,log:0],"}}
+{"t":{"$date":"2022-11-21T22:02:26.111+08:00"},"s":"I",  "c":"STORAGE",  "id":4795906, "ctx":"initandlisten","msg":"WiredTiger opened","attr":{"durationMillis":546}}
+{"t":{"$date":"2022-11-21T22:02:26.111+08:00"},"s":"I",  "c":"RECOVERY", "id":23987,   "ctx":"initandlisten","msg":"WiredTiger recoveryTimestamp","attr":{"recoveryTimestamp":{"$timestamp":{"t":0,"i":0}}}}
+{"t":{"$date":"2022-11-21T22:02:26.169+08:00"},"s":"W",  "c":"CONTROL",  "id":22140,   "ctx":"initandlisten","msg":"This server is bound to localhost. Remote systems will be unable to connect to this server. Start the server with --bind_ip <address> to specify which IP addresses it should serve responses from, or with --bind_ip_all to bind to all interfaces. If this behavior is desired, start the server with --bind_ip 127.0.0.1 to disable this warning","tags":["startupWarnings"]}
+{"t":{"$date":"2022-11-21T22:02:26.174+08:00"},"s":"I",  "c":"NETWORK",  "id":4915702, "ctx":"initandlisten","msg":"Updated wire specification","attr":{"oldSpec":{"incomingExternalClient":{"minWireVersion":0,"maxWireVersion":17},"incomingInternalClient":{"minWireVersion":0,"maxWireVersion":17},"outgoing":{"minWireVersion":6,"maxWireVersion":17},"isInternalClient":true},"newSpec":{"incomingExternalClient":{"minWireVersion":0,"maxWireVersion":17},"incomingInternalClient":{"minWireVersion":17,"maxWireVersion":17},"outgoing":{"minWireVersion":17,"maxWireVersion":17},"isInternalClient":true}}}
+{"t":{"$date":"2022-11-21T22:02:26.174+08:00"},"s":"I",  "c":"REPL",     "id":5853300, "ctx":"initandlisten","msg":"current featureCompatibilityVersion value","attr":{"featureCompatibilityVersion":"6.0","context":"startup"}}
+{"t":{"$date":"2022-11-21T22:02:26.175+08:00"},"s":"I",  "c":"STORAGE",  "id":5071100, "ctx":"initandlisten","msg":"Clearing temp directory"}
+{"t":{"$date":"2022-11-21T22:02:26.178+08:00"},"s":"I",  "c":"CONTROL",  "id":20536,   "ctx":"initandlisten","msg":"Flow Control is enabled on this deployment"}
+{"t":{"$date":"2022-11-21T22:02:26.645+08:00"},"s":"I",  "c":"FTDC",     "id":20625,   "ctx":"initandlisten","msg":"Initializing full-time diagnostic data capture","attr":{"dataDirectory":".//..//data//db/diagnostic.data"}}
+{"t":{"$date":"2022-11-21T22:02:26.650+08:00"},"s":"I",  "c":"REPL",     "id":6015317, "ctx":"initandlisten","msg":"Setting new configuration state","attr":{"newState":"ConfigReplicationDisabled","oldState":"ConfigPreStart"}}
+{"t":{"$date":"2022-11-21T22:02:26.650+08:00"},"s":"I",  "c":"STORAGE",  "id":22262,   "ctx":"initandlisten","msg":"Timestamp monitor starting"}
+{"t":{"$date":"2022-11-21T22:02:26.652+08:00"},"s":"I",  "c":"NETWORK",  "id":23015,   "ctx":"listener","msg":"Listening on","attr":{"address":"127.0.0.1"}}
+{"t":{"$date":"2022-11-21T22:02:26.653+08:00"},"s":"I",  "c":"NETWORK",  "id":23016,   "ctx":"listener","msg":"Waiting for connections","attr":{"port":27017,"ssl":"off"}}
+```
+
+
+
+```sh
+PS C:\Users\mao\Desktop> mongosh
+Current Mongosh Log ID: 637b8518b637d382cf208711
+Connecting to:          mongodb://127.0.0.1:27017/?directConnection=true&serverSelectionTimeoutMS=2000&appName=mongosh+1.6.0
+Using MongoDB:          6.0.2
+Using Mongosh:          1.6.0
+
+For mongosh info see: https://docs.mongodb.com/mongodb-shell/
+
+test> show databases
+MongoServerError: command listDatabases requires authentication
+test> use admin
+switched to db admin
+admin> db.auth("mao","123456")
+MongoServerError: Authentication failed.
+admin> use articledb
+switched to db articledb
+articledb> db.auth("mao","123456")
+{ ok: 1 }
+articledb> show databases
+articledb  72.00 KiB
+articledb>
+```
+
+
+
+
+
+
+
+
+
+**开启了认证的情况下的客户端登录**
+
+有两种认证方式，一种是先登录，在mongo shell中认证；一种是登录时直接认证
+
+
+
+**先连接再认证**
+
+```sh
+PS C:\Users\mao\Desktop> mongosh
+Current Mongosh Log ID: 637b8518b637d382cf208711
+Connecting to:          mongodb://127.0.0.1:27017/?directConnection=true&serverSelectionTimeoutMS=2000&appName=mongosh+1.6.0
+Using MongoDB:          6.0.2
+Using Mongosh:          1.6.0
+
+For mongosh info see: https://docs.mongodb.com/mongodb-shell/
+
+test> use articledb
+switched to db articledb
+articledb> db.auth("mao","123456")
+{ ok: 1 }
+articledb> show databases
+articledb  72.00 KiB
+articledb>
+```
+
+
+
+
+
+**连接时直接认证**
+
+
+
+对admin数据库进行登录认证和相关操作：
+
+```sh
+mongosh --authenticationDatabase admin -u root -p 123456
+```
+
+
+
+```sh
+PS C:\Users\mao\Desktop> mongosh --authenticationDatabase admin -u root -p 123456
+Current Mongosh Log ID: 637b86fcacca504eebc68f93
+Connecting to:          mongodb://<credentials>@127.0.0.1:27017/?directConnection=true&serverSelectionTimeoutMS=2000&authSource=admin&appName=mongosh+1.6.0
+Using MongoDB:          6.0.2
+Using Mongosh:          1.6.0
+
+For mongosh info see: https://docs.mongodb.com/mongodb-shell/
+
+------
+   The server generated these startup warnings when booting
+   2022-11-21T22:02:26.169+08:00: This server is bound to localhost. Remote systems will be unable to connect to this server. Start the server with --bind_ip <address> to specify which IP addresses it should serve responses from, or with --bind_ip_all to bind to all interfaces. If this behavior is desired, start the server with --bind_ip 127.0.0.1 to disable this warning
+------
+
+------
+   Enable MongoDB's free cloud-based monitoring service, which will then receive and display
+   metrics about your deployment (disk utilization, CPU, operation statistics, etc).
+
+   The monitoring data will be available on a MongoDB website with a unique URL accessible to you
+   and anyone you share the URL with. MongoDB may use this information to make product
+   improvements and to suggest MongoDB products and deployment options to you.
+
+   To enable free monitoring, run the following command: db.enableFreeMonitoring()
+   To permanently disable this reminder, run the following command: db.disableFreeMonitoring()
+------
+
+test> show databases
+admin      180.00 KiB
+articledb   72.00 KiB
+config     108.00 KiB
+db1         60.00 KiB
+local       72.00 KiB
+test>
+```
+
+
+
+错误的情况：
+
+```sh
+mongosh --authenticationDatabase admin -u root -p 12345
+```
+
+
+
+```sh
+PS C:\Users\mao\Desktop> mongosh --authenticationDatabase admin -u root -p 12345
+Current Mongosh Log ID: 637b873a35000e86b3b91869
+Connecting to:          mongodb://<credentials>@127.0.0.1:27017/?directConnection=true&serverSelectionTimeoutMS=2000&authSource=admin&appName=mongosh+1.6.0
+MongoServerError: Authentication failed.
+PS C:\Users\mao\Desktop>
+```
+
+
+
+
+
+
+
+对articledb数据库进行登录认证和相关操作：
+
+```sh
+mongosh --authenticationDatabase articledb -u mao -p 123456
+```
+
+
+
+```sh
+PS C:\Users\mao\Desktop> mongosh --authenticationDatabase articledb -u mao -p 123456
+Current Mongosh Log ID: 637b877762991980ac49f90e
+Connecting to:          mongodb://<credentials>@127.0.0.1:27017/?directConnection=true&serverSelectionTimeoutMS=2000&authSource=articledb&appName=mongosh+1.6.0
+Using MongoDB:          6.0.2
+Using Mongosh:          1.6.0
+
+For mongosh info see: https://docs.mongodb.com/mongodb-shell/
+
+test> show databases
+articledb  72.00 KiB
+test>
+```
+
+
+
+
+
+
+
+* -u ：用户名
+* -p ：密码
+* --authenticationDatabase ：指定连接到哪个库。当登录是指定用户名密码时，必须指定对应的数据库！
+
+
+
+
+
+
+
+
+
+
+
+
+
+### SpringDataMongoDB连接认证
+
