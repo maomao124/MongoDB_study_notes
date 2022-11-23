@@ -14224,3 +14224,341 @@ Caused by: com.mongodb.MongoCommandException: Command failed with error 18 (Auth
 
 ## 副本集环境
 
+### 创建副本集认证的key文件
+
+
+
+生成key文件：
+
+```sh
+keytool -genkey -validity 36000 -keyalg RSA -keystore ./mongo.keyfile
+```
+
+
+
+* -genkey表示生成密钥 
+* -validity指定证书有效期
+* -alias指定别名
+* -keyalg指定算法
+* -keystore指定存储位置
+
+
+
+```sh
+PS C:\Users\mao\Desktop> keytool -genkey -validity 36000 -keyalg RSA -keystore ./mongo.keyfile
+输入密钥库口令:
+再次输入新口令:
+您的名字与姓氏是什么?
+  [Unknown]:  mao
+您的组织单位名称是什么?
+  [Unknown]:  mao
+您的组织名称是什么?
+  [Unknown]:  mao
+您所在的城市或区域名称是什么?
+  [Unknown]:  mao
+您所在的省/市/自治区名称是什么?
+  [Unknown]:  mao
+该单位的双字母国家/地区代码是什么?
+  [Unknown]:  mao
+CN=mao, OU=mao, O=mao, L=mao, ST=mao, C=mao是否正确?
+  [否]:  y
+
+正在为以下对象生成 2,048 位RSA密钥对和自签名证书 (SHA256withRSA) (有效期为 36,000 天):
+         CN=mao, OU=mao, O=mao, L=mao, ST=mao, C=mao
+PS C:\Users\mao\Desktop>
+```
+
+
+
+
+
+将生成的文件复制到MongoDB的key目录下
+
+
+
+```sh
+PS H:\opensoft\MongoDB> ls
+
+
+    目录: H:\opensoft\MongoDB
+
+
+Mode                 LastWriteTime         Length Name
+----                 -------------         ------ ----
+d-----        2022/11/17     14:04                arbiter
+d-----        2022/11/18     15:50                bin
+d-----        2022/11/17     14:09                conf
+d-----        2022/11/15     12:49                data
+d-----        2022/11/22     14:59                key
+d-----        2022/11/14     20:16                log
+d-----        2022/11/17     13:47                master
+d-----        2022/11/15     21:53                MongoDBCompass
+d-----         2022/9/20      4:08                mongosh
+d-----        2022/11/19     22:12                shards
+d-----        2022/11/17     13:58                slave
+-a----        2022/11/19     14:01            225 config.bat
+-a----         2022/9/29      1:03          30608 LICENSE-Community.txt
+-a----         2022/9/29      1:03          16726 MPL-2
+-a----         2022/9/29      1:03           1977 README
+-a----        2022/11/19     22:53            152 router.bat
+-a----        2022/11/18     15:40            247 shard1.bat
+-a----        2022/11/19     13:27            243 shard2.bat
+-a----         2022/9/29      1:03          77913 THIRD-PARTY-NOTICES
+-a----        2022/11/20     14:06            878 分片集群-单窗口.bat
+-a----        2022/11/20     14:02            845 分片集群.bat
+-a----        2022/11/14     21:22             50 运行.bat
+-a----        2022/11/17     14:32            193 集群启动-单窗口.bat
+-a----        2022/11/17     14:26            184 集群启动.bat
+
+
+PS H:\opensoft\MongoDB> cd key
+PS H:\opensoft\MongoDB\key> ls
+
+
+    目录: H:\opensoft\MongoDB\key
+
+
+Mode                 LastWriteTime         Length Name
+----                 -------------         ------ ----
+-a----        2022/11/22     14:54           2694 mongo.keyfile
+
+
+PS H:\opensoft\MongoDB\key>
+```
+
+
+
+
+
+
+
+
+
+
+
+### 通过主节点添加一个管理员帐号
+
+只需要在主节点上添加用户，副本集会自动同步。
+
+开启认证之前，创建超管用户：root，密码：123456
+
+
+
+```sh
+use admin
+```
+
+```sh
+db.createUser({user:"root",pwd:"123456",roles:["root"]})
+```
+
+
+
+```sh
+PS C:\Users\mao\Desktop> mongosh --port 27017
+Current Mongosh Log ID: 637deea7204a132103eeb0f7
+Connecting to:          mongodb://127.0.0.1:27017/?directConnection=true&serverSelectionTimeoutMS=2000&appName=mongosh+1.6.0
+Using MongoDB:          6.0.2
+Using Mongosh:          1.6.0
+
+For mongosh info see: https://docs.mongodb.com/mongodb-shell/
+
+------
+   The server generated these startup warnings when booting
+   2022-11-23T17:56:52.288+08:00: Access control is not enabled for the database. Read and write access to data and configuration is unrestricted
+------
+
+------
+   Enable MongoDB's free cloud-based monitoring service, which will then receive and display
+   metrics about your deployment (disk utilization, CPU, operation statistics, etc).
+
+   The monitoring data will be available on a MongoDB website with a unique URL accessible to you
+   and anyone you share the URL with. MongoDB may use this information to make product
+   improvements and to suggest MongoDB products and deployment options to you.
+
+   To enable free monitoring, run the following command: db.enableFreeMonitoring()
+   To permanently disable this reminder, run the following command: db.disableFreeMonitoring()
+------
+
+mongodb [direct: primary] test> use admin
+switched to db admin
+mongodb [direct: primary] admin> db.createUser({user:"root",pwd:"123456",roles:["root"]})
+{
+  ok: 1,
+  '$clusterTime': {
+    clusterTime: Timestamp({ t: 1669197506, i: 4 }),
+    signature: {
+      hash: Binary(Buffer.from("0000000000000000000000000000000000000000", "hex"), 0),
+      keyId: Long("0")
+    }
+  },
+  operationTime: Timestamp({ t: 1669197506, i: 4 })
+}
+mongodb [direct: primary] admin>
+```
+
+
+
+该步骤也可以在开启认证之后，但需要通过localhost登录才允许添加用户，用户数据也会自动同步到副本集。
+
+后续再创建其他用户，都可以使用该超管用户创建。
+
+
+
+
+
+
+
+
+
+
+
+
+
+### 修改配置文件指定keyfile
+
+
+
+master.conf
+
+```sh
+systemLog:
+  #MongoDB发送所有日志输出的目标指定为文件
+  destination: file
+  #mongod或mongos应向其发送所有诊断日志记录信息的日志文件的路径
+  path: "./../master/log/mongod.log"
+  #当mongos或mongod实例重新启动时，mongos或mongod会将新条目附加到现有日志文件的末尾。
+  logAppend: true
+storage:
+  #mongod实例存储其数据的目录。storage.dbPath设置仅适用于mongod
+  dbPath: "./../master/data/db"
+  journal:
+  #启用或禁用持久性日志以确保数据文件保持有效和可恢复。
+    enabled: true
+processManagement:
+  #启用在后台运行mongos或mongod进程的守护进程模式
+  #fork: true
+  #指定用于保存mongos或mongod进程的进程ID的文件位置，其中mongos或mongod将写入其PID
+  pidFilePath: "./../master/log/mongod.pid"
+net:
+  #服务实例绑定所有IP，有副作用，副本集初始化的时候，节点名字会自动设置为本地域名，而不是ip
+  #bindIpAll: true
+  #服务实例绑定的IP
+  bindIp: 127.0.0.1
+  #绑定的端口
+  port: 27017
+replication:
+  #副本集的名称
+  replSetName: mongodb
+security:
+  #KeyFile鉴权文件
+  keyFile: ./../key/mongo.keyfile
+  #开启认证方式运行
+  authorization: enabled
+```
+
+
+
+
+
+slave.conf
+
+```sh
+systemLog:
+  #MongoDB发送所有日志输出的目标指定为文件
+  destination: file
+  #mongod或mongos应向其发送所有诊断日志记录信息的日志文件的路径
+  path: "./../slave/log/mongod.log"
+  #当mongos或mongod实例重新启动时，mongos或mongod会将新条目附加到现有日志文件的末尾。
+  logAppend: true
+storage:
+  #mongod实例存储其数据的目录。storage.dbPath设置仅适用于mongod
+  dbPath: "./../slave/data/db"
+  journal:
+  #启用或禁用持久性日志以确保数据文件保持有效和可恢复。
+    enabled: true
+processManagement:
+  #启用在后台运行mongos或mongod进程的守护进程模式
+  #fork: true
+  #指定用于保存mongos或mongod进程的进程ID的文件位置，其中mongos或mongod将写入其PID
+  pidFilePath: "./../slave/log/mongod.pid"
+net:
+  #服务实例绑定所有IP，有副作用，副本集初始化的时候，节点名字会自动设置为本地域名，而不是ip
+  #bindIpAll: true
+  #服务实例绑定的IP
+  bindIp: 127.0.0.1
+  #绑定的端口
+  port: 27018
+replication:
+  #副本集的名称
+  replSetName: mongodb
+security:
+  #KeyFile鉴权文件
+  keyFile: ./../key/mongo.keyfile
+  #开启认证方式运行
+  authorization: enabled
+```
+
+
+
+
+
+arbiter.conf
+
+```sh
+systemLog:
+  #MongoDB发送所有日志输出的目标指定为文件
+  destination: file
+  #mongod或mongos应向其发送所有诊断日志记录信息的日志文件的路径
+  path: "./../arbiter/log/mongod.log"
+  #当mongos或mongod实例重新启动时，mongos或mongod会将新条目附加到现有日志文件的末尾。
+  logAppend: true
+storage:
+  #mongod实例存储其数据的目录。storage.dbPath设置仅适用于mongod
+  dbPath: "./../arbiter/data/db"
+  journal:
+  #启用或禁用持久性日志以确保数据文件保持有效和可恢复。
+    enabled: true
+processManagement:
+  #启用在后台运行mongos或mongod进程的守护进程模式
+  #fork: true
+  #指定用于保存mongos或mongod进程的进程ID的文件位置，其中mongos或mongod将写入其PID
+  pidFilePath: "./../arbiter/log/mongod.pid"
+net:
+  #服务实例绑定所有IP，有副作用，副本集初始化的时候，节点名字会自动设置为本地域名，而不是ip
+  #bindIpAll: true
+  #服务实例绑定的IP
+  bindIp: 127.0.0.1
+  #绑定的端口
+  port: 27019
+replication:
+  #副本集的名称
+  replSetName: mongodb
+security:
+  #KeyFile鉴权文件
+  keyFile: ./../key/mongo.keyfile
+  #开启认证方式运行
+  authorization: enabled
+```
+
+
+
+
+
+
+
+
+
+### 重新启动副本集
+
+如果副本集是开启状态，则先分别关闭关闭复本集中的每个mongod，从次节点开始。直到副本集的所 有成员都离线，包括任何仲裁者。主节点必须是最后一个成员关闭以避免潜在的回滚
+
+
+
+
+
+
+
+
+
+### 在主节点上添加普通账号
