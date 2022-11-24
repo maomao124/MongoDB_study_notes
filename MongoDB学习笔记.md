@@ -14228,103 +14228,378 @@ Caused by: com.mongodb.MongoCommandException: Command failed with error 18 (Auth
 
 
 
-生成key文件：
-
-```sh
-keytool -genkey -validity 36000 -keyalg RSA -keystore ./mongo.keyfile
-```
+以Ubuntu为例
 
 
 
-* -genkey表示生成密钥 
-* -validity指定证书有效期
-* -alias指定别名
-* -keyalg指定算法
-* -keystore指定存储位置
+#### 第一步：下载openssl的源码包
+
+因为Ubuntu 20.04LTS 系统自带 OpenSSL无法使用，这个自带的openssl是没有<头文件>和<库文件>，对于开发人员编程来说用不了，所以我们需要自己去官网下载OpenSSL源码，然后编译安装
 
 
 
-```sh
-PS C:\Users\mao\Desktop> keytool -genkey -validity 36000 -keyalg RSA -keystore ./mongo.keyfile
-输入密钥库口令:
-再次输入新口令:
-您的名字与姓氏是什么?
-  [Unknown]:  mao
-您的组织单位名称是什么?
-  [Unknown]:  mao
-您的组织名称是什么?
-  [Unknown]:  mao
-您所在的城市或区域名称是什么?
-  [Unknown]:  mao
-您所在的省/市/自治区名称是什么?
-  [Unknown]:  mao
-该单位的双字母国家/地区代码是什么?
-  [Unknown]:  mao
-CN=mao, OU=mao, O=mao, L=mao, ST=mao, C=mao是否正确?
-  [否]:  y
-
-正在为以下对象生成 2,048 位RSA密钥对和自签名证书 (SHA256withRSA) (有效期为 36,000 天):
-         CN=mao, OU=mao, O=mao, L=mao, ST=mao, C=mao
-PS C:\Users\mao\Desktop>
-```
+https://www.openssl.org/source/old/3.0/
 
 
 
 
 
-将生成的文件复制到MongoDB的key目录下
+#### 第二步：复制到Linux系统里
+
+
+
+![image-20221123224509761](img/MongoDB学习笔记/image-20221123224509761.png)
+
+
+
+
+
+
+
+
+
+
+
+#### 第三步：卸载自带的OpenSSL
 
 
 
 ```sh
-PS H:\opensoft\MongoDB> ls
-
-
-    目录: H:\opensoft\MongoDB
-
-
-Mode                 LastWriteTime         Length Name
-----                 -------------         ------ ----
-d-----        2022/11/17     14:04                arbiter
-d-----        2022/11/18     15:50                bin
-d-----        2022/11/17     14:09                conf
-d-----        2022/11/15     12:49                data
-d-----        2022/11/22     14:59                key
-d-----        2022/11/14     20:16                log
-d-----        2022/11/17     13:47                master
-d-----        2022/11/15     21:53                MongoDBCompass
-d-----         2022/9/20      4:08                mongosh
-d-----        2022/11/19     22:12                shards
-d-----        2022/11/17     13:58                slave
--a----        2022/11/19     14:01            225 config.bat
--a----         2022/9/29      1:03          30608 LICENSE-Community.txt
--a----         2022/9/29      1:03          16726 MPL-2
--a----         2022/9/29      1:03           1977 README
--a----        2022/11/19     22:53            152 router.bat
--a----        2022/11/18     15:40            247 shard1.bat
--a----        2022/11/19     13:27            243 shard2.bat
--a----         2022/9/29      1:03          77913 THIRD-PARTY-NOTICES
--a----        2022/11/20     14:06            878 分片集群-单窗口.bat
--a----        2022/11/20     14:02            845 分片集群.bat
--a----        2022/11/14     21:22             50 运行.bat
--a----        2022/11/17     14:32            193 集群启动-单窗口.bat
--a----        2022/11/17     14:26            184 集群启动.bat
-
-
-PS H:\opensoft\MongoDB> cd key
-PS H:\opensoft\MongoDB\key> ls
-
-
-    目录: H:\opensoft\MongoDB\key
-
-
-Mode                 LastWriteTime         Length Name
-----                 -------------         ------ ----
--a----        2022/11/22     14:54           2694 mongo.keyfile
-
-
-PS H:\opensoft\MongoDB\key>
+sudo apt-get remove openssl
 ```
+
+
+
+```sh
+mao@ubuntu:~/桌面/openssl-3.0.5$ sudo apt-get remove openssl
+[sudo] mao 的密码： 
+正在读取软件包列表... 完成
+正在分析软件包的依赖关系树       
+正在读取状态信息... 完成       
+下列软件包是自动安装的并且现在不需要了：
+  apg apport-symptoms apturl-common avahi-utils cups-pk-helper
+  cups-server-common gir1.2-goa-1.0 gir1.2-notify-0.7 gir1.2-snapd-1
+  gnome-control-center-faces hplip-data ippusbxd libauthen-sasl-perl
+  libcolord-gtk1 libdata-dump-perl libdate-manip-perl libencode-locale-perl
+  libfile-listing-perl libfont-afm-perl libglu1-mesa libgsound0 libgssdp-1.2-0
+  libgupnp-1.2-0 libgupnp-av-1.0-2 libgupnp-dlna-2.0-3 libhpmud0
+  libhtml-form-perl libhtml-format-perl libhtml-parser-perl
+  libhtml-tagset-perl libhtml-tree-perl libhttp-cookies-perl
+  libhttp-daemon-perl libhttp-date-perl libhttp-message-perl
+  libhttp-negotiate-perl libimagequant0 libio-html-perl libio-socket-ssl-perl
+  liblwp-mediatypes-perl libmailtools-perl libnet-http-perl
+  libnet-smtp-ssl-perl libnet-ssleay-perl librygel-core-2.6-2
+  librygel-db-2.6-2 librygel-renderer-2.6-2 librygel-server-2.6-2
+  libsane-hpaio libtie-ixhash-perl libtimedate-perl libtry-tiny-perl
+  libwhoopsie-preferences0 libwww-robotrules-perl libxml-xpathengine-perl
+  libxss1 libxvmc1 linux-headers-5.11.0-27-generic
+  linux-hwe-5.11-headers-5.11.0-27 linux-image-5.11.0-27-generic
+  linux-modules-5.11.0-27-generic linux-modules-extra-5.11.0-27-generic
+  mobile-broadband-provider-info network-manager-gnome perl-openssl-defaults
+  printer-driver-postscript-hp python3-cups python3-dateutil python3-debconf
+  python3-distro-info python3-distupgrade python3-entrypoints python3-keyring
+  python3-lazr.uri python3-olefile python3-pil python3-problem-report
+  python3-protobuf python3-pymacaroons python3-renderpm python3-reportlab
+  python3-reportlab-accel python3-rfc3339 python3-secretstorage
+  python3-simplejson python3-software-properties python3-systemd python3-tz
+  python3-update-manager python3-wadllib rygel unattended-upgrades
+  whoopsie-preferences x11-apps x11-session-utils xbitmaps xinit xinput
+  xserver-xorg-input-all xserver-xorg-input-libinput xserver-xorg-input-wacom
+  xserver-xorg-video-all xserver-xorg-video-amdgpu xserver-xorg-video-ati
+  xserver-xorg-video-fbdev xserver-xorg-video-intel xserver-xorg-video-nouveau
+  xserver-xorg-video-qxl xserver-xorg-video-radeon xserver-xorg-video-vesa
+使用'sudo apt autoremove'来卸载它(它们)。
+将会同时安装下列软件：
+  gnome-control-center-data python3-update-manager
+建议安装：
+  python3-launchpadlib
+下列软件包将被【卸载】：
+  apport apport-gtk apturl bluez-cups ca-certificates cups cups-browsed
+  cups-core-drivers cups-daemon gnome-control-center gnome-online-accounts
+  hplip liblwp-protocol-https-perl libnet-dbus-perl libwww-perl
+  libxml-parser-perl libxml-twig-perl logwatch nautilus-share openssl postfix
+  printer-driver-hpcups printer-driver-splix python3-apport python3-certifi
+  python3-cupshelpers python3-httplib2 python3-launchpadlib
+  python3-lazr.restfulclient python3-macaroonbakery python3-requests
+  python3-requests-unixsocket snapd software-properties-common
+  software-properties-gtk ssl-cert system-config-printer
+  system-config-printer-common system-config-printer-udev ubuntu-desktop
+  ubuntu-desktop-minimal ubuntu-release-upgrader-core
+  ubuntu-release-upgrader-gtk update-manager update-manager-core
+  update-notifier update-notifier-common xorg xserver-xorg
+下列软件包将被升级：
+  gnome-control-center-data python3-update-manager
+升级了 2 个软件包，新安装了 0 个软件包，要卸载 49 个软件包，有 130 个软件包未被升级。
+需要下载 38.1 kB/366 kB 的归档。
+解压缩后将会空出 180 MB 的空间。
+您希望继续执行吗？ [Y/n] y
+忽略:1 http://cn.archive.ubuntu.com/ubuntu focal-updates/main amd64 python3-update-manager all 1:20.04.10.10
+错误:1 http://cn.archive.ubuntu.com/ubuntu focal-updates/main amd64 python3-update-manager all 1:20.04.10.10
+  暂时不能解析域名“cn.archive.ubuntu.com”
+E: 无法下载 http://cn.archive.ubuntu.com/ubuntu/pool/main/u/update-manager/python3-update-manager_20.04.10.10_all.deb  暂时不能解析域名“cn.archive.ubuntu.com”
+E: 有几个软件包无法下载，要不运行 apt-get update 或者加上 --fix-missing 的选项再试试？
+mao@ubuntu:~/桌面/openssl-3.0.5$ 
+```
+
+
+
+
+
+
+
+
+
+#### 第四步：解压源码包
+
+
+
+```sh
+tar -xzvf openssl-3.0.5.tar.gz
+```
+
+
+
+
+
+
+
+
+
+#### 第五步：编译
+
+
+
+```sh
+sudo ./config  --prefix=/usr/local/openssl
+```
+
+
+
+```sh
+mao@ubuntu:~/桌面$ ls
+openssl-3.0.5  openssl-3.0.5.tar.gz  test.txt
+mao@ubuntu:~/桌面$ cd openssl-3.0.5/
+mao@ubuntu:~/桌面/openssl-3.0.5$ ls -l
+总用量 1260
+-rw-rw-r--  1 mao mao    157 7月   5 01:57 ACKNOWLEDGEMENTS.md
+drwxrwxr-x  5 mao mao   4096 7月   5 01:57 apps
+-rw-rw-r--  1 mao mao   2042 7月   5 01:57 appveyor.yml
+-rw-rw-r--  1 mao mao    990 7月   5 01:57 AUTHORS.md
+-rw-rw-r--  1 mao mao   3825 7月   5 01:57 build.info
+-rw-rw-r--  1 mao mao 728653 7月   5 01:57 CHANGES.md
+-rwxrwxr-x  1 mao mao    378 7月   5 01:57 config
+-rw-rw-r--  1 mao mao   2516 7月   5 01:57 config.com
+-rw-rw-r--  1 mao mao  16738 7月   5 01:57 configdata.pm.in
+drwxrwxr-x  3 mao mao   4096 7月   5 01:57 Configurations
+-rwxrwxr-x  1 mao mao 137411 7月   5 01:57 Configure
+-rw-rw-r--  1 mao mao   4360 7月   5 01:57 CONTRIBUTING.md
+drwxrwxr-x 69 mao mao   4096 7月   5 01:57 crypto
+drwxrwxr-x 14 mao mao   4096 7月   5 01:57 demos
+drwxrwxr-x 10 mao mao   4096 7月   5 01:57 doc
+drwxrwxr-x  3 mao mao   4096 7月   5 01:57 engines
+-rw-rw-r--  1 mao mao  13101 7月   5 01:57 e_os.h
+drwxrwxr-x  3 mao mao   4096 7月   5 01:57 external
+-rw-rw-r--  1 mao mao    197 7月   5 01:57 FAQ.md
+drwxrwxr-x  2 mao mao   4096 7月   5 01:57 fuzz
+-rw-rw-r--  1 mao mao   1228 7月   5 01:57 HACKING.md
+drwxrwxr-x  5 mao mao   4096 7月   5 01:57 include
+-rw-rw-r--  1 mao mao  62592 7月   5 01:57 INSTALL.md
+-rw-rw-r--  1 mao mao  10175 7月   5 01:57 LICENSE.txt
+drwxrwxr-x  2 mao mao   4096 7月   5 01:57 ms
+-rw-rw-r--  1 mao mao  70696 7月   5 01:57 NEWS.md
+-rw-rw-r--  1 mao mao   4592 7月   5 01:57 NOTES-ANDROID.md
+-rw-rw-r--  1 mao mao   2112 7月   5 01:57 NOTES-DJGPP.md
+-rw-rw-r--  1 mao mao  10054 7月   5 01:57 NOTES-NONSTOP.md
+-rw-rw-r--  1 mao mao   4994 7月   5 01:57 NOTES-PERL.md
+-rw-rw-r--  1 mao mao   5685 7月   5 01:57 NOTES-UNIX.md
+-rw-rw-r--  1 mao mao   2740 7月   5 01:57 NOTES-VALGRIND.md
+-rw-rw-r--  1 mao mao   4148 7月   5 01:57 NOTES-VMS.md
+-rw-rw-r--  1 mao mao   9227 7月   5 01:57 NOTES-WINDOWS.md
+drwxrwxr-x  2 mao mao   4096 7月   5 01:57 os-dep
+drwxrwxr-x  5 mao mao   4096 7月   5 01:57 providers
+-rw-rw-r--  1 mao mao  15670 7月   5 01:57 README-ENGINES.md
+-rw-rw-r--  1 mao mao   2823 7月   5 01:57 README-FIPS.md
+-rw-rw-r--  1 mao mao   6633 7月   5 01:57 README.md
+-rw-rw-r--  1 mao mao   5472 7月   5 01:57 README-PROVIDERS.md
+drwxrwxr-x  4 mao mao   4096 7月   5 01:57 ssl
+-rw-rw-r--  1 mao mao   3897 7月   5 01:57 SUPPORT.md
+drwxrwxr-x 11 mao mao  12288 7月   5 01:57 test
+drwxrwxr-x  2 mao mao   4096 7月   5 01:57 tools
+drwxrwxr-x  3 mao mao   4096 7月   5 01:57 util
+-rw-rw-r--  1 mao mao     99 7月   5 01:57 VERSION.dat
+drwxrwxr-x  2 mao mao   4096 7月   5 01:57 VMS
+drwxrwxr-x  2 mao mao   4096 7月   5 01:57 wycheproof
+mao@ubuntu:~/桌面/openssl-3.0.5$ sudo ./config  --prefix=/usr/local/openssl
+[sudo] mao 的密码： 
+Configuring OpenSSL version 3.0.5 for target linux-x86_64
+Using os-specific seed configuration
+Created configdata.pm
+Running configdata.pm
+Created Makefile.in
+Created Makefile
+Created include/openssl/configuration.h
+
+**********************************************************************
+***                                                                ***
+***   OpenSSL has been successfully configured                     ***
+***                                                                ***
+***   If you encounter a problem while building, please open an    ***
+***   issue on GitHub <https://github.com/openssl/openssl/issues>  ***
+***   and include the output from the following command:           ***
+***                                                                ***
+***       perl configdata.pm --dump                                ***
+***                                                                ***
+***   (If you are new to OpenSSL, you might want to consult the    ***
+***   'Troubleshooting' section in the INSTALL.md file first)      ***
+***                                                                ***
+**********************************************************************
+mao@ubuntu:~/桌面/openssl-3.0.5$ ls -l
+总用量 6476
+-rw-rw-r--  1 mao  mao      157 7月   5 01:57 ACKNOWLEDGEMENTS.md
+drwxrwxr-x  5 mao  mao     4096 7月   5 01:57 apps
+-rw-rw-r--  1 mao  mao     2042 7月   5 01:57 appveyor.yml
+-rw-rw-r--  1 mao  mao      990 7月   5 01:57 AUTHORS.md
+-rw-rw-r--  1 mao  mao     3825 7月   5 01:57 build.info
+-rw-rw-r--  1 mao  mao   728653 7月   5 01:57 CHANGES.md
+-rwxrwxr-x  1 mao  mao      378 7月   5 01:57 config
+-rw-rw-r--  1 mao  mao     2516 7月   5 01:57 config.com
+-rwxr-xr-x  1 root root 1109348 11月 23 07:27 configdata.pm
+-rw-rw-r--  1 mao  mao    16738 7月   5 01:57 configdata.pm.in
+drwxrwxr-x  3 mao  mao     4096 7月   5 01:57 Configurations
+-rwxrwxr-x  1 mao  mao   137411 7月   5 01:57 Configure
+-rw-rw-r--  1 mao  mao     4360 7月   5 01:57 CONTRIBUTING.md
+drwxrwxr-x 70 mao  mao     4096 11月 23 07:27 crypto
+drwxrwxr-x 14 mao  mao     4096 7月   5 01:57 demos
+drwxrwxr-x 12 mao  mao     4096 11月 23 07:27 doc
+drwxrwxr-x  3 mao  mao     4096 7月   5 01:57 engines
+-rw-rw-r--  1 mao  mao    13101 7月   5 01:57 e_os.h
+drwxrwxr-x  3 mao  mao     4096 7月   5 01:57 external
+-rw-rw-r--  1 mao  mao      197 7月   5 01:57 FAQ.md
+drwxrwxr-x  2 mao  mao     4096 7月   5 01:57 fuzz
+-rw-rw-r--  1 mao  mao     1228 7月   5 01:57 HACKING.md
+drwxrwxr-x  5 mao  mao     4096 7月   5 01:57 include
+-rw-rw-r--  1 mao  mao    62592 7月   5 01:57 INSTALL.md
+-rw-rw-r--  1 mao  mao    10175 7月   5 01:57 LICENSE.txt
+-rw-r--r--  1 root root 2584090 11月 23 07:27 Makefile
+-rw-r--r--  1 root root 1642887 11月 23 07:27 Makefile.in
+drwxrwxr-x  2 mao  mao     4096 7月   5 01:57 ms
+-rw-rw-r--  1 mao  mao    70696 7月   5 01:57 NEWS.md
+-rw-rw-r--  1 mao  mao     4592 7月   5 01:57 NOTES-ANDROID.md
+-rw-rw-r--  1 mao  mao     2112 7月   5 01:57 NOTES-DJGPP.md
+-rw-rw-r--  1 mao  mao    10054 7月   5 01:57 NOTES-NONSTOP.md
+-rw-rw-r--  1 mao  mao     4994 7月   5 01:57 NOTES-PERL.md
+-rw-rw-r--  1 mao  mao     5685 7月   5 01:57 NOTES-UNIX.md
+-rw-rw-r--  1 mao  mao     2740 7月   5 01:57 NOTES-VALGRIND.md
+-rw-rw-r--  1 mao  mao     4148 7月   5 01:57 NOTES-VMS.md
+-rw-rw-r--  1 mao  mao     9227 7月   5 01:57 NOTES-WINDOWS.md
+drwxrwxr-x  2 mao  mao     4096 7月   5 01:57 os-dep
+drwxrwxr-x  5 mao  mao     4096 7月   5 01:57 providers
+-rw-rw-r--  1 mao  mao    15670 7月   5 01:57 README-ENGINES.md
+-rw-rw-r--  1 mao  mao     2823 7月   5 01:57 README-FIPS.md
+-rw-rw-r--  1 mao  mao     6633 7月   5 01:57 README.md
+-rw-rw-r--  1 mao  mao     5472 7月   5 01:57 README-PROVIDERS.md
+drwxrwxr-x  4 mao  mao     4096 7月   5 01:57 ssl
+-rw-rw-r--  1 mao  mao     3897 7月   5 01:57 SUPPORT.md
+drwxrwxr-x 11 mao  mao    12288 7月   5 01:57 test
+drwxrwxr-x  2 mao  mao     4096 7月   5 01:57 tools
+drwxrwxr-x  3 mao  mao     4096 7月   5 01:57 util
+-rw-rw-r--  1 mao  mao       99 7月   5 01:57 VERSION.dat
+drwxrwxr-x  2 mao  mao     4096 7月   5 01:57 VMS
+drwxrwxr-x  2 mao  mao     4096 7月   5 01:57 wycheproof
+mao@ubuntu:~/桌面/openssl-3.0.5$ 
+```
+
+
+
+编译
+
+```sh
+sudo make
+```
+
+
+
+
+
+![image-20221123233551706](img/MongoDB学习笔记/image-20221123233551706.png)
+
+
+
+
+
+
+
+#### 第六步：安装
+
+
+
+```sh
+sudo make install
+```
+
+
+
+![image-20221123234016837](img/MongoDB学习笔记/image-20221123234016837.png)
+
+
+
+
+
+
+
+
+
+#### 第七步：配置环境变量
+
+
+
+```sh
+export PATH=$PATH:/usr/local/openssl/bin
+```
+
+
+
+
+
+gcc 编译器找到头文件（xx.h）的路径
+
+```sh
+export C_INCLUDE_PATH=$C_INCLUDE_PATH:/usr/local/openssl/include
+```
+
+
+
+找到静态库（xx.a）的路径
+
+```sh
+export LIBRARY_PATH=$LIBRARY_PATH:/usr/local/openssl/lib
+```
+
+
+
+找到动态链接库（xx.so）的路径
+
+```sh
+export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/openssl/lib
+```
+
+
+
+
+
+![image-20221123235311000](img/MongoDB学习笔记/image-20221123235311000.png)
+
+
+
+```sh
+ln -s /usr/local/libssl.so.3 /usr/lib/libssl.so.3
+```
+
+```sh
+ln -s /usr/local/libcrypto.so.3 /usr/lib/libcrypto.so.3
+```
+
+
 
 
 
