@@ -15194,5 +15194,146 @@ mongodb [direct: arbiter] test> exit
 
 ### SpringDataMongoDB连接副本集
 
+使用用户名和密码连接到 MongoDB 服务器，你必须使用
+
+'username:password@hostname/dbname' 格式，'username'为用户名，'password' 为密码
 
 
+
+配置文件：
+
+```yaml
+
+spring:
+  data:
+    mongodb:
+      # 库名称
+      #database: articledb
+      # mongodb服务地址
+      #host: 127.0.0.1
+      # 端口号
+      #port: 27017
+      # 可以使用uri连接
+      uri: mongodb://mao:123456@127.0.0.1:27017,127.0.0.1:27018,127.0.0.1:27019/articledb?connect=replicaSet&readPreference=secondaryPreferred&replicaSet=mongodb
+
+```
+
+
+
+
+
+启动测试
+
+```sh
+
+  .   ____          _            __ _ _
+ /\\ / ___'_ __ _ _(_)_ __  __ _ \ \ \ \
+( ( )\___ | '_ | '_| | '_ \/ _` | \ \ \ \
+ \\/  ___)| |_)| | | | | || (_| |  ) ) ) )
+  '  |____| .__|_| |_|_| |_\__, | / / / /
+ =========|_|==============|___/=/_/_/_/
+ :: Spring Boot ::                (v2.7.1)
+
+2022-11-27 14:58:56.042  INFO 23384 --- [           main] .MongoDbArticleReplicaSetAuthApplication : Starting MongoDbArticleReplicaSetAuthApplication using Java 16.0.2 on mao with PID 23384 (H:\程序\大四上期\MongoDB_article_replicaSet_auth\target\classes started by mao in H:\程序\大四上期\MongoDB_article_replicaSet_auth)
+2022-11-27 14:58:56.045  INFO 23384 --- [           main] .MongoDbArticleReplicaSetAuthApplication : No active profile set, falling back to 1 default profile: "default"
+2022-11-27 14:58:56.497  INFO 23384 --- [           main] .s.d.r.c.RepositoryConfigurationDelegate : Bootstrapping Spring Data MongoDB repositories in DEFAULT mode.
+2022-11-27 14:58:56.534  INFO 23384 --- [           main] .s.d.r.c.RepositoryConfigurationDelegate : Finished Spring Data repository scanning in 33 ms. Found 1 MongoDB repository interfaces.
+2022-11-27 14:58:56.960  INFO 23384 --- [           main] o.s.b.w.embedded.tomcat.TomcatWebServer  : Tomcat initialized with port(s): 8080 (http)
+2022-11-27 14:58:56.970  INFO 23384 --- [           main] o.apache.catalina.core.StandardService   : Starting service [Tomcat]
+2022-11-27 14:58:56.970  INFO 23384 --- [           main] org.apache.catalina.core.StandardEngine  : Starting Servlet engine: [Apache Tomcat/9.0.64]
+2022-11-27 14:58:57.057  INFO 23384 --- [           main] o.a.c.c.C.[Tomcat].[localhost].[/]       : Initializing Spring embedded WebApplicationContext
+2022-11-27 14:58:57.057  INFO 23384 --- [           main] w.s.c.ServletWebServerApplicationContext : Root WebApplicationContext: initialization completed in 962 ms
+2022-11-27 14:58:57.138  WARN 23384 --- [           main] org.mongodb.driver.uri                   : Connection string contains unsupported option 'connect'.
+2022-11-27 14:58:57.153  INFO 23384 --- [           main] org.mongodb.driver.cluster               : Adding discovered server 127.0.0.1:27017 to client view of cluster
+2022-11-27 14:58:57.178  INFO 23384 --- [           main] org.mongodb.driver.cluster               : Adding discovered server 127.0.0.1:27018 to client view of cluster
+2022-11-27 14:58:57.179  INFO 23384 --- [           main] org.mongodb.driver.cluster               : Adding discovered server 127.0.0.1:27019 to client view of cluster
+2022-11-27 14:58:57.194  INFO 23384 --- [           main] org.mongodb.driver.client                : MongoClient with metadata {"driver": {"name": "mongo-java-driver|sync|spring-boot", "version": "4.6.1"}, "os": {"type": "Windows", "name": "Windows 10", "architecture": "amd64", "version": "10.0"}, "platform": "Java/Oracle Corporation/16.0.2+7-67"} created with settings MongoClientSettings{readPreference=ReadPreference{name=secondaryPreferred, hedgeOptions=null}, writeConcern=WriteConcern{w=null, wTimeout=null ms, journal=null}, retryWrites=true, retryReads=true, readConcern=ReadConcern{level=null}, credential=MongoCredential{mechanism=null, userName='mao', source='articledb', password=<hidden>, mechanismProperties=<hidden>}, streamFactoryFactory=null, commandListeners=[], codecRegistry=ProvidersCodecRegistry{codecProviders=[ValueCodecProvider{}, BsonValueCodecProvider{}, DBRefCodecProvider{}, DBObjectCodecProvider{}, DocumentCodecProvider{}, IterableCodecProvider{}, MapCodecProvider{}, GeoJsonCodecProvider{}, GridFSFileCodecProvider{}, Jsr310CodecProvider{}, JsonObjectCodecProvider{}, BsonCodecProvider{}, EnumCodecProvider{}, com.mongodb.Jep395RecordCodecProvider@75181b50]}, clusterSettings={hosts=[127.0.0.1:27017, 127.0.0.1:27018, 127.0.0.1:27019], srvServiceName=mongodb, mode=MULTIPLE, requiredClusterType=REPLICA_SET, requiredReplicaSetName='mongodb', serverSelector='null', clusterListeners='[]', serverSelectionTimeout='30000 ms', localThreshold='30000 ms'}, socketSettings=SocketSettings{connectTimeoutMS=10000, readTimeoutMS=0, receiveBufferSize=0, sendBufferSize=0}, heartbeatSocketSettings=SocketSettings{connectTimeoutMS=10000, readTimeoutMS=10000, receiveBufferSize=0, sendBufferSize=0}, connectionPoolSettings=ConnectionPoolSettings{maxSize=100, minSize=0, maxWaitTimeMS=120000, maxConnectionLifeTimeMS=0, maxConnectionIdleTimeMS=0, maintenanceInitialDelayMS=0, maintenanceFrequencyMS=60000, connectionPoolListeners=[], maxConnecting=2}, serverSettings=ServerSettings{heartbeatFrequencyMS=10000, minHeartbeatFrequencyMS=500, serverListeners='[]', serverMonitorListeners='[]'}, sslSettings=SslSettings{enabled=false, invalidHostNameAllowed=false, context=null}, applicationName='null', compressorList=[], uuidRepresentation=JAVA_LEGACY, serverApi=null, autoEncryptionSettings=null, contextProvider=null}
+2022-11-27 14:58:57.197  WARN 23384 --- [           main] org.mongodb.driver.uri                   : Connection string contains unsupported option 'connect'.
+2022-11-27 14:58:57.201  INFO 23384 --- [127.0.0.1:27018] org.mongodb.driver.connection            : Opened connection [connectionId{localValue:3, serverValue:34}] to 127.0.0.1:27018
+2022-11-27 14:58:57.201  INFO 23384 --- [127.0.0.1:27018] org.mongodb.driver.connection            : Opened connection [connectionId{localValue:4, serverValue:35}] to 127.0.0.1:27018
+2022-11-27 14:58:57.201  INFO 23384 --- [127.0.0.1:27017] org.mongodb.driver.connection            : Opened connection [connectionId{localValue:1, serverValue:43}] to 127.0.0.1:27017
+2022-11-27 14:58:57.201  INFO 23384 --- [127.0.0.1:27019] org.mongodb.driver.connection            : Opened connection [connectionId{localValue:5, serverValue:25}] to 127.0.0.1:27019
+2022-11-27 14:58:57.201  INFO 23384 --- [127.0.0.1:27019] org.mongodb.driver.connection            : Opened connection [connectionId{localValue:6, serverValue:24}] to 127.0.0.1:27019
+2022-11-27 14:58:57.201  INFO 23384 --- [127.0.0.1:27017] org.mongodb.driver.connection            : Opened connection [connectionId{localValue:2, serverValue:44}] to 127.0.0.1:27017
+2022-11-27 14:58:57.201  INFO 23384 --- [127.0.0.1:27018] org.mongodb.driver.cluster               : Monitor thread successfully connected to server with description ServerDescription{address=127.0.0.1:27018, type=REPLICA_SET_SECONDARY, state=CONNECTED, ok=true, minWireVersion=0, maxWireVersion=17, maxDocumentSize=16777216, logicalSessionTimeoutMinutes=30, roundTripTimeNanos=16371900, setName='mongodb', canonicalAddress=127.0.0.1:27018, hosts=[127.0.0.1:27017, 127.0.0.1:27018], passives=[], arbiters=[127.0.0.1:27019], primary='127.0.0.1:27017', tagSet=TagSet{[]}, electionId=null, setVersion=5, topologyVersion=TopologyVersion{processId=6383052831bde679fd43ff67, counter=8}, lastWriteDate=Sun Nov 27 14:58:56 CST 2022, lastUpdateTimeNanos=5246002948700}
+2022-11-27 14:58:57.201  INFO 23384 --- [127.0.0.1:27017] org.mongodb.driver.cluster               : Monitor thread successfully connected to server with description ServerDescription{address=127.0.0.1:27017, type=REPLICA_SET_PRIMARY, state=CONNECTED, ok=true, minWireVersion=0, maxWireVersion=17, maxDocumentSize=16777216, logicalSessionTimeoutMinutes=30, roundTripTimeNanos=16371400, setName='mongodb', canonicalAddress=127.0.0.1:27017, hosts=[127.0.0.1:27017, 127.0.0.1:27018], passives=[], arbiters=[127.0.0.1:27019], primary='127.0.0.1:27017', tagSet=TagSet{[]}, electionId=7fffffff0000000000000014, setVersion=5, topologyVersion=TopologyVersion{processId=63830528a8572160652526d2, counter=7}, lastWriteDate=Sun Nov 27 14:58:56 CST 2022, lastUpdateTimeNanos=5246002948600}
+2022-11-27 14:58:57.201  INFO 23384 --- [127.0.0.1:27019] org.mongodb.driver.cluster               : Monitor thread successfully connected to server with description ServerDescription{address=127.0.0.1:27019, type=REPLICA_SET_ARBITER, state=CONNECTED, ok=true, minWireVersion=0, maxWireVersion=17, maxDocumentSize=16777216, logicalSessionTimeoutMinutes=30, roundTripTimeNanos=16348100, setName='mongodb', canonicalAddress=127.0.0.1:27019, hosts=[127.0.0.1:27017, 127.0.0.1:27018], passives=[], arbiters=[127.0.0.1:27019], primary='127.0.0.1:27017', tagSet=TagSet{[]}, electionId=null, setVersion=5, topologyVersion=TopologyVersion{processId=638305285868cb4a3199c0ca, counter=3}, lastWriteDate=Sun Nov 27 14:58:56 CST 2022, lastUpdateTimeNanos=5246002948700}
+2022-11-27 14:58:57.204  INFO 23384 --- [127.0.0.1:27017] org.mongodb.driver.cluster               : Setting max election id to 7fffffff0000000000000014 from replica set primary 127.0.0.1:27017
+2022-11-27 14:58:57.205  INFO 23384 --- [127.0.0.1:27017] org.mongodb.driver.cluster               : Setting max set version to 5 from replica set primary 127.0.0.1:27017
+2022-11-27 14:58:57.205  INFO 23384 --- [127.0.0.1:27017] org.mongodb.driver.cluster               : Discovered replica set primary 127.0.0.1:27017
+2022-11-27 14:58:57.674  INFO 23384 --- [           main] o.s.b.w.embedded.tomcat.TomcatWebServer  : Tomcat started on port(s): 8080 (http) with context path ''
+2022-11-27 14:58:57.682  INFO 23384 --- [           main] .MongoDbArticleReplicaSetAuthApplication : Started MongoDbArticleReplicaSetAuthApplication in 2.071 seconds (JVM running for 2.482)
+```
+
+
+
+
+
+查询数据
+
+
+
+![image-20221127150039897](img/MongoDB学习笔记/image-20221127150039897.png)
+
+
+
+
+
+
+
+尝试配置错误的密码：
+
+```sh
+
+spring:
+  data:
+    mongodb:
+      # 库名称
+      #database: articledb
+      # mongodb服务地址
+      #host: 127.0.0.1
+      # 端口号
+      #port: 27017
+      # 可以使用uri连接
+      uri: mongodb://mao:1234567@127.0.0.1:27017,127.0.0.1:27018,127.0.0.1:27019/articledb?connect=replicaSet&readPreference=secondaryPreferred&replicaSet=mongodb
+
+```
+
+
+
+![image-20221127150248728](img/MongoDB学习笔记/image-20221127150248728.png)
+
+
+
+
+
+```sh
+Caused by: com.mongodb.MongoCommandException: Command failed with error 18 (AuthenticationFailed): 'Authentication failed.' on server 127.0.0.1:27018. The full response is {"ok": 0.0, "errmsg": "Authentication failed.", "code": 18, "codeName": "AuthenticationFailed", "$clusterTime": {"clusterTime": {"$timestamp": {"t": 1669532516, "i": 1}}, "signature": {"hash": {"$binary": {"base64": "FtNFbW+E42hB48DAFZlBFOevXR0=", "subType": "00"}}, "keyId": 7166872529376641030}}, "operationTime": {"$timestamp": {"t": 1669532516, "i": 1}}}
+	at com.mongodb.internal.connection.ProtocolHelper.getCommandFailureException(ProtocolHelper.java:198)
+	......
+	
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+## 分片集群环境
