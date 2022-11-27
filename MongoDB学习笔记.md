@@ -15337,3 +15337,578 @@ Caused by: com.mongodb.MongoCommandException: Command failed with error 18 (Auth
 
 
 ## 分片集群环境
+
+### 创建副本集认证的key文件
+
+
+
+```sh
+openssl rand -base64 90 -out ./mongo.keyfile
+```
+
+
+
+```sh
+PS H:\opensoft\MongoDB> cd .\shards\
+PS H:\opensoft\MongoDB\shards> ls
+
+
+    目录: H:\opensoft\MongoDB\shards
+
+
+Mode                 LastWriteTime         Length Name
+----                 -------------         ------ ----
+d-----        2022/11/19     22:19                conf
+d-----        2022/11/19     13:42                config
+d-----        2022/11/19     22:12                router
+d-----        2022/11/18     15:19                shard1
+d-----        2022/11/19     13:21                shard2
+
+
+PS H:\opensoft\MongoDB\shards> mkdir key
+
+
+    目录: H:\opensoft\MongoDB\shards
+
+
+Mode                 LastWriteTime         Length Name
+----                 -------------         ------ ----
+d-----        2022/11/27     15:15                key
+
+
+PS H:\opensoft\MongoDB\shards> ls
+
+
+    目录: H:\opensoft\MongoDB\shards
+
+
+Mode                 LastWriteTime         Length Name
+----                 -------------         ------ ----
+d-----        2022/11/19     22:19                conf
+d-----        2022/11/19     13:42                config
+d-----        2022/11/27     15:15                key
+d-----        2022/11/19     22:12                router
+d-----        2022/11/18     15:19                shard1
+d-----        2022/11/19     13:21                shard2
+
+
+PS H:\opensoft\MongoDB\shards> cd .\key\
+PS H:\opensoft\MongoDB\shards\key> openssl rand -base64 90 -out ./mongo.keyfile
+Loading 'screen' into random state - done
+PS H:\opensoft\MongoDB\shards\key> ls
+
+
+    目录: H:\opensoft\MongoDB\shards\key
+
+
+Mode                 LastWriteTime         Length Name
+----                 -------------         ------ ----
+-a----        2022/11/27     15:15            122 mongo.keyfile
+
+
+PS H:\opensoft\MongoDB\shards\key>
+```
+
+
+
+
+
+
+
+
+
+### 修改配置文件指定keyfile
+
+config1.conf
+
+```sh
+systemLog:
+  #MongoDB发送所有日志输出的目标指定为文件
+  destination: file
+  #mongod或mongos应向其发送所有诊断日志记录信息的日志文件的路径
+  path: "./../shards/config/config1/log/mongod.log"
+  #当mongos或mongod实例重新启动时，mongos或mongod会将新条目附加到现有日志文件的末尾。
+  logAppend: true
+storage:
+  #mongod实例存储其数据的目录。storage.dbPath设置仅适用于mongod
+  dbPath: "./../shards/config/config1/data/db"
+  journal:
+  #启用或禁用持久性日志以确保数据文件保持有效和可恢复。
+    enabled: true
+processManagement:
+  #启用在后台运行mongos或mongod进程的守护进程模式
+  #fork: true
+  #指定用于保存mongos或mongod进程的进程ID的文件位置，其中mongos或mongod将写入其PID
+  pidFilePath: "./../shards/config/config1/log/mongod.pid"
+net:
+  #服务实例绑定所有IP，有副作用，副本集初始化的时候，节点名字会自动设置为本地域名，而不是ip
+  #bindIpAll: true
+  #服务实例绑定的IP
+  bindIp: 127.0.0.1
+  #绑定的端口
+  port: 27019
+replication:
+  #副本集的名称
+  replSetName: config
+sharding:
+  #分片角色
+  clusterRole: configsvr
+security:
+  #KeyFile鉴权文件
+  keyFile: ./../shards/key/mongo.keyfile
+  #开启认证方式运行
+  authorization: enabled
+```
+
+
+
+
+
+config2.conf
+
+```sh
+systemLog:
+  #MongoDB发送所有日志输出的目标指定为文件
+  destination: file
+  #mongod或mongos应向其发送所有诊断日志记录信息的日志文件的路径
+  path: "./../shards/config/config2/log/mongod.log"
+  #当mongos或mongod实例重新启动时，mongos或mongod会将新条目附加到现有日志文件的末尾。
+  logAppend: true
+storage:
+  #mongod实例存储其数据的目录。storage.dbPath设置仅适用于mongod
+  dbPath: "./../shards/config/config2/data/db"
+  journal:
+  #启用或禁用持久性日志以确保数据文件保持有效和可恢复。
+    enabled: true
+processManagement:
+  #启用在后台运行mongos或mongod进程的守护进程模式
+  #fork: true
+  #指定用于保存mongos或mongod进程的进程ID的文件位置，其中mongos或mongod将写入其PID
+  pidFilePath: "./../shards/config/config2/log/mongod.pid"
+net:
+  #服务实例绑定所有IP，有副作用，副本集初始化的时候，节点名字会自动设置为本地域名，而不是ip
+  #bindIpAll: true
+  #服务实例绑定的IP
+  bindIp: 127.0.0.1
+  #绑定的端口
+  port: 27119
+replication:
+  #副本集的名称
+  replSetName: config
+sharding:
+  #分片角色
+  clusterRole: configsvr
+security:
+  #KeyFile鉴权文件
+  keyFile: ./../shards/key/mongo.keyfile
+  #开启认证方式运行
+  authorization: enabled
+```
+
+
+
+
+
+config3.conf
+
+```sh
+systemLog:
+  #MongoDB发送所有日志输出的目标指定为文件
+  destination: file
+  #mongod或mongos应向其发送所有诊断日志记录信息的日志文件的路径
+  path: "./../shards/config/config3/log/mongod.log"
+  #当mongos或mongod实例重新启动时，mongos或mongod会将新条目附加到现有日志文件的末尾。
+  logAppend: true
+storage:
+  #mongod实例存储其数据的目录。storage.dbPath设置仅适用于mongod
+  dbPath: "./../shards/config/config3/data/db"
+  journal:
+  #启用或禁用持久性日志以确保数据文件保持有效和可恢复。
+    enabled: true
+processManagement:
+  #启用在后台运行mongos或mongod进程的守护进程模式
+  #fork: true
+  #指定用于保存mongos或mongod进程的进程ID的文件位置，其中mongos或mongod将写入其PID
+  pidFilePath: "./../shards/config/config3/log/mongod.pid"
+net:
+  #服务实例绑定所有IP，有副作用，副本集初始化的时候，节点名字会自动设置为本地域名，而不是ip
+  #bindIpAll: true
+  #服务实例绑定的IP
+  bindIp: 127.0.0.1
+  #绑定的端口
+  port: 27219
+replication:
+  #副本集的名称
+  replSetName: config
+sharding:
+  #分片角色
+  clusterRole: configsvr
+security:
+  #KeyFile鉴权文件
+  keyFile: ./../shards/key/mongo.keyfile
+  #开启认证方式运行
+  authorization: enabled
+```
+
+
+
+
+
+router1.conf
+
+```sh
+systemLog:
+  #MongoDB发送所有日志输出的目标指定为文件
+  destination: file
+  #mongod或mongos应向其发送所有诊断日志记录信息的日志文件的路径
+  path: "./../shards/router/router1/log/mongod.log"
+  #当mongos或mongod实例重新启动时，mongos或mongod会将新条目附加到现有日志文件的末尾。
+  logAppend: true
+processManagement:
+  #启用在后台运行mongos或mongod进程的守护进程模式
+  #fork: true
+  #指定用于保存mongos或mongod进程的进程ID的文件位置，其中mongos或mongod将写入其PID
+  pidFilePath: "./../shards/router/router1/log/mongod.pid"
+net:
+  #服务实例绑定所有IP，有副作用，副本集初始化的时候，节点名字会自动设置为本地域名，而不是ip
+  #bindIpAll: true
+  #服务实例绑定的IP
+  bindIp: 127.0.0.1
+  #绑定的端口
+  port: 27017
+sharding:
+  #指定配置节点副本集
+  configDB: "config/127.0.0.1:27019,127.0.0.1:27119,127.0.0.1:27219"
+security:
+  #KeyFile鉴权文件
+  keyFile: ./../shards/key/mongo.keyfile
+```
+
+
+
+
+
+router2.conf
+
+```sh
+systemLog:
+  #MongoDB发送所有日志输出的目标指定为文件
+  destination: file
+  #mongod或mongos应向其发送所有诊断日志记录信息的日志文件的路径
+  path: "./../shards/router/router2/log/mongod.log"
+  #当mongos或mongod实例重新启动时，mongos或mongod会将新条目附加到现有日志文件的末尾。
+  logAppend: true
+processManagement:
+  #启用在后台运行mongos或mongod进程的守护进程模式
+  #fork: true
+  #指定用于保存mongos或mongod进程的进程ID的文件位置，其中mongos或mongod将写入其PID
+  pidFilePath: "./../shards/router/router2/log/mongod.pid"
+net:
+  #服务实例绑定所有IP，有副作用，副本集初始化的时候，节点名字会自动设置为本地域名，而不是ip
+  #bindIpAll: true
+  #服务实例绑定的IP
+  bindIp: 127.0.0.1
+  #绑定的端口
+  port: 27117
+sharding:
+  #指定配置节点副本集
+  configDB: config/127.0.0.1:27019,127.0.0.1:27119,127.0.0.1:27219
+security:
+  #KeyFile鉴权文件
+  keyFile: ./../shards/key/mongo.keyfile
+```
+
+
+
+
+
+shard1_arbiter.conf
+
+```sh
+systemLog:
+  #MongoDB发送所有日志输出的目标指定为文件
+  destination: file
+  #mongod或mongos应向其发送所有诊断日志记录信息的日志文件的路径
+  path: "./../shards/shard1/arbiter/log/mongod.log"
+  #当mongos或mongod实例重新启动时，mongos或mongod会将新条目附加到现有日志文件的末尾。
+  logAppend: true
+storage:
+  #mongod实例存储其数据的目录。storage.dbPath设置仅适用于mongod
+  dbPath: "./../shards/shard1/arbiter/data/db"
+  journal:
+  #启用或禁用持久性日志以确保数据文件保持有效和可恢复。
+    enabled: true
+processManagement:
+  #启用在后台运行mongos或mongod进程的守护进程模式
+  #fork: true
+  #指定用于保存mongos或mongod进程的进程ID的文件位置，其中mongos或mongod将写入其PID
+  pidFilePath: "./../shards/shard1/arbiter/log/mongod.pid"
+net:
+  #服务实例绑定所有IP，有副作用，副本集初始化的时候，节点名字会自动设置为本地域名，而不是ip
+  #bindIpAll: true
+  #服务实例绑定的IP
+  bindIp: 127.0.0.1
+  #绑定的端口
+  port: 27218
+replication:
+  #副本集的名称
+  replSetName: shard1
+sharding:
+  #分片角色
+  clusterRole: shardsvr
+security:
+  #KeyFile鉴权文件
+  keyFile: ./../shards/key/mongo.keyfile
+  #开启认证方式运行
+  authorization: enabled
+```
+
+
+
+
+
+shard1_master.conf
+
+```sh
+systemLog:
+  #MongoDB发送所有日志输出的目标指定为文件
+  destination: file
+  #mongod或mongos应向其发送所有诊断日志记录信息的日志文件的路径
+  path: "./../shards/shard1/master/log/mongod.log"
+  #当mongos或mongod实例重新启动时，mongos或mongod会将新条目附加到现有日志文件的末尾。
+  logAppend: true
+storage:
+  #mongod实例存储其数据的目录。storage.dbPath设置仅适用于mongod
+  dbPath: "./../shards/shard1/master/data/db"
+  journal:
+  #启用或禁用持久性日志以确保数据文件保持有效和可恢复。
+    enabled: true
+processManagement:
+  #启用在后台运行mongos或mongod进程的守护进程模式
+  #fork: true
+  #指定用于保存mongos或mongod进程的进程ID的文件位置，其中mongos或mongod将写入其PID
+  pidFilePath: "./../shards/shard1/master/log/mongod.pid"
+net:
+  #服务实例绑定所有IP，有副作用，副本集初始化的时候，节点名字会自动设置为本地域名，而不是ip
+  #bindIpAll: true
+  #服务实例绑定的IP
+  bindIp: 127.0.0.1
+  #绑定的端口
+  port: 27018
+replication:
+  #副本集的名称
+  replSetName: shard1
+sharding:
+  #分片角色
+  clusterRole: shardsvr
+security:
+  #KeyFile鉴权文件
+  keyFile: ./../shards/key/mongo.keyfile
+  #开启认证方式运行
+  authorization: enabled
+```
+
+
+
+
+
+shard1_slave.conf
+
+```sh
+systemLog:
+  #MongoDB发送所有日志输出的目标指定为文件
+  destination: file
+  #mongod或mongos应向其发送所有诊断日志记录信息的日志文件的路径
+  path: "./../shards/shard1/slave/log/mongod.log"
+  #当mongos或mongod实例重新启动时，mongos或mongod会将新条目附加到现有日志文件的末尾。
+  logAppend: true
+storage:
+  #mongod实例存储其数据的目录。storage.dbPath设置仅适用于mongod
+  dbPath: "./../shards/shard1/slave/data/db"
+  journal:
+  #启用或禁用持久性日志以确保数据文件保持有效和可恢复。
+    enabled: true
+processManagement:
+  #启用在后台运行mongos或mongod进程的守护进程模式
+  #fork: true
+  #指定用于保存mongos或mongod进程的进程ID的文件位置，其中mongos或mongod将写入其PID
+  pidFilePath: "./../shards/shard1/slave/log/mongod.pid"
+net:
+  #服务实例绑定所有IP，有副作用，副本集初始化的时候，节点名字会自动设置为本地域名，而不是ip
+  #bindIpAll: true
+  #服务实例绑定的IP
+  bindIp: 127.0.0.1
+  #绑定的端口
+  port: 27118
+replication:
+  #副本集的名称
+  replSetName: shard1
+sharding:
+  #分片角色
+  clusterRole: shardsvr
+security:
+  #KeyFile鉴权文件
+  keyFile: ./../shards/key/mongo.keyfile
+  #开启认证方式运行
+  authorization: enabled
+```
+
+
+
+
+
+shard2_arbiter.conf
+
+```sh
+systemLog:
+  #MongoDB发送所有日志输出的目标指定为文件
+  destination: file
+  #mongod或mongos应向其发送所有诊断日志记录信息的日志文件的路径
+  path: "./../shards/shard2/arbiter/log/mongod.log"
+  #当mongos或mongod实例重新启动时，mongos或mongod会将新条目附加到现有日志文件的末尾。
+  logAppend: true
+storage:
+  #mongod实例存储其数据的目录。storage.dbPath设置仅适用于mongod
+  dbPath: "./../shards/shard2/arbiter/data/db"
+  journal:
+  #启用或禁用持久性日志以确保数据文件保持有效和可恢复。
+    enabled: true
+processManagement:
+  #启用在后台运行mongos或mongod进程的守护进程模式
+  #fork: true
+  #指定用于保存mongos或mongod进程的进程ID的文件位置，其中mongos或mongod将写入其PID
+  pidFilePath: "./../shards/shard2/arbiter/log/mongod.pid"
+net:
+  #服务实例绑定所有IP，有副作用，副本集初始化的时候，节点名字会自动设置为本地域名，而不是ip
+  #bindIpAll: true
+  #服务实例绑定的IP
+  bindIp: 127.0.0.1
+  #绑定的端口
+  port: 27518
+replication:
+  #副本集的名称
+  replSetName: shard2
+sharding:
+  #分片角色
+  clusterRole: shardsvr
+security:
+  #KeyFile鉴权文件
+  keyFile: ./../shards/key/mongo.keyfile
+  #开启认证方式运行
+  authorization: enabled
+```
+
+
+
+
+
+shard2_master.conf
+
+```sh
+systemLog:
+  #MongoDB发送所有日志输出的目标指定为文件
+  destination: file
+  #mongod或mongos应向其发送所有诊断日志记录信息的日志文件的路径
+  path: "./../shards/shard2/master/log/mongod.log"
+  #当mongos或mongod实例重新启动时，mongos或mongod会将新条目附加到现有日志文件的末尾。
+  logAppend: true
+storage:
+  #mongod实例存储其数据的目录。storage.dbPath设置仅适用于mongod
+  dbPath: "./../shards/shard2/master/data/db"
+  journal:
+  #启用或禁用持久性日志以确保数据文件保持有效和可恢复。
+    enabled: true
+processManagement:
+  #启用在后台运行mongos或mongod进程的守护进程模式
+  #fork: true
+  #指定用于保存mongos或mongod进程的进程ID的文件位置，其中mongos或mongod将写入其PID
+  pidFilePath: "./../shards/shard2/master/log/mongod.pid"
+net:
+  #服务实例绑定所有IP，有副作用，副本集初始化的时候，节点名字会自动设置为本地域名，而不是ip
+  #bindIpAll: true
+  #服务实例绑定的IP
+  bindIp: 127.0.0.1
+  #绑定的端口
+  port: 27318
+replication:
+  #副本集的名称
+  replSetName: shard2
+sharding:
+  #分片角色
+  clusterRole: shardsvr
+security:
+  #KeyFile鉴权文件
+  keyFile: ./../shards/key/mongo.keyfile
+  #开启认证方式运行
+  authorization: enabled
+```
+
+
+
+
+
+shard2_slave.conf
+
+```sh
+systemLog:
+  #MongoDB发送所有日志输出的目标指定为文件
+  destination: file
+  #mongod或mongos应向其发送所有诊断日志记录信息的日志文件的路径
+  path: "./../shards/shard2/slave/log/mongod.log"
+  #当mongos或mongod实例重新启动时，mongos或mongod会将新条目附加到现有日志文件的末尾。
+  logAppend: true
+storage:
+  #mongod实例存储其数据的目录。storage.dbPath设置仅适用于mongod
+  dbPath: "./../shards/shard2/slave/data/db"
+  journal:
+  #启用或禁用持久性日志以确保数据文件保持有效和可恢复。
+    enabled: true
+processManagement:
+  #启用在后台运行mongos或mongod进程的守护进程模式
+  #fork: true
+  #指定用于保存mongos或mongod进程的进程ID的文件位置，其中mongos或mongod将写入其PID
+  pidFilePath: "./../shards/shard2/slave/log/mongod.pid"
+net:
+  #服务实例绑定所有IP，有副作用，副本集初始化的时候，节点名字会自动设置为本地域名，而不是ip
+  #bindIpAll: true
+  #服务实例绑定的IP
+  bindIp: 127.0.0.1
+  #绑定的端口
+  port: 27418
+replication:
+  #副本集的名称
+  replSetName: shard2
+sharding:
+  #分片角色
+  clusterRole: shardsvr
+security:
+  #KeyFile鉴权文件
+  keyFile: ./../shards/key/mongo.keyfile
+  #开启认证方式运行
+  authorization: enabled
+```
+
+
+
+
+
+
+
+mongos比mongod少了authorization：enabled的配置。原因是，副本集加分片的安全认证需要配置两方面的，副本集各个节点之间使用内部身份验证，用于内部各个mongo实例的通信，只有相同keyfile才能相互访问。所以都要开启 keyFile
+
+然而对于所有的mongod，才是真正的保存数据的分片。mongos只做路由，不保存数据。所以所有的mongod开启访问数据的授权authorization:enabled。这样用户只有账号密码正确才能访问到数据
+
+
+
+
+
+
+
+
+
+
+
+
+
+### 创建帐号和认证
+
