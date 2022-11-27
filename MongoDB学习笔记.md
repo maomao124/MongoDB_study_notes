@@ -18,9 +18,9 @@
 
 # MongoDB简介
 
-MongoDB是一个开源、高性能、无模式的文档型数据库，当初的设计就是用于简化开发和方便扩展，是NoSQL数据库产品中的一种。是最 像关系型数据库（MySQL）的非关系型数据库。 
+MongoDB是一个开源、高性能、无模式的文档型数据库，当初的设计就是用于简化开发和方便扩展，是NoSQL数据库产品中的一种。是最像关系型数据库（MySQL）的非关系型数据库。 
 
-它支持的数据结构非常松散，是一种类似于 JSON 的 格式叫BSON，所以它既可以存储比较复杂的数据类型，又相当的灵活。 MongoDB中的记录是一个文档，它是一个由字段和值对（field:value）组成的数据结构。MongoDB文档类似于JSON对象，即一个文档认 为就是一个对象。字段的数据类型是字符型，它的值除了使用基本的一些类型外，还可以包括其他文档、普通数组和文档数组。
+它支持的数据结构非常松散，是一种类似于 JSON 的 格式叫BSON，所以它既可以存储比较复杂的数据类型，又相当的灵活。 MongoDB中的记录是一个文档，它是一个由字段和值对（field:value）组成的数据结构。MongoDB文档类似于JSON对象，即一个文档认为就是一个对象。字段的数据类型是字符型，它的值除了使用基本的一些类型外，还可以包括其他文档、普通数组和文档数组。
 
 
 
@@ -14592,12 +14592,188 @@ export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/openssl/lib
 
 
 ```sh
-ln -s /usr/local/libssl.so.3 /usr/lib/libssl.so.3
+sudo cp /usr/local/openssl/lib64/libssl.so.3 /usr/local/openssl/bin
 ```
 
 ```sh
-ln -s /usr/local/libcrypto.so.3 /usr/lib/libcrypto.so.3
+sudo cp /usr/local/openssl/lib64/libcrypto.so.3 /usr/local/openssl/bin
 ```
+
+
+
+```sh
+ao@ubuntu:/usr/local/openssl/bin$ sudo cp /usr/local/openssl/lib64/libssl.so.3 /usr/local/openssl/bin
+mao@ubuntu:/usr/local/openssl/bin$ ./openssl version
+./openssl: error while loading shared libraries: libcrypto.so.3: cannot open shared object file: No such file or directory
+mao@ubuntu:/usr/local/openssl/bin$ sudo cp /usr/local/openssl/lib64/libcrypto.so.3 /usr/local/openssl/bin
+mao@ubuntu:/usr/local/openssl/bin$ ./openssl version
+OpenSSL 3.0.5 5 Jul 2022 (Library: OpenSSL 3.0.5 5 Jul 2022)
+mao@ubuntu:/usr/local/openssl/bin$ 
+```
+
+
+
+
+
+
+
+#### 第八步：生成key文件
+
+
+
+```sh
+./openssl rand -base64 90 -out ./mongo.keyfile
+```
+
+
+
+
+
+
+
+
+
+### Windows安装openssl
+
+
+
+#### 第一步：下载
+
+https://slproweb.com/products/Win32OpenSSL.html
+
+
+
+![image-20221127141814003](img/MongoDB学习笔记/image-20221127141814003.png)
+
+
+
+|                           **文件**                           |    **类型**    |                           **描述**                           |
+| :----------------------------------------------------------: | :------------: | :----------------------------------------------------------: |
+| Win64 OpenSSL v3.0.7 Light [EXE](https://slproweb.com/download/Win64OpenSSL_Light-3_0_7.exe)\|[.MSI](https://slproweb.com/download/Win64OpenSSL_Light-3_0_7.msi) |  5MB 安装程序  | 安装 Win64 OpenSSL v3.0.7 最常用的基本要素（[由 OpenSSL](http://www.openssl.org/) 的创建者推荐给用户）。仅安装在 64 位版本的 Windows 上，面向英特尔 x64 芯片组。请注意，这是OpenSSL的默认版本，受当地和州法律的约束。更多信息可以在安装的法律协议中找到。 |
+| Win64 OpenSSL v3.0.7 [EXE](https://slproweb.com/download/Win64OpenSSL-3_0_7.exe)\|[.MSI](https://slproweb.com/download/Win64OpenSSL-3_0_7.msi) | 140MB 安装程序 | 安装 Win64 OpenSSL v3.0.7（[由 OpenSSL](http://www.openssl.org/) 的创建者推荐给软件开发人员）。仅安装在 64 位版本的 Windows 上，面向英特尔 x64 芯片组。请注意，这是OpenSSL的默认版本，受当地和州法律的约束。更多信息可以在安装的法律协议中找到。 |
+| Win32 OpenSSL v3.0.7 Light [EXE](https://slproweb.com/download/Win32OpenSSL_Light-3_0_7.exe)\|[.MSI](https://slproweb.com/download/Win32OpenSSL_Light-3_0_7.msi) |  4MB 安装程序  | 安装 Win32 OpenSSL v3.0.7 最常用的基本功能（仅当您需要 32 位 OpenSSL for Windows 时才安装此软件包。请注意，这是OpenSSL的默认版本，受当地和州法律的约束。更多信息可以在安装的法律协议中找到。 |
+| Win32 OpenSSL v3.0.7 [EXE](https://slproweb.com/download/Win32OpenSSL-3_0_7.exe)\|[.MSI](https://slproweb.com/download/Win32OpenSSL-3_0_7.msi) | 116MB 安装程序 | 安装 Win32 OpenSSL v3.0.7（仅当您需要 Windows 版 32 位 OpenSSL 时才安装此版本。请注意，这是OpenSSL的默认版本，受当地和州法律的约束。更多信息可以在安装的法律协议中找到。 |
+| Win64 OpenSSL v3.0.7 Light for ARM （EXPERIMENTAL） [EXE](https://slproweb.com/download/Win64ARMOpenSSL_Light-3_0_7.exe)\|[.MSI](https://slproweb.com/download/Win64ARMOpenSSL_Light-3_0_7.msi) |  5MB 安装程序  | 为 ARM64 设备安装 Win64 OpenSSL v3.0.7 最常用的基本要素（如果要在 ARM 处理器上尝试 64 位 OpenSSL for Windows，请仅安装此非常实验性的版本。请注意，这是OpenSSL的默认版本，受当地和州法律的约束。更多信息可以在安装的法律协议中找到。 |
+| Win64 OpenSSL v3.0.7 for ARM （EXPERIMENTAL） [EXE](https://slproweb.com/download/Win64ARMOpenSSL-3_0_7.exe)\|[.MSI](https://slproweb.com/download/Win64ARMOpenSSL-3_0_7.msi) | 113MB 安装程序 | 为 ARM64 设备安装 Win64 OpenSSL v3.0.7（如果您想在 ARM 处理器上尝试 64 位 OpenSSL for Windows，请仅安装此非常实验性的版本。请注意，这是OpenSSL的默认版本，受当地和州法律的约束。更多信息可以在安装的法律协议中找到。 |
+|                                                              |                |                                                              |
+| Win64 OpenSSL v1.1.1s Light [EXE](https://slproweb.com/download/Win64OpenSSL_Light-1_1_1s.exe)\|[.MSI](https://slproweb.com/download/Win64OpenSSL_Light-1_1_1s.msi) |  3MB 安装程序  | 安装Win64 OpenSSL v1.1.1最常用的基本功能（[由OpenSSL](http://www.openssl.org/)的创建者推荐给用户）。仅在 64 位版本的 Windows 上安装。请注意，这是OpenSSL的默认版本，受当地和州法律的约束。更多信息可以在安装的法律协议中找到。 |
+| Win64 OpenSSL v1.1.1s [EXE](https://slproweb.com/download/Win64OpenSSL-1_1_1s.exe)\|[.MSI](https://slproweb.com/download/Win64OpenSSL-1_1_1s.msi) | 63MB 安装程序  | 安装 Win64 OpenSSL v1.1.1s（[由 OpenSSL](http://www.openssl.org/) 的创建者推荐给软件开发人员）。仅在 64 位版本的 Windows 上安装。请注意，这是OpenSSL的默认版本，受当地和州法律的约束。更多信息可以在安装的法律协议中找到。 |
+| Win32 OpenSSL v1.1.1s Light [EXE](https://slproweb.com/download/Win32OpenSSL_Light-1_1_1s.exe)\|[.MSI](https://slproweb.com/download/Win32OpenSSL_Light-1_1_1s.msi) |  3MB 安装程序  | 安装 Win32 OpenSSL v1.1.1s 最常用的基本功能（仅当您需要适用于 Windows 的 32 位 OpenSSL 时才安装此内容。请注意，这是OpenSSL的默认版本，受当地和州法律的约束。更多信息可以在安装的法律协议中找到。 |
+| Win32 OpenSSL v1.1.1s [EXE](https://slproweb.com/download/Win32OpenSSL-1_1_1s.exe)\|[.MSI](https://slproweb.com/download/Win32OpenSSL-1_1_1s.msi) | 54MB 安装程序  | 安装 Win32 OpenSSL v1.1.1s（仅当您需要 32 位 OpenSSL for Windows 时才安装此版本。请注意，这是OpenSSL的默认版本，受当地和州法律的约束。更多信息可以在安装的法律协议中找到。 |
+
+
+
+
+
+
+
+#### 第二步：安装
+
+
+
+![image-20221127141905636](img/MongoDB学习笔记/image-20221127141905636.png)
+
+
+
+![image-20221127141918073](img/MongoDB学习笔记/image-20221127141918073.png)
+
+
+
+![image-20221127141933234](img/MongoDB学习笔记/image-20221127141933234.png)
+
+
+
+![image-20221127142010187](img/MongoDB学习笔记/image-20221127142010187.png)
+
+
+
+![image-20221127142017794](img/MongoDB学习笔记/image-20221127142017794.png)
+
+
+
+![image-20221127142024566](img/MongoDB学习笔记/image-20221127142024566.png)
+
+
+
+![image-20221127142104795](img/MongoDB学习笔记/image-20221127142104795.png)
+
+
+
+
+
+#### 第三步：使用openssl
+
+
+
+```sh
+PS C:\Users\mao\Desktop> openssl version
+OpenSSL 0.9.8k 25 Mar 2009
+PS C:\Users\mao\Desktop> openssl rand -base64 90 -out ./mongo.keyfile
+Loading 'screen' into random state - done
+PS C:\Users\mao\Desktop>
+```
+
+
+
+
+
+#### 第四步：拷贝到MongoDB的安装目录的key目录下
+
+
+
+```sh
+PS H:\opensoft\MongoDB> ls
+
+
+    目录: H:\opensoft\MongoDB
+
+
+Mode                 LastWriteTime         Length Name
+----                 -------------         ------ ----
+d-----        2022/11/17     14:04                arbiter
+d-----        2022/11/18     15:50                bin
+d-----        2022/11/17     14:09                conf
+d-----        2022/11/15     12:49                data
+d-----        2022/11/22     14:59                key
+d-----        2022/11/14     20:16                log
+d-----        2022/11/17     13:47                master
+d-----        2022/11/15     21:53                MongoDBCompass
+d-----         2022/9/20      4:08                mongosh
+d-----        2022/11/19     22:12                shards
+d-----        2022/11/17     13:58                slave
+-a----        2022/11/19     14:01            225 config.bat
+-a----         2022/9/29      1:03          30608 LICENSE-Community.txt
+-a----         2022/9/29      1:03          16726 MPL-2
+-a----         2022/9/29      1:03           1977 README
+-a----        2022/11/19     22:53            152 router.bat
+-a----        2022/11/18     15:40            247 shard1.bat
+-a----        2022/11/19     13:27            243 shard2.bat
+-a----         2022/9/29      1:03          77913 THIRD-PARTY-NOTICES
+-a----        2022/11/20     14:06            878 分片集群-单窗口.bat
+-a----        2022/11/20     14:02            845 分片集群.bat
+-a----        2022/11/14     21:22             50 运行.bat
+-a----        2022/11/17     14:32            193 集群启动-单窗口.bat
+-a----        2022/11/17     14:26            184 集群启动.bat
+
+
+PS H:\opensoft\MongoDB> cd key
+PS H:\opensoft\MongoDB\key> ls
+
+
+    目录: H:\opensoft\MongoDB\key
+
+
+Mode                 LastWriteTime         Length Name
+----                 -------------         ------ ----
+-a----        2022/11/27     14:25            122 mongo.keyfile
+
+
+PS H:\opensoft\MongoDB\key>
+```
+
+
+
+
 
 
 
@@ -14826,7 +15002,7 @@ security:
 
 ### 重新启动副本集
 
-如果副本集是开启状态，则先分别关闭关闭复本集中的每个mongod，从次节点开始。直到副本集的所 有成员都离线，包括任何仲裁者。主节点必须是最后一个成员关闭以避免潜在的回滚
+如果副本集是开启状态，则先分别关闭关闭复本集中的每个mongod，从次节点开始。直到副本集的所有成员都离线，包括任何仲裁者。主节点必须是最后一个成员关闭以避免潜在的回滚
 
 
 
@@ -14837,3 +15013,186 @@ security:
 
 
 ### 在主节点上添加普通账号
+
+```sh
+use admin
+```
+
+```sh
+db.auth("root","123456")
+```
+
+```sh
+use articledb
+```
+
+```sh
+db.createUser({user: "mao", pwd: "123456", roles: ["readWrite"]})
+```
+
+
+
+```sh
+PS H:\opensoft\MongoDB> mongosh
+Current Mongosh Log ID: 6383042c0806912a12dbd752
+Connecting to:          mongodb://127.0.0.1:27017/?directConnection=true&serverSelectionTimeoutMS=2000&appName=mongosh+1.6.0
+Using MongoDB:          6.0.2
+Using Mongosh:          1.6.0
+
+For mongosh info see: https://docs.mongodb.com/mongodb-shell/
+
+mongodb [direct: primary] test> use admin
+switched to db admin
+mongodb [direct: primary] admin> db.auth("root","123456")
+{ ok: 1 }
+mongodb [direct: primary] admin> use articledb
+switched to db articledb
+mongodb [direct: primary] articledb> db.createUser({user: "mao", pwd: "123456", roles: ["readWrite"]})
+{
+  ok: 1,
+  '$clusterTime': {
+    clusterTime: Timestamp({ t: 1669530709, i: 1 }),
+    signature: {
+      hash: Binary(Buffer.from("52e3d4dca8a6f477cb57584706ee7ff26b24def0", "hex"), 0),
+      keyId: Long("7166872529376641030")
+    }
+  },
+  operationTime: Timestamp({ t: 1669530709, i: 1 })
+}
+mongodb [direct: primary] articledb>
+```
+
+
+
+
+
+
+
+### 验证正确性
+
+
+
+#### 第一步：重启服务
+
+
+
+
+
+#### 第二步：访问27017节点
+
+```sh
+mongosh --authenticationDatabase articledb -u mao -p 123456
+```
+
+```sh
+mongosh --authenticationDatabase articledb -u mao -p 12345
+```
+
+
+
+```sh
+PS H:\opensoft\MongoDB> mongosh --authenticationDatabase articledb -u mao -p 123456
+Current Mongosh Log ID: 63830612d810e47cac08a779
+Connecting to:          mongodb://<credentials>@127.0.0.1:27017/?directConnection=true&serverSelectionTimeoutMS=2000&authSource=articledb&appName=mongosh+1.6.0
+Using MongoDB:          6.0.2
+Using Mongosh:          1.6.0
+
+For mongosh info see: https://docs.mongodb.com/mongodb-shell/
+
+mongodb [direct: primary] test> show db
+MongoshInvalidInputError: [COMMON-10001] 'db' is not a valid argument for "show".
+mongodb [direct: primary] test> show databases
+articledb  72.00 KiB
+mongodb [direct: primary] test> exit
+PS H:\opensoft\MongoDB> mongosh --authenticationDatabase articledb -u mao -p 12345
+Current Mongosh Log ID: 63830639858f546a436b005d
+Connecting to:          mongodb://<credentials>@127.0.0.1:27017/?directConnection=true&serverSelectionTimeoutMS=2000&authSource=articledb&appName=mongosh+1.6.0
+MongoServerError: Authentication failed.
+PS H:\opensoft\MongoDB>
+```
+
+
+
+
+
+#### 第三步：访问27018节点
+
+```sh
+mongosh --port 27018 --authenticationDatabase articledb -u mao -p 123456
+```
+
+```sh
+mongosh --port 27018 --authenticationDatabase articledb -u mao -p 12345
+```
+
+
+
+```sh
+PS H:\opensoft\MongoDB> mongosh --port 27018 --authenticationDatabase articledb -u mao -p 123456
+Current Mongosh Log ID: 6383068f13c0204837dde854
+Connecting to:          mongodb://<credentials>@127.0.0.1:27018/?directConnection=true&serverSelectionTimeoutMS=2000&authSource=articledb&appName=mongosh+1.6.0
+Using MongoDB:          6.0.2
+Using Mongosh:          1.6.0
+
+For mongosh info see: https://docs.mongodb.com/mongodb-shell/
+
+mongodb [direct: secondary] test> show databases
+articledb  72.00 KiB
+mongodb [direct: secondary] test> exit
+PS H:\opensoft\MongoDB> mongosh --port 27018 --authenticationDatabase articledb -u mao -p 12345
+Current Mongosh Log ID: 638306a8aece867e2854fbdf
+Connecting to:          mongodb://<credentials>@127.0.0.1:27018/?directConnection=true&serverSelectionTimeoutMS=2000&authSource=articledb&appName=mongosh+1.6.0
+MongoServerError: Authentication failed.
+PS H:\opensoft\MongoDB>
+```
+
+
+
+
+
+#### 第四步：访问27019节点
+
+
+
+```sh
+mongosh --port 27019 --authenticationDatabase articledb -u mao -p 123456
+```
+
+```sh
+mongosh --port 27019 --authenticationDatabase articledb -u mao -p 12345
+```
+
+
+
+```sh
+PS H:\opensoft\MongoDB> mongosh --port 27019 --authenticationDatabase articledb -u mao -p 123456
+Current Mongosh Log ID: 63830710dd99348d42c3a74b
+Connecting to:          mongodb://<credentials>@127.0.0.1:27019/?directConnection=true&serverSelectionTimeoutMS=2000&authSource=articledb&appName=mongosh+1.6.0
+Using MongoDB:          6.0.2
+Using Mongosh:          1.6.0
+
+For mongosh info see: https://docs.mongodb.com/mongodb-shell/
+
+mongodb [direct: arbiter] test> exit
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+### SpringDataMongoDB连接副本集
+
+
+
