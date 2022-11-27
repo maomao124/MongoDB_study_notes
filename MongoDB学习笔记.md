@@ -15912,3 +15912,394 @@ mongos比mongod少了authorization：enabled的配置。原因是，副本集加
 
 ### 创建帐号和认证
 
+登录任意一个mongos路由
+
+```sh
+mongosh --port 27017
+```
+
+
+
+```sh
+PS H:\opensoft\MongoDB> mongosh --port 27017
+Current Mongosh Log ID: 6383639576952e398cbacf15
+Connecting to:          mongodb://127.0.0.1:27017/?directConnection=true&serverSelectionTimeoutMS=2000&appName=mongosh+1.6.0
+Using MongoDB:          6.0.2
+Using Mongosh:          1.6.0
+
+For mongosh info see: https://docs.mongodb.com/mongodb-shell/
+
+[direct: mongos] test>
+```
+
+
+
+
+
+创建一个管理员帐号
+
+```sh
+use admin
+```
+
+```sh
+db.createUser({user:"root",pwd:"123456",roles:["root"]})
+```
+
+
+
+```sh
+[direct: mongos] test> use admin
+switched to db admin
+[direct: mongos] admin> db.createUser({user:"root",pwd:"123456",roles:["root"]})
+{
+  ok: 1,
+  '$clusterTime': {
+    clusterTime: Timestamp({ t: 1669555153, i: 4 }),
+    signature: {
+      hash: Binary(Buffer.from("39f5eceb0dc994dccd6eb5e9ec370df72afa924a", "hex"), 0),
+      keyId: Long("7167604258659893250")
+    }
+  },
+  operationTime: Timestamp({ t: 1669555153, i: 4 })
+}
+[direct: mongos] admin>
+```
+
+
+
+
+
+创建一个普通权限帐号
+
+```sh
+db.auth("root","123456")
+```
+
+```sh
+use articledb
+```
+
+```sh
+db.createUser({user: "mao", pwd: "123456", roles: [{ role: "readWrite",db: "articledb" }]})
+```
+
+
+
+```sh
+[direct: mongos] admin> db.auth("root","123456")
+{ ok: 1 }
+[direct: mongos] admin> use articledb
+switched to db articledb
+[direct: mongos] articledb> db.createUser({user: "mao", pwd: "123456", roles: [{ role: "readWrite",db: "articledb" }]})
+{
+  ok: 1,
+  '$clusterTime': {
+    clusterTime: Timestamp({ t: 1669555522, i: 1 }),
+    signature: {
+      hash: Binary(Buffer.from("bccdec9ac223fe99158b452d5c8f6b20aa3c4728", "hex"), 0),
+      keyId: Long("7167604258659893250")
+    }
+  },
+  operationTime: Timestamp({ t: 1669555522, i: 1 })
+}
+[direct: mongos] articledb>
+```
+
+
+
+
+
+通过mongos添加的账号信息，只会保存到配置节点的服务中，具体的数据节点不保存账号信息，因此，分片中的账号信息不涉及到同步问题
+
+
+
+
+
+用管理员帐号登录可查看分片情况
+
+```sh
+use admin
+```
+
+```sh
+sh.status()
+```
+
+
+
+```sh
+[direct: mongos] articledb> use admin
+switched to db admin
+[direct: mongos] admin> sh.status()
+shardingVersion
+{
+  _id: 1,
+  minCompatibleVersion: 5,
+  currentVersion: 6,
+  clusterId: ObjectId("6378721952fa08bd79db735d")
+}
+---
+shards
+[
+  {
+    _id: 'shard1',
+    host: 'shard1/127.0.0.1:27018,127.0.0.1:27118',
+    state: 1,
+    topologyTime: Timestamp({ t: 1668871172, i: 1 })
+  },
+  {
+    _id: 'shard2',
+    host: 'shard2/127.0.0.1:27318,127.0.0.1:27418',
+    state: 1,
+    topologyTime: Timestamp({ t: 1668871351, i: 1 })
+  }
+]
+---
+most recently active mongoses
+[ { '6.0.2': 2 } ]
+---
+autosplit
+{ 'Currently enabled': 'yes' }
+---
+balancer
+{
+  'Currently enabled': 'yes',
+  'Currently running': 'no',
+  'Failed balancer rounds in last 5 attempts': 0,
+  'Migration Results for the last 24 hours': 'No recent migrations'
+}
+---
+databases
+[
+  {
+    database: {
+      _id: 'articledb',
+      primary: 'shard2',
+      partitioned: false,
+      version: {
+        uuid: new UUID("077166aa-0743-4147-a161-a40173443f26"),
+        timestamp: Timestamp({ t: 1668871768, i: 1 }),
+        lastMod: 1
+      }
+    },
+    collections: {
+      'articledb.comment': {
+        shardKey: { _id: 'hashed' },
+        unique: false,
+        balancing: true,
+        chunkMetadata: [
+          { shard: 'shard1', nChunks: 2 },
+          { shard: 'shard2', nChunks: 2 }
+        ],
+        chunks: [
+          { min: { _id: MinKey() }, max: { _id: Long("-4611686018427387902") }, 'on shard': 'shard1', 'last modified': Timestamp({ t: 1, i: 0 }) },
+          { min: { _id: Long("-4611686018427387902") }, max: { _id: Long("0") }, 'on shard': 'shard1', 'last modified': Timestamp({ t: 1, i: 1 }) },
+          { min: { _id: Long("0") }, max: { _id: Long("4611686018427387902") }, 'on shard': 'shard2', 'last modified': Timestamp({ t: 1, i: 2 }) },
+          { min: { _id: Long("4611686018427387902") }, max: { _id: MaxKey() }, 'on shard': 'shard2', 'last modified': Timestamp({ t: 1, i: 3 }) }
+        ],
+        tags: []
+      }
+    }
+  },
+  {
+    database: { _id: 'config', primary: 'config', partitioned: true },
+    collections: {
+      'config.system.sessions': {
+        shardKey: { _id: 1 },
+        unique: false,
+        balancing: true,
+        chunkMetadata: [
+          { shard: 'shard1', nChunks: 512 },
+          { shard: 'shard2', nChunks: 512 }
+        ],
+        chunks: [
+          'too many chunks to print, use verbose if you want to force print'
+        ],
+        tags: []
+      }
+    }
+  }
+]
+[direct: mongos] admin>
+```
+
+
+
+
+
+退出连接，重新连接服务，使用普通权限帐号访问数据
+
+```sh
+mongosh --port 27017
+```
+
+```sh
+use articledb
+```
+
+```sh
+db.auth("mao","123456")
+```
+
+```sh
+db.comment.count()
+```
+
+
+
+```sh
+PS H:\opensoft\MongoDB> mongosh --port 27017
+Current Mongosh Log ID: 6383675aedc9938d1a867251
+Connecting to:          mongodb://127.0.0.1:27017/?directConnection=true&serverSelectionTimeoutMS=2000&appName=mongosh+1.6.0
+Using MongoDB:          6.0.2
+Using Mongosh:          1.6.0
+
+For mongosh info see: https://docs.mongodb.com/mongodb-shell/
+
+[direct: mongos] test> use articledb
+switched to db articledb
+[direct: mongos] articledb> db.auth("mao","123456")
+{ ok: 1 }
+[direct: mongos] articledb> db.comment.count()
+DeprecationWarning: Collection.count() is deprecated. Use countDocuments or estimatedDocumentCount.
+1000
+[direct: mongos] articledb>
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+### SpringDataMongoDB连接认证
+
+使用用户名和密码连接到 MongoDB 服务器必须使用
+
+'username:password@hostname/dbname' 格式，'username'为用户名，'password' 为密码
+
+
+
+配置文件
+
+```yaml
+
+spring:
+  data:
+    mongodb:
+      # 库名称
+      #database: articledb
+      # mongodb服务地址
+      #host: 127.0.0.1
+      # 端口号
+      #port: 27017
+      # 可以使用uri连接
+      uri: mongodb://mao:123456@127.0.0.1:27017,127.0.0.1:27117/articledb
+
+```
+
+
+
+
+
+
+
+启动
+
+```sh
+
+  .   ____          _            __ _ _
+ /\\ / ___'_ __ _ _(_)_ __  __ _ \ \ \ \
+( ( )\___ | '_ | '_| | '_ \/ _` | \ \ \ \
+ \\/  ___)| |_)| | | | | || (_| |  ) ) ) )
+  '  |____| .__|_| |_|_| |_\__, | / / / /
+ =========|_|==============|___/=/_/_/_/
+ :: Spring Boot ::                (v2.7.1)
+
+2022-11-27 21:43:16.516  INFO 25380 --- [           main] m.m.MongoDbArticleShardsAuthApplication  : Starting MongoDbArticleShardsAuthApplication using Java 16.0.2 on mao with PID 25380 (H:\程序\大四上期\MongoDB_article_shards_auth\target\classes started by mao in H:\程序\大四上期\MongoDB_article_shards_auth)
+2022-11-27 21:43:16.519  INFO 25380 --- [           main] m.m.MongoDbArticleShardsAuthApplication  : No active profile set, falling back to 1 default profile: "default"
+2022-11-27 21:43:16.945  INFO 25380 --- [           main] .s.d.r.c.RepositoryConfigurationDelegate : Bootstrapping Spring Data MongoDB repositories in DEFAULT mode.
+2022-11-27 21:43:16.983  INFO 25380 --- [           main] .s.d.r.c.RepositoryConfigurationDelegate : Finished Spring Data repository scanning in 34 ms. Found 1 MongoDB repository interfaces.
+2022-11-27 21:43:17.290  INFO 25380 --- [           main] o.s.b.w.embedded.tomcat.TomcatWebServer  : Tomcat initialized with port(s): 8080 (http)
+2022-11-27 21:43:17.297  INFO 25380 --- [           main] o.apache.catalina.core.StandardService   : Starting service [Tomcat]
+2022-11-27 21:43:17.297  INFO 25380 --- [           main] org.apache.catalina.core.StandardEngine  : Starting Servlet engine: [Apache Tomcat/9.0.64]
+2022-11-27 21:43:17.372  INFO 25380 --- [           main] o.a.c.c.C.[Tomcat].[localhost].[/]       : Initializing Spring embedded WebApplicationContext
+2022-11-27 21:43:17.372  INFO 25380 --- [           main] w.s.c.ServletWebServerApplicationContext : Root WebApplicationContext: initialization completed in 815 ms
+2022-11-27 21:43:17.456  INFO 25380 --- [           main] org.mongodb.driver.cluster               : Adding discovered server 127.0.0.1:27017 to client view of cluster
+2022-11-27 21:43:17.474  INFO 25380 --- [           main] org.mongodb.driver.cluster               : Adding discovered server 127.0.0.1:27117 to client view of cluster
+2022-11-27 21:43:17.490  INFO 25380 --- [           main] org.mongodb.driver.client                : MongoClient with metadata {"driver": {"name": "mongo-java-driver|sync|spring-boot", "version": "4.6.1"}, "os": {"type": "Windows", "name": "Windows 10", "architecture": "amd64", "version": "10.0"}, "platform": "Java/Oracle Corporation/16.0.2+7-67"} created with settings MongoClientSettings{readPreference=primary, writeConcern=WriteConcern{w=null, wTimeout=null ms, journal=null}, retryWrites=true, retryReads=true, readConcern=ReadConcern{level=null}, credential=MongoCredential{mechanism=null, userName='mao', source='articledb', password=<hidden>, mechanismProperties=<hidden>}, streamFactoryFactory=null, commandListeners=[], codecRegistry=ProvidersCodecRegistry{codecProviders=[ValueCodecProvider{}, BsonValueCodecProvider{}, DBRefCodecProvider{}, DBObjectCodecProvider{}, DocumentCodecProvider{}, IterableCodecProvider{}, MapCodecProvider{}, GeoJsonCodecProvider{}, GridFSFileCodecProvider{}, Jsr310CodecProvider{}, JsonObjectCodecProvider{}, BsonCodecProvider{}, EnumCodecProvider{}, com.mongodb.Jep395RecordCodecProvider@37637a24]}, clusterSettings={hosts=[127.0.0.1:27017, 127.0.0.1:27117], srvServiceName=mongodb, mode=MULTIPLE, requiredClusterType=UNKNOWN, requiredReplicaSetName='null', serverSelector='null', clusterListeners='[]', serverSelectionTimeout='30000 ms', localThreshold='30000 ms'}, socketSettings=SocketSettings{connectTimeoutMS=10000, readTimeoutMS=0, receiveBufferSize=0, sendBufferSize=0}, heartbeatSocketSettings=SocketSettings{connectTimeoutMS=10000, readTimeoutMS=10000, receiveBufferSize=0, sendBufferSize=0}, connectionPoolSettings=ConnectionPoolSettings{maxSize=100, minSize=0, maxWaitTimeMS=120000, maxConnectionLifeTimeMS=0, maxConnectionIdleTimeMS=0, maintenanceInitialDelayMS=0, maintenanceFrequencyMS=60000, connectionPoolListeners=[], maxConnecting=2}, serverSettings=ServerSettings{heartbeatFrequencyMS=10000, minHeartbeatFrequencyMS=500, serverListeners='[]', serverMonitorListeners='[]'}, sslSettings=SslSettings{enabled=false, invalidHostNameAllowed=false, context=null}, applicationName='null', compressorList=[], uuidRepresentation=JAVA_LEGACY, serverApi=null, autoEncryptionSettings=null, contextProvider=null}
+2022-11-27 21:43:17.493  INFO 25380 --- [127.0.0.1:27017] org.mongodb.driver.connection            : Opened connection [connectionId{localValue:1, serverValue:115}] to 127.0.0.1:27017
+2022-11-27 21:43:17.493  INFO 25380 --- [127.0.0.1:27117] org.mongodb.driver.connection            : Opened connection [connectionId{localValue:3, serverValue:32}] to 127.0.0.1:27117
+2022-11-27 21:43:17.493  INFO 25380 --- [127.0.0.1:27117] org.mongodb.driver.connection            : Opened connection [connectionId{localValue:4, serverValue:33}] to 127.0.0.1:27117
+2022-11-27 21:43:17.493  INFO 25380 --- [127.0.0.1:27017] org.mongodb.driver.connection            : Opened connection [connectionId{localValue:2, serverValue:114}] to 127.0.0.1:27017
+2022-11-27 21:43:17.494  INFO 25380 --- [127.0.0.1:27117] org.mongodb.driver.cluster               : Monitor thread successfully connected to server with description ServerDescription{address=127.0.0.1:27117, type=SHARD_ROUTER, state=CONNECTED, ok=true, minWireVersion=0, maxWireVersion=17, maxDocumentSize=16777216, logicalSessionTimeoutMinutes=30, roundTripTimeNanos=14285200}
+2022-11-27 21:43:17.494  INFO 25380 --- [127.0.0.1:27017] org.mongodb.driver.cluster               : Monitor thread successfully connected to server with description ServerDescription{address=127.0.0.1:27017, type=SHARD_ROUTER, state=CONNECTED, ok=true, minWireVersion=0, maxWireVersion=17, maxDocumentSize=16777216, logicalSessionTimeoutMinutes=30, roundTripTimeNanos=14284000}
+2022-11-27 21:43:17.496  INFO 25380 --- [127.0.0.1:27117] org.mongodb.driver.cluster               : Discovered cluster type of SHARDED
+2022-11-27 21:43:17.951  INFO 25380 --- [           main] o.s.b.w.embedded.tomcat.TomcatWebServer  : Tomcat started on port(s): 8080 (http) with context path ''
+2022-11-27 21:43:17.959  INFO 25380 --- [           main] m.m.MongoDbArticleShardsAuthApplication  : Started MongoDbArticleShardsAuthApplication in 1.738 seconds (JVM running for 2.312)
+
+```
+
+
+
+
+
+测试
+
+![image-20221127214505336](img/MongoDB学习笔记/image-20221127214505336.png)
+
+
+
+
+
+数据正常返回
+
+
+
+修改为错误的密码测试
+
+```yaml
+
+spring:
+  data:
+    mongodb:
+      # 库名称
+      #database: articledb
+      # mongodb服务地址
+      #host: 127.0.0.1
+      # 端口号
+      #port: 27017
+      # 可以使用uri连接
+      uri: mongodb://mao:12345678@127.0.0.1:27017,127.0.0.1:27117/articledb
+
+```
+
+
+
+
+
+![image-20221127214652162](img/MongoDB学习笔记/image-20221127214652162.png)
+
+
+
+
+
+```sh
+Caused by: com.mongodb.MongoCommandException: Command failed with error 18 (AuthenticationFailed): 'Authentication failed.' on server 127.0.0.1:27117. The full response is {"ok": 0.0, "errmsg": "Authentication failed.", "code": 18, "codeName": "AuthenticationFailed", "$clusterTime": {"clusterTime": {"$timestamp": {"t": 1669556786, "i": 1}}, "signature": {"hash": {"$binary": {"base64": "5hD+V1EeovNBYwTMXAnB4t+Cxf0=", "subType": "00"}}, "keyId": 7167604258659893250}}, "operationTime": {"$timestamp": {"t": 1669556786, "i": 1}}}
+	at com.mongodb.internal.connection.ProtocolHelper.getCommandFailureException(ProtocolHelper.java:198)
+	......
+```
+
+
+
