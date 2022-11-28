@@ -4,6 +4,22 @@
 
 
 
+[TOC]
+
+---
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -1139,6 +1155,381 @@ PS H:\opensoft\MongoDB\MongoDBCompass\app-1.33.1>
 
 
 ![image-20221114213701980](img/MongoDB学习笔记/image-20221114213701980.png)
+
+
+
+
+
+
+
+
+
+## Docker
+
+### 第一步：搜索镜像
+
+```sh
+docker search mongo
+```
+
+
+
+```sh
+PS C:\Users\mao\Desktop> docker search mongo
+NAME                                                   DESCRIPTION                                     STARS     OFFICIAL   AUTOMATED
+mongo                                                  MongoDB document databases provide high avai…   9291      [OK]
+mongo-express                                          Web-based MongoDB admin interface, written w…   1252      [OK]
+bitnami/mongodb                                        Bitnami MongoDB Docker Image                    201                  [OK]
+rapidfort/mongodb                                      RapidFort optimized, hardened image for Mong…   15
+circleci/mongo                                         CircleCI images for MongoDB                     12                   [OK]
+bitnami/mongodb-sharded                                                                                9
+bitnami/mongodb-exporter                                                                               9
+percona/mongodb_exporter                               A Prometheus exporter for MongoDB including …   3
+rancher/mongodb-conf                                                                                   2
+litmuschaos/mongo                                                                                      1
+mongodb/mongodb-atlas-kubernetes-operator                                                              1
+ibmcom/mongodb                                                                                         1
+ibmcom/mongodb-ppc64le                                                                                 1
+rapidfort/mongodb-perfomance-test                                                                      0
+rancher/mongodb-config                                                                                 0
+rapidfort/mongodb-official                             RapidFort optimized, hardened image for Mong…   0
+mongodb/mongodb-atlas-kubernetes-operator-prerelease   This is a MongoDB Atlas Operator image built…   0
+corpusops/mongo                                        https://github.com/corpusops/docker-images/     0
+ibmcom/mongo-c-driver-ppc64le                          Docker image for mongo-c-driver-ppc64leDocke…   0
+ibmcom/mongo-java-driver-ppc64le                       Docker image for mongo-java-driver-ppc64le      0
+litmuschaos/mongo-utils                                                                                0
+ibmcom/mongodb-s390x                                                                                   0
+drud/mongodb                                           Mongodb                                         0                    [OK]
+ibmcom/mongodb-amd64                                                                                   0
+ibmcom/mongodb-exporter-ppc64le                                                                        0
+PS C:\Users\mao\Desktop>
+```
+
+
+
+直接使用官方的镜像
+
+
+
+
+
+### 第二步：拉取镜像
+
+```sh
+docker pull mongo
+```
+
+
+
+默认使用最新的镜像
+
+
+
+![image-20221127220846615](img/MongoDB学习笔记/image-20221127220846615.png)
+
+
+
+```sh
+PS C:\Users\mao\Desktop> docker pull mongo
+Using default tag: latest
+latest: Pulling from library/mongo
+eaead16dc43b: Pull complete
+8a00eb9f68a0: Pull complete
+f683956749c5: Pull complete
+b33b2f05ea20: Pull complete
+3a342bea915a: Pull complete
+fa956ab1c2f0: Pull complete
+138a8542a624: Pull complete
+0a5a5d2ec822: Pull complete
+37200fef7cf6: Pull complete
+Digest: sha256:8bed0be3e86595283d67836e8d4f3f08916184ea6f2aac7440bda496083ab0c8
+Status: Downloaded newer image for mongo:latest
+docker.io/library/mongo:latest
+PS C:\Users\mao\Desktop>
+```
+
+
+
+
+
+
+
+### 第三步：查看镜像是否存在
+
+```sh
+docker images
+```
+
+
+
+```sh
+PS C:\Users\mao\Desktop> docker images
+REPOSITORY            TAG       IMAGE ID       CREATED         SIZE
+mongo                 latest    2dd27bb6d3e6   10 days ago     695MB
+docker_compose_boot   1.0       aaef57816a3b   5 months ago    588MB
+java17                1.0       282982c69086   5 months ago    489MB
+grafana/grafana       latest    c4b778290339   5 months ago    292MB
+tomcat                latest    c795915cb678   6 months ago    680MB
+redis                 latest    53aa81e8adfa   6 months ago    117MB
+mysql                 latest    65b636d5542b   6 months ago    524MB
+ubuntu                latest    d2e4e1f51132   7 months ago    77.8MB
+centos                latest    5d0da3dc9764   14 months ago   231MB
+google/cadvisor       latest    eb1210707573   4 years ago     69.6MB
+tutum/influxdb        0.9       7aa2a38f2ef6   6 years ago     275MB
+PS C:\Users\mao\Desktop>
+```
+
+
+
+
+
+
+
+### 第四步：运行
+
+```sh
+docker run -d --name mongo -v H:/docker/mongo/data/db:/data/db -v H:/docker/mongo/data/log:/var/log/mongodb -p 27319:27017  mongo
+```
+
+
+
+```sh
+PS C:\Users\mao\Desktop> docker run -d --name mongo -v H:/docker/mongo/data/db:/data/db -v H:/docker/mongo/data/log:/var/log/mongodb -p 27319:27017  mongo
+a59c8242a8c8f64134820d0c7171ecb295e613335394402faea7ea3d2f765237
+PS C:\Users\mao\Desktop>
+```
+
+
+
+
+
+
+
+### 第五步：查看程序是否正在运行
+
+```sh
+docker ps
+```
+
+或者
+
+```sh
+docker ps -a
+```
+
+
+
+
+
+```sh
+PS C:\Users\mao\Desktop> docker ps
+CONTAINER ID   IMAGE     COMMAND                  CREATED          STATUS          PORTS                      NAMES
+a59c8242a8c8   mongo     "docker-entrypoint.s…"   54 seconds ago   Up 54 seconds   0.0.0.0:27319->27017/tcp   mongo
+PS C:\Users\mao\Desktop>
+```
+
+
+
+
+
+### 第六步：进入容器内部
+
+```sh
+docker exec -it mongo /bin/bash
+```
+
+
+
+```sh
+PS C:\Users\mao\Desktop> docker exec -it mongo /bin/bash
+root@a59c8242a8c8:/# type mongo
+bash: type: mongo: not found
+root@a59c8242a8c8:/# type mongod
+mongod is /usr/bin/mongod
+```
+
+
+
+
+
+
+
+### 第七步：使用mongosh连接
+
+```sh
+mongosh --port 27319
+```
+
+
+
+```sh
+PS C:\Users\mao\Desktop> mongosh --port 27319
+Current Mongosh Log ID: 6383741bbedef8ceeef98363
+Connecting to:          mongodb://127.0.0.1:27319/?directConnection=true&serverSelectionTimeoutMS=2000&appName=mongosh+1.6.0
+Using MongoDB:          6.0.3
+Using Mongosh:          1.6.0
+
+For mongosh info see: https://docs.mongodb.com/mongodb-shell/
+
+------
+   The server generated these startup warnings when booting
+   2022-11-27T14:20:29.145+00:00: Access control is not enabled for the database. Read and write access to data and configuration is unrestricted
+   2022-11-27T14:20:29.145+00:00: /sys/kernel/mm/transparent_hugepage/enabled is 'always'. We suggest setting it to 'never'
+   2022-11-27T14:20:29.145+00:00: vm.max_map_count is too low
+------
+
+------
+   Enable MongoDB's free cloud-based monitoring service, which will then receive and display
+   metrics about your deployment (disk utilization, CPU, operation statistics, etc).
+
+   The monitoring data will be available on a MongoDB website with a unique URL accessible to you
+   and anyone you share the URL with. MongoDB may use this information to make product
+   improvements and to suggest MongoDB products and deployment options to you.
+
+   To enable free monitoring, run the following command: db.enableFreeMonitoring()
+   To permanently disable this reminder, run the following command: db.disableFreeMonitoring()
+------
+
+test> show databases
+admin   40.00 KiB
+config  12.00 KiB
+local   40.00 KiB
+test>
+```
+
+
+
+
+
+
+
+### 第八步：添加认证
+
+```sh
+use admin
+```
+
+```sh
+db.createUser({user:"root",pwd:"123456",roles:["root"]})
+```
+
+```sh
+db.system.users.find()
+```
+
+
+
+
+
+```sh
+PS C:\Users\mao\Desktop> mongosh --port 27319
+Current Mongosh Log ID: 6383741bbedef8ceeef98363
+Connecting to:          mongodb://127.0.0.1:27319/?directConnection=true&serverSelectionTimeoutMS=2000&appName=mongosh+1.6.0
+Using MongoDB:          6.0.3
+Using Mongosh:          1.6.0
+
+For mongosh info see: https://docs.mongodb.com/mongodb-shell/
+
+------
+   The server generated these startup warnings when booting
+   2022-11-27T14:20:29.145+00:00: Access control is not enabled for the database. Read and write access to data and configuration is unrestricted
+   2022-11-27T14:20:29.145+00:00: /sys/kernel/mm/transparent_hugepage/enabled is 'always'. We suggest setting it to 'never'
+   2022-11-27T14:20:29.145+00:00: vm.max_map_count is too low
+------
+
+------
+   Enable MongoDB's free cloud-based monitoring service, which will then receive and display
+   metrics about your deployment (disk utilization, CPU, operation statistics, etc).
+
+   The monitoring data will be available on a MongoDB website with a unique URL accessible to you
+   and anyone you share the URL with. MongoDB may use this information to make product
+   improvements and to suggest MongoDB products and deployment options to you.
+
+   To enable free monitoring, run the following command: db.enableFreeMonitoring()
+   To permanently disable this reminder, run the following command: db.disableFreeMonitoring()
+------
+
+test> show databases
+admin   40.00 KiB
+config  12.00 KiB
+local   40.00 KiB
+test> use admin
+switched to db admin
+admin> db.createUser({user:"root",pwd:"123456",roles:["root"]})
+{ ok: 1 }
+admin> db.system.users.find()
+[
+  {
+    _id: 'admin.root',
+    userId: new UUID("4d213224-3527-477a-9e42-75c9b57cfd6a"),
+    user: 'root',
+    db: 'admin',
+    credentials: {
+      'SCRAM-SHA-1': {
+        iterationCount: 10000,
+        salt: '4V/X37V1NJSNbw002Hp7Jw==',
+        storedKey: '9lcophUc2p0eAlSbQ63kh+B+OvI=',
+        serverKey: 'RjnWT0tWckV6R9cqBIXIKueoRas='
+      },
+      'SCRAM-SHA-256': {
+        iterationCount: 15000,
+        salt: 'kux1UC3+AMIzoEhepGvM8p4xyKKkZtnQgpJbLw==',
+        storedKey: '8Cx1kGN1Y1i9LbeDyE0S3OZ7esF46qacrRKZTUfVmY8=',
+        serverKey: 'NsLvEWgqlLnU2o4LU2mKHvUataBuKBhhwBeBoGEQW/Y='
+      }
+    },
+    roles: [ { role: 'root', db: 'admin' } ]
+  }
+]
+admin>
+```
+
+
+
+
+
+### 第九步：停止服务
+
+```sh
+docker stop mongo
+```
+
+
+
+```sh
+PS C:\Users\mao\Desktop> docker stop mongo
+mongo
+PS C:\Users\mao\Desktop> docker ps
+CONTAINER ID   IMAGE     COMMAND   CREATED   STATUS    PORTS     NAMES
+PS C:\Users\mao\Desktop>
+```
+
+
+
+
+
+
+
+### 第十步：再次启动服务
+
+```sh
+docker start mongo
+```
+
+
+
+```sh
+PS C:\Users\mao\Desktop> docker start mongo
+mongo
+PS C:\Users\mao\Desktop> docker ps
+CONTAINER ID   IMAGE     COMMAND                  CREATED          STATUS         PORTS                      NAMES
+a59c8242a8c8   mongo     "docker-entrypoint.s…"   14 minutes ago   Up 9 seconds   0.0.0.0:27319->27017/tcp   mongo
+PS C:\Users\mao\Desktop>
+```
+
+
+
+
 
 
 
@@ -16303,3 +16694,35 @@ Caused by: com.mongodb.MongoCommandException: Command failed with error 18 (Auth
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+---
+end
+
+---
+by  mao
+2022/11/27
+
+---
